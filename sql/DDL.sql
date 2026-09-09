@@ -58,13 +58,21 @@ CREATE TABLE IF NOT EXISTS media_watch_progress (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS media_ingest_log (
-  id            BIGINT PRIMARY KEY AUTO_INCREMENT,
-  external_ref  VARCHAR(128) NOT NULL,
-  drama_id      BIGINT       NULL,
-  payload_json  MEDIUMTEXT   NULL,
-  status        VARCHAR(32)  NOT NULL,
-  message       VARCHAR(1024) NULL,
-  created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id               BIGINT PRIMARY KEY AUTO_INCREMENT,
+  external_ref     VARCHAR(128) NOT NULL,
+  drama_id         BIGINT       NULL,
+  payload_json     MEDIUMTEXT   NULL,
+  status           VARCHAR(32)  NOT NULL,
+  message          VARCHAR(1024) NULL,
+  idempotency_key  VARCHAR(256) NULL,
+  media_id         VARCHAR(64)  NULL,
+  play_url         VARCHAR(4096) NULL,
+  created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_ingest_idempotency (idempotency_key),
   KEY idx_ingest_external_ref (external_ref),
+  KEY idx_ingest_media_id (media_id),
   KEY idx_ingest_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Additive catalog views used by shared short-drama contract (maps onto drama/episode).
+-- media_id is a stable public id stored on media_ingest_log and derived from episode id.

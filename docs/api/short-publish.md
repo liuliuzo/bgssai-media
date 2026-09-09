@@ -69,3 +69,12 @@ curl -s -X POST http://127.0.0.1:8080/api/ingest/short/publish \
 ```
 
 Admin 端「入库日志」可看到本次摄入记录。
+
+
+---
+
+## Shared contract (preferred for short-side agent)
+
+See `docs/feature/short-drama-ingest.md`.
+
+`POST /bgssai/user/media/ingest/short-drama` + header `X-Bgssai-Ingest-Token`.

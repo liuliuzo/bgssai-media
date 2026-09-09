@@ -22,8 +22,16 @@ public class IngestController {
 
     @PostMapping("/short/publish")
     public ApiResponse<Map<String, Object>> shortPublish(
-            @RequestHeader(value = "X-Ingest-Token", required = false) String token,
+            @RequestHeader(value = "X-Bgssai-Ingest-Token", required = false) String bgssaiToken,
+            @RequestHeader(value = "X-Ingest-Token", required = false) String legacyToken,
+            @RequestHeader(value = "Authorization", required = false) String authorization,
             @RequestBody Map<String, Object> body) {
+        String token = bgssaiToken;
+        if (token == null || token.isBlank()) token = legacyToken;
+        if ((token == null || token.isBlank()) && authorization != null
+                && authorization.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            token = authorization.substring(7).trim();
+        }
         ingestService.assertToken(token);
         return ApiResponse.ok(ingestService.publishFromShort(body));
     }
