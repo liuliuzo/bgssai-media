@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.MediaEpisodeMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.MediaEpisode">
+    <id column="id" property="id"/>
+    <result column="drama_id" property="dramaId"/>
+    <result column="ep_no" property="epNo"/>
+    <result column="title" property="title"/>
+    <result column="duration_sec" property="durationSec"/>
+    <result column="media_url" property="mediaUrl"/>
+    <result column="storage_key" property="storageKey"/>
+    <result column="status" property="status"/>
+    <result column="created_at" property="createdAt"/>
+    <result column="updated_at" property="updatedAt"/>
+  </resultMap>
+  
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">and ${criterion.condition}</when>
+                <when test="criterion.singleValue">and ${criterion.condition} #{criterion.value}</when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+
+  <select id="selectByExample" resultMap="BaseResultMap">
+    select id, drama_id, ep_no, title, duration_sec, media_url, storage_key, status, created_at, updated_at
+    from media_episode
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+    <if test="orderByClause != null">order by ${orderByClause}</if>
+  </select>
+  <select id="countByExample" resultType="long">
+    select count(*) from media_episode
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long">
+    select id, drama_id, ep_no, title, duration_sec, media_url, storage_key, status, created_at, updated_at from media_episode where id = #{id}
+  </select>
+  <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.MediaEpisode" useGeneratedKeys="true" keyProperty="id">
+    insert into media_episode
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="dramaId != null">drama_id,</if>
+      <if test="epNo != null">ep_no,</if>
+      <if test="title != null">title,</if>
+      <if test="durationSec != null">duration_sec,</if>
+      <if test="mediaUrl != null">media_url,</if>
+      <if test="storageKey != null">storage_key,</if>
+      <if test="status != null">status,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="dramaId != null">#{dramaId},</if>
+      <if test="epNo != null">#{epNo},</if>
+      <if test="title != null">#{title},</if>
+      <if test="durationSec != null">#{durationSec},</if>
+      <if test="mediaUrl != null">#{mediaUrl},</if>
+      <if test="storageKey != null">#{storageKey},</if>
+      <if test="status != null">#{status},</if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bgssai.media.common.domain.MediaEpisode">
+    update media_episode
+    <set>
+      <if test="dramaId != null">drama_id = #{dramaId},</if>
+      <if test="epNo != null">ep_no = #{epNo},</if>
+      <if test="title != null">title = #{title},</if>
+      <if test="durationSec != null">duration_sec = #{durationSec},</if>
+      <if test="mediaUrl != null">media_url = #{mediaUrl},</if>
+      <if test="storageKey != null">storage_key = #{storageKey},</if>
+      <if test="status != null">status = #{status},</if>
+    </set>
+    where id = #{id}
+  </update>
+  <delete id="deleteByPrimaryKey" parameterType="long">delete from media_episode where id = #{id}</delete>
+  <delete id="deleteByDramaId" parameterType="long">delete from media_episode where drama_id = #{dramaId}</delete>
+</mapper>

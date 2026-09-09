@@ -1,0 +1,27 @@
+# Build
+**/target/
+**/dist/
+**/node_modules/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+.DS_Store
+
+# Logs / local
+*.log
+logs/
+.env
+.env.local
+
+# Frontend TS incremental
+*.tsbuildinfo
+
+# OS
+Thumbs.db
