@@ -1,19 +1,15 @@
-# 功能：通用播放器（MVP）
+# 功能：播放器
 
-## 目标
+## Web 短剧端
 
-提供 VLC 启发的基础 Web 播放能力：打开 URL、打开本地文件、播放/暂停、进度、音量、倍速、全屏、基础播放列表。
+- 组件：`bgssai-media-user/frontend` UniversalPlayer（video.js + hls.js）
+- 支持：MP4 / WebM / HLS
+- 能力：URL、本地 File（object URL，限浏览器可解格式）、播放列表、倍速、全屏
+- 非浏览器格式：提示改用桌面播放器
 
-## 格式支持矩阵
+## 桌面端（完整矩阵）
 
-| 格式 | MVP 支持 | 说明 |
-| --- | --- | --- |
-| MP4 (H.264/AAC) | 是 | 浏览器原生 / video.js |
-| WebM | 是 | 浏览器原生 |
-| HLS (m3u8) | 是 | hls.js |
-| MKV / AVI / MOV(部分) | 否 | 展示不支持提示；Electron/libVLC 为后续 |
-
-## 交互
-
-- 横屏：文件/URL 播放为主
-- 竖屏：短剧分集模式（复用同一播放器组件）
+- 模块：`bgssai-media-desktop`（Electron 壳 + 系统 libVLC/cvlc）
+- 支持矩阵：见 `docs/feature/format-matrix.md`
+- UX：打开文件、播放列表、播放/暂停/停止、上一首/下一首、音量、倍速、seek
+- 上游参考：https://github.com/videolan/vlc（只读，不 vendor）

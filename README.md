@@ -18,6 +18,7 @@
 | `bgssai-media-admin/frontend` | 管理端前端 | 3001 |
 | `bgssai-media-user` | 用户端后端 | 8081（本机并发用启动参数） |
 | `bgssai-media-user/frontend` | 用户端前端 | 3002 |
+| `bgssai-media-desktop` | Electron + libVLC 桌面播放器 | 本地 |
 | `sql/` | DDL + DML 种子 | - |
 
 两端后端配置里默认 `server.port=8080`（与产品线一致，分环境分开部署）。本机同时跑两端时，用户端用 `--server.port=8081`。
@@ -97,9 +98,15 @@ mvn -q -DskipTests package
 
 ## 格式支持（MVP）
 
-| 格式 | 支持 |
+完整矩阵见 [docs/feature/format-matrix.md](docs/feature/format-matrix.md)。
+
+| 路径 | 支持 |
 | --- | --- |
-| MP4 (H.264/AAC) | 是 |
-| WebM | 是 |
-| HLS (m3u8) | 是 |
-| MKV / AVI 等 | 否（提示不支持；Electron/libVLC 后续） |
+| Web 短剧端 | MP4 / WebM / HLS |
+| 桌面 libVLC | mp4/mkv/webm/mov/avi/flv/ts/m3u8/mpg/wmv/3gp + 全音频矩阵 |
+
+```bash
+# 桌面播放器
+sudo apt install -y vlc
+cd bgssai-media-desktop && npm install && npm run smoke:vlc && npm start
+```

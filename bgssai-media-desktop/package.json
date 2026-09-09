@@ -1,0 +1,16 @@
+{
+  "name": "bgssai-media-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BGSSAI media desktop player (Electron + system libVLC/VLC)",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "smoke:vlc": "node scripts/smoke-vlc.js",
+    "build": "node -e \"console.log('desktop MVP: no packager bundle; run npm start with system VLC')\""
+  },
+  "devDependencies": {
+    "electron": "^33.2.0"
+  }
+}

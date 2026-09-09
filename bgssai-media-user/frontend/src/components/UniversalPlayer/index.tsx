@@ -9,12 +9,14 @@ import './UniversalPlayer.css';
 
 const { Text } = Typography;
 
-const UNSUPPORTED_EXTENSIONS = ['.mkv', '.avi', '.wmv', '.flv', '.rmvb'];
+const UNSUPPORTED_EXTENSIONS = [
+  '.mkv', '.avi', '.wmv', '.flv', '.rmvb', '.mov', '.mpg', '.mpeg', '.3gp', '.ts',
+  '.mp3', '.m4a', '.aac', '.ogg', '.opus', '.flac', '.wav', '.ape', '.alac', '.wma',
+];
 
 const FORMAT_MATRIX = [
-  { format: 'MP4 / WebM', support: '浏览器原生支持' },
-  { format: 'HLS (.m3u8)', support: '通过 hls.js 播放' },
-  { format: 'MKV / AVI / WMV / FLV', support: '浏览器不支持，请转码为 MP4 或 HLS' },
+  { format: 'Web: MP4 / WebM / HLS', support: '浏览器短剧端（本页）' },
+  { format: 'Desktop: mkv/avi/mov/… + 全音频', support: 'bgssai-media-desktop（libVLC）' },
 ];
 
 function getExtension(url: string): string {

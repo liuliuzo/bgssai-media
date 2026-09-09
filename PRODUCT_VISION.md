@@ -8,7 +8,7 @@
 
 | 能力 | 说明 |
 | --- | --- |
-| 通用播放器 | Web 端优先：MP4（H.264/AAC）、WebM、HLS（m3u8）；打开 URL / 本地文件；播放控制、倍速、全屏、基础播放列表 |
+| 通用播放器 | **桌面端（libVLC）**覆盖完整容器/编码矩阵；**Web 短剧端**播放在线 MP4/WebM/HLS。详见 `docs/feature/format-matrix.md` |
 | 短剧平台 | 剧集目录、分集播放、继续观看（MVP stub）；竖屏短剧与横屏文件两种观看模式 |
 | 发布接入 | 提供对 bgssai-short 的服务端发布摄入 API（幂等 upsert），运营端可查看摄入日志 |
 
@@ -19,7 +19,7 @@
 
 ## 非目标（MVP）
 
-原生 VLC/libVLC、桌面安装包、DRM、直播、社区、支付、推荐排序、完整 Chat OAuth、生产 OBS/SMS 凭证。
+DRM、直播、社区、支付、推荐排序、完整 Chat OAuth、生产 OBS/SMS 凭证；不 vendor Videolan 源码树（用系统 libVLC）。
 
 ## 里程碑
 
