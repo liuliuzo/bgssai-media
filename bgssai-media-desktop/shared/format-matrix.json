@@ -1,0 +1,18 @@
+{
+  "web": {
+    "label": "浏览器短剧端（video.js + hls.js）",
+    "video_containers": [".mp4", ".webm", ".m3u8"],
+    "audio_containers": [],
+    "video_codecs": ["H.264/AVC (browser dependent)", "VP9 (WebM)"],
+    "audio_codecs": ["AAC", "Opus/Vorbis (WebM)"],
+    "notes": "仅用于短剧在线分发目录中的渐进式/HLS 媒资。完整格式请用桌面播放器。"
+  },
+  "desktop_libvlc": {
+    "label": "桌面播放器（Electron + 系统 libVLC/VLC）",
+    "video_containers": [".mp4", ".mkv", ".webm", ".mov", ".avi", ".flv", ".ts", ".m3u8", ".mpg", ".wmv", ".3gp"],
+    "audio_containers": [".mp3", ".m4a", ".aac", ".ogg", ".opus", ".flac", ".wav", ".ape", ".alac", ".wma"],
+    "video_codecs": ["H.264/AVC", "H.265/HEVC", "AV1", "VP9", "MPEG-2"],
+    "audio_codecs": ["AAC", "MP3", "Opus", "FLAC", "PCM"],
+    "notes": "解码由系统 libVLC 完成。需安装 VLC（apt install vlc）。不内嵌 vendor Videolan 源码树。"
+  }
+}

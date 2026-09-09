@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bgssai-media Desktop</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div class="brand">bgssai-media</div>
+      <p class="tagline">桌面播放器 · libVLC 全格式解码</p>
+    </header>
+
+    <section class="panel">
+      <div class="actions">
+        <button id="btn-open">打开文件</button>
+        <button id="btn-play">播放</button>
+        <button id="btn-pause">暂停</button>
+        <button id="btn-stop">停止</button>
+        <button id="btn-prev">上一首</button>
+        <button id="btn-next">下一首</button>
+      </div>
+      <div class="controls">
+        <label>音量 <input id="volume" type="range" min="0" max="100" value="50" /></label>
+        <label>倍速
+          <select id="rate">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+          </select>
+        </label>
+        <label>跳转(秒) <input id="seek" type="number" min="0" value="0" step="1" />
+          <button id="btn-seek">Seek</button>
+        </label>
+      </div>
+      <p id="status" class="status">就绪。画面由 VLC/libVLC 窗口输出。</p>
+      <ul id="playlist" class="playlist"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>格式支持矩阵</h2>
+      <div id="matrix" class="matrix"></div>
+      <p class="hint">Web 短剧端仅覆盖 MP4 / WebM / HLS；本桌面端覆盖完整矩阵。</p>
+    </section>
+  </div>
+  <script src="./renderer.js"></script>
+</body>
+</html>
