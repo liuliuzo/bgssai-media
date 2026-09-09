@@ -45,9 +45,29 @@ public class IngestService {
     }
 
     public void assertToken(String token) {
-        if (token == null || token.isBlank() || !token.equals(ingestToken)) {
+        String expected = resolveExpectedToken();
+        String profile = System.getProperty("spring.profiles.active", "");
+        if (profile == null || profile.isBlank()) {
+            profile = System.getenv().getOrDefault("SPRING_PROFILES_ACTIVE", "");
+        }
+        boolean local = profile != null && profile.contains("local");
+        if (expected == null || expected.isBlank()) {
+            if (!local) {
+                throw new BizException(503, "ingest token not configured");
+            }
             throw new BizException(401, "invalid ingest token");
         }
+        if (token == null || token.isBlank() || !expected.equals(token)) {
+            throw new BizException(401, "invalid ingest token");
+        }
+    }
+
+    public String resolveExpectedToken() {
+        String env = System.getenv("MEDIA_INGEST_TOKEN");
+        if (env != null && !env.isBlank()) {
+            return env;
+        }
+        return ingestToken;
     }
 
     @Transactional

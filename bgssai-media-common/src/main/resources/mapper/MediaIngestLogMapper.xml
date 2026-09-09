@@ -8,9 +8,16 @@
     <result column="payload_json" property="payloadJson"/>
     <result column="status" property="status"/>
     <result column="message" property="message"/>
+    <result column="idempotency_key" property="idempotencyKey"/>
+    <result column="media_id" property="mediaId"/>
+    <result column="play_url" property="playUrl"/>
     <result column="created_at" property="createdAt"/>
   </resultMap>
-  
+
+  <sql id="Base_Column_List">
+    id, external_ref, drama_id, payload_json, status, message, idempotency_key, media_id, play_url, created_at
+  </sql>
+
   <sql id="Example_Where_Clause">
     <where>
       <foreach collection="oredCriteria" item="criteria" separator="or">
@@ -29,12 +36,18 @@
   </sql>
 
   <select id="selectByExample" resultMap="BaseResultMap">
-    select id, external_ref, drama_id, payload_json, status, message, created_at from media_ingest_log
+    select <include refid="Base_Column_List"/> from media_ingest_log
     <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
     <if test="orderByClause != null">order by ${orderByClause}</if>
   </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long">
-    select id, external_ref, drama_id, payload_json, status, message, created_at from media_ingest_log where id = #{id}
+    select <include refid="Base_Column_List"/> from media_ingest_log where id = #{id}
+  </select>
+  <select id="selectByIdempotencyKey" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from media_ingest_log where idempotency_key = #{idempotencyKey} limit 1
+  </select>
+  <select id="selectByMediaId" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from media_ingest_log where media_id = #{mediaId} order by id desc limit 1
   </select>
   <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.MediaIngestLog" useGeneratedKeys="true" keyProperty="id">
     insert into media_ingest_log
@@ -44,6 +57,9 @@
       <if test="payloadJson != null">payload_json,</if>
       <if test="status != null">status,</if>
       <if test="message != null">message,</if>
+      <if test="idempotencyKey != null">idempotency_key,</if>
+      <if test="mediaId != null">media_id,</if>
+      <if test="playUrl != null">play_url,</if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="externalRef != null">#{externalRef},</if>
@@ -51,6 +67,32 @@
       <if test="payloadJson != null">#{payloadJson},</if>
       <if test="status != null">#{status},</if>
       <if test="message != null">#{message},</if>
+      <if test="idempotencyKey != null">#{idempotencyKey},</if>
+      <if test="mediaId != null">#{mediaId},</if>
+      <if test="playUrl != null">#{playUrl},</if>
     </trim>
   </insert>
+  <update id="updateByIdempotencyKey" parameterType="com.bgssai.media.common.domain.MediaIngestLog">
+    update media_ingest_log
+    <set>
+      <if test="externalRef != null">external_ref = #{externalRef},</if>
+      <if test="dramaId != null">drama_id = #{dramaId},</if>
+      <if test="payloadJson != null">payload_json = #{payloadJson},</if>
+      <if test="status != null">status = #{status},</if>
+      <if test="message != null">message = #{message},</if>
+      <if test="mediaId != null">media_id = #{mediaId},</if>
+      <if test="playUrl != null">play_url = #{playUrl},</if>
+    </set>
+    where idempotency_key = #{idempotencyKey}
+  </update>
+
+  <select id="listRecentContract" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from media_ingest_log
+    where media_id is not null and media_id != ''
+    order by id desc
+    limit #{limit} offset #{offset}
+  </select>
+  <select id="countContract" resultType="long">
+    select count(1) from media_ingest_log where media_id is not null and media_id != ''
+  </select>
 </mapper>
