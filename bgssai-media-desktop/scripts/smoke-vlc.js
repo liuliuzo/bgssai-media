@@ -10,6 +10,11 @@ const path = require('path');
 
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 
+const MEDIA_EXT = new Set([
+  '.mp4', '.mkv', '.webm', '.mov', '.avi', '.flv', '.ts', '.m3u8', '.mpg', '.mpeg', '.wmv', '.3gp',
+  '.mp3', '.m4a', '.aac', '.ogg', '.opus', '.flac', '.wav', '.ape', '.alac', '.wma',
+]);
+
 function collect(dir) {
   const out = [];
   for (const name of fs.readdirSync(dir)) {
@@ -17,7 +22,7 @@ function collect(dir) {
     const full = path.join(dir, name);
     const st = fs.statSync(full);
     if (st.isDirectory()) out.push(...collect(full));
-    else out.push(full);
+    else if (MEDIA_EXT.has(path.extname(name).toLowerCase())) out.push(full);
   }
   return out;
 }
