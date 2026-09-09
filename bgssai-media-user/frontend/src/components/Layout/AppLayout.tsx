@@ -4,6 +4,7 @@ import {
   PlayCircleOutlined,
   HistoryOutlined,
   LogoutOutlined,
+  ProfileOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
@@ -19,6 +20,7 @@ export default function AppLayout() {
   const selectedKey = (() => {
     if (location.pathname.startsWith('/continue')) return '/continue';
     if (location.pathname.startsWith('/player')) return '/player';
+    if (location.pathname.startsWith('/formats')) return '/formats';
     return '/';
   })();
 
@@ -60,6 +62,11 @@ export default function AppLayout() {
                 key: '/player',
                 icon: <PlayCircleOutlined />,
                 label: <Link to="/player">通用播放器</Link>,
+              },
+              {
+                key: '/formats',
+                icon: <ProfileOutlined />,
+                label: <Link to="/formats">格式支持</Link>,
               },
             ]}
           />

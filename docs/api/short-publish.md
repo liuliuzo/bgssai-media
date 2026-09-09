@@ -46,3 +46,26 @@ Header：
 ## short 侧调用提示（stub）
 
 配置 media 基址与 ingest token，在成品「发布到渠道」时 POST 上述 payload。本 PR 不修改 bgssai-short 代码。
+
+## 本机冒烟
+
+```bash
+curl -s -X POST http://127.0.0.1:8080/api/ingest/short/publish \
+  -H 'Content-Type: application/json' \
+  -H 'X-Ingest-Token: local-ingest-token-change-me' \
+  -d '{
+    "external_ref": "short-smoke-001",
+    "title": "short 冒烟剧",
+    "status": "published",
+    "episodes": [
+      {
+        "ep_no": 1,
+        "title": "EP1",
+        "media_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        "status": "published"
+      }
+    ]
+  }'
+```
+
+Admin 端「入库日志」可看到本次摄入记录。

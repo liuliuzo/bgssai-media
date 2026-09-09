@@ -19,3 +19,14 @@
 配置默认 `server.port=8080`。本机同时跑 admin + user 时，user 用 `--server.port=8081`。前端 dev：admin 3001，user 3002。
 
 愿景权威：`docs/PRODUCT-LINE-VISION.md` / 骨架仓 `PRODUCT-LINE-VISION.md`。
+
+
+## 参考源（强制 GitHub remote）
+
+优先从 GitHub 远程只读参考，勿依赖本机陈旧副本：
+
+- https://github.com/liuliuzo/bgssai-skeleton
+- https://github.com/liuliuzo/bgssai-short
+- 本仓 https://github.com/liuliuzo/bgssai-media （唯一可写）
+
+Standards / monorepo / auth / ApiResponse 以 skeleton、short 远程为准，变更后应重新 clone 同步。
