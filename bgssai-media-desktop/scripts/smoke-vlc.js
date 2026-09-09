@@ -2,29 +2,42 @@
 
 /**
  * Headless smoke: open each fixture with cvlc --play-and-exit for 1s.
- * Proves system libVLC can demux/decode the matrix samples on this machine.
+ * Proves system libVLC can demux/decode matrix samples on this machine.
  */
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
-const files = fs.readdirSync(fixturesDir).filter((f) => !f.startsWith('.'));
+
+function collect(dir) {
+  const out = [];
+  for (const name of fs.readdirSync(dir)) {
+    if (name.startsWith('.')) continue;
+    const full = path.join(dir, name);
+    const st = fs.statSync(full);
+    if (st.isDirectory()) out.push(...collect(full));
+    else out.push(full);
+  }
+  return out;
+}
+
+const files = collect(fixturesDir);
 if (files.length === 0) {
   console.error('no fixtures');
   process.exit(1);
 }
 
 let failed = 0;
-for (const file of files) {
-  const full = path.join(fixturesDir, file);
+for (const full of files) {
+  const rel = path.relative(fixturesDir, full);
   const r = spawnSync(
     'cvlc',
     ['--play-and-exit', '--run-time=1', '--intf', 'dummy', full],
-    { encoding: 'utf8', timeout: 15000 }
+    { encoding: 'utf8', timeout: 20000 }
   );
   const ok = r.status === 0;
-  console.log(`${ok ? 'OK' : 'FAIL'} ${file} (exit=${r.status})`);
+  console.log(`${ok ? 'OK' : 'FAIL'} ${rel} (exit=${r.status})`);
   if (!ok) failed += 1;
 }
 

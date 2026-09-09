@@ -30,3 +30,6 @@ cd bgssai-media-desktop && npm run smoke:vlc
 ```
 
 fixtures 由 ffmpeg 生成，经 cvlc 打开验证 demux/decode。
+
+
+Fixture inventory and encoder caveats: `bgssai-media-desktop/fixtures/README.md`.
