@@ -110,3 +110,9 @@ mvn -q -DskipTests package
 sudo apt install -y vlc
 cd bgssai-media-desktop && npm install && npm run smoke:vlc && npm start
 ```
+
+
+## 与骨架仓对齐
+
+本仓应对齐 https://github.com/liuliuzo/bgssai-skeleton 与 https://github.com/liuliuzo/bgssai-short 的 Standards / 布局 / 鉴权约定。
+若 Cloud Agent 无权读取上述私有仓，请先授予 GitHub App 访问后再同步。
