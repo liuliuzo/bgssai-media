@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.PlatformEmailConfigMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.PlatformEmailConfig">
+    <id column="id" property="id"/>
+    <result column="smtp_host" property="smtpHost"/>
+    <result column="smtp_port" property="smtpPort"/>
+    <result column="smtp_username" property="smtpUsername"/>
+    <result column="smtp_password" property="smtpPassword"/>
+    <result column="from_address" property="fromAddress"/>
+    <result column="from_name" property="fromName"/>
+    <result column="ssl_enable" property="sslEnable"/>
+    <result column="starttls_enable" property="starttlsEnable"/>
+    <result column="auth_enable" property="authEnable"/>
+    <result column="enabled" property="enabled"/>
+    <result column="last_test_status" property="lastTestStatus"/>
+    <result column="last_test_at" property="lastTestAt"/>
+  </resultMap>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, smtp_host, smtp_port, smtp_username, smtp_password, from_address, from_name,
+           ssl_enable, starttls_enable, auth_enable, enabled, last_test_status, last_test_at
+    from platform_email_config where id = #{id}
+  </select>
+</mapper>

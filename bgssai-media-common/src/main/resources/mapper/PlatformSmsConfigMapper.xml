@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.PlatformSmsConfigMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.PlatformSmsConfig">
+    <id column="id" property="id"/>
+    <result column="provider" property="provider"/>
+    <result column="secret_id" property="secretId"/>
+    <result column="secret_key" property="secretKey"/>
+    <result column="sdk_app_id" property="sdkAppId"/>
+    <result column="sign_name" property="signName"/>
+    <result column="region" property="region"/>
+    <result column="login_template_id" property="loginTemplateId"/>
+    <result column="bind_phone_template_id" property="bindPhoneTemplateId"/>
+    <result column="reset_password_template_id" property="resetPasswordTemplateId"/>
+    <result column="code_expire_seconds" property="codeExpireSeconds"/>
+    <result column="enabled" property="enabled"/>
+    <result column="last_test_status" property="lastTestStatus"/>
+    <result column="last_test_at" property="lastTestAt"/>
+  </resultMap>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, provider, secret_id, secret_key, sdk_app_id, sign_name, region,
+           login_template_id, bind_phone_template_id, reset_password_template_id,
+           code_expire_seconds, enabled, last_test_status, last_test_at
+    from platform_sms_config where id = #{id}
+  </select>
+</mapper>
