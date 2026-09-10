@@ -6,6 +6,7 @@
 - 短剧首页、详情、分集播放
 - Admin 剧集/分集 CRUD、上下架、摄入日志
 - bgssai-short 服务端发布摄入 API
+- MCP 连接器（对照 blog）：用户端 PAT + `/api/mcp` 只读工具；Admin 连接器说明页
 
 产品愿景见 [PRODUCT_VISION.md](PRODUCT_VISION.md)。编码规范见 [docs/BGSSAI-Standards.md](docs/BGSSAI-Standards.md)。
 
@@ -76,8 +77,9 @@ cd bgssai-media-user/frontend && npm install && npm run dev
 
 1. 用户登录后首页可见样例短剧；进入详情播放第 1 集 MP4、第 2 集 HLS
 2. 「通用播放器」打开公开 URL 或本地 MP4/WebM 文件
-3. Admin 登录后可增改剧集/分集、上下架，查看摄入日志
-4. short 发布摄入（示例）：
+3. Admin 登录后可增改剧集/分集、上下架，查看摄入日志；「MCP 连接器」页可见五款 AI 客户端说明
+4. 用户端「设置」创建 MCP PAT，用 Bearer 调用 `POST /api/mcp`（见 [docs/feature/mcp.md](docs/feature/mcp.md)）
+5. short 发布摄入（示例）：
 
 ```bash
 curl -s -X POST http://127.0.0.1:8080/api/ingest/short/publish \
@@ -86,7 +88,7 @@ curl -s -X POST http://127.0.0.1:8080/api/ingest/short/publish \
   -d '{"external_ref":"short-demo-ref-002","title":"摄入测试","status":"published","episodes":[{"ep_no":1,"title":"EP1","media_url":"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4","status":"published"}]}'
 ```
 
-契约见 [docs/api/short-publish.md](docs/api/short-publish.md)。
+契约见 [docs/api/short-publish.md](docs/api/short-publish.md)。MCP API 见 [docs/api/mcp.md](docs/api/mcp.md)。
 
 ## 构建检查
 
