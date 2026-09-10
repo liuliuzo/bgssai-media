@@ -1,7 +1,6 @@
 package com.bgssai.media.common.service;
 
 import com.bgssai.media.common.domain.MediaDrama;
-import com.bgssai.media.common.domain.MediaWatchProgress;
 import com.bgssai.media.common.web.BizException;
 import com.bgssai.media.common.web.PageResult;
 import com.fasterxml.jackson.databind.JsonNode;
