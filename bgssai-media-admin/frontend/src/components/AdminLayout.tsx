@@ -3,6 +3,7 @@ import {
   VideoCameraOutlined,
   FileTextOutlined,
   LogoutOutlined,
+  ApiOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -26,6 +27,11 @@ export default function AdminLayout() {
       key: '/ingest-logs',
       icon: <FileTextOutlined />,
       label: '入库日志',
+    },
+    {
+      key: '/mcp-connectors',
+      icon: <ApiOutlined />,
+      label: 'MCP 连接器',
     },
   ];
 

@@ -6,6 +6,7 @@ import DramaList from '../pages/DramaList';
 import DramaForm from '../pages/DramaForm';
 import DramaDetail from '../pages/DramaDetail';
 import IngestLogs from '../pages/IngestLogs';
+import McpConnectorsPage from '../pages/McpConnectorsPage';
 
 export default function AppRouter() {
   return (
@@ -25,6 +26,7 @@ export default function AppRouter() {
         <Route path="dramas/:id" element={<DramaDetail />} />
         <Route path="dramas/:id/edit" element={<DramaForm />} />
         <Route path="ingest-logs" element={<IngestLogs />} />
+        <Route path="mcp-connectors" element={<McpConnectorsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

@@ -5,6 +5,7 @@ import {
   HistoryOutlined,
   LogoutOutlined,
   ProfileOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
@@ -21,6 +22,7 @@ export default function AppLayout() {
     if (location.pathname.startsWith('/continue')) return '/continue';
     if (location.pathname.startsWith('/player')) return '/player';
     if (location.pathname.startsWith('/formats')) return '/formats';
+    if (location.pathname.startsWith('/settings')) return '/settings';
     return '/';
   })();
 
@@ -67,6 +69,11 @@ export default function AppLayout() {
                 key: '/formats',
                 icon: <ProfileOutlined />,
                 label: <Link to="/formats">格式支持</Link>,
+              },
+              {
+                key: '/settings',
+                icon: <SettingOutlined />,
+                label: <Link to="/settings">设置</Link>,
               },
             ]}
           />
