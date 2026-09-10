@@ -76,3 +76,48 @@ INSERT INTO media_watch_progress (id, user_id, drama_id, episode_id, position_se
 VALUES (1, 2, 1, 1, 12)
 ON DUPLICATE KEY UPDATE
   position_sec = IF(position_sec IS NULL, VALUES(position_sec), position_sec);
+
+-- -----------------------------------------------------------------------------
+-- 登录通道配置：空种子，enabled=0，运营在管理端补齐凭据后再启用。
+-- ON DUPLICATE KEY UPDATE 只做空值回填：重复执行 DML 不会覆盖控制台已填的真实凭据。
+-- enabled 同理——只有在凭据仍为空时才允许被种子改回 0，避免把线上已启用的通道关掉。
+-- 真实密钥一律不入库种子、不进 Git。
+-- -----------------------------------------------------------------------------
+INSERT INTO platform_email_config
+  (id, smtp_host, smtp_port, smtp_username, smtp_password, from_address, from_name,
+   ssl_enable, starttls_enable, auth_enable, enabled)
+VALUES (1, '', 465, '', '', '', 'BGSSAI Media', 1, 0, 1, 0)
+ON DUPLICATE KEY UPDATE
+  smtp_host = IF(smtp_host IS NULL OR smtp_host = '', VALUES(smtp_host), smtp_host),
+  smtp_username = IF(smtp_username IS NULL OR smtp_username = '', VALUES(smtp_username), smtp_username),
+  smtp_password = IF(smtp_password IS NULL OR smtp_password = '', VALUES(smtp_password), smtp_password),
+  from_address = IF(from_address IS NULL OR from_address = '', VALUES(from_address), from_address),
+  from_name = IF(from_name IS NULL OR from_name = '', VALUES(from_name), from_name),
+  enabled = IF(
+    (smtp_host IS NULL OR smtp_host = '')
+      AND (smtp_username IS NULL OR smtp_username = '')
+      AND (smtp_password IS NULL OR smtp_password = ''),
+    VALUES(enabled), enabled);
+
+-- 对齐 BGSSAI 共享腾讯云控制台：SignName=昆山兵贵神速智能科技、Login OTP=2677885
+-- (禁止待审 2728085)。SecretId / SecretKey / SdkAppId 空种子，Admin 运行期填齐后启用。
+INSERT INTO platform_sms_config
+  (id, provider, secret_id, secret_key, sdk_app_id, sign_name, region,
+   login_template_id, bind_phone_template_id, reset_password_template_id,
+   code_expire_seconds, enabled)
+VALUES
+  (1, 'TENCENT', '', '', '', '昆山兵贵神速智能科技', 'ap-guangzhou',
+   '2677885', '', '', 300, 0)
+ON DUPLICATE KEY UPDATE
+  secret_id = IF(secret_id IS NULL OR secret_id = '', VALUES(secret_id), secret_id),
+  secret_key = IF(secret_key IS NULL OR secret_key = '', VALUES(secret_key), secret_key),
+  sdk_app_id = IF(sdk_app_id IS NULL OR sdk_app_id = '', VALUES(sdk_app_id), sdk_app_id),
+  sign_name = IF(sign_name IS NULL OR sign_name = '', VALUES(sign_name), sign_name),
+  login_template_id = IF(login_template_id IS NULL OR login_template_id = '', VALUES(login_template_id), login_template_id),
+  bind_phone_template_id = IF(bind_phone_template_id IS NULL OR bind_phone_template_id = '', VALUES(bind_phone_template_id), bind_phone_template_id),
+  reset_password_template_id = IF(reset_password_template_id IS NULL OR reset_password_template_id = '', VALUES(reset_password_template_id), reset_password_template_id),
+  enabled = IF(
+    (secret_id IS NULL OR secret_id = '')
+      AND (secret_key IS NULL OR secret_key = '')
+      AND (sdk_app_id IS NULL OR sdk_app_id = ''),
+    VALUES(enabled), enabled);

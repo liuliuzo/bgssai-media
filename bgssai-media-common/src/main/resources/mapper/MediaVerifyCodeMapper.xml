@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.MediaVerifyCodeMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.MediaVerifyCode">
+    <id column="id" property="id"/>
+    <result column="target" property="target"/>
+    <result column="channel" property="channel"/>
+    <result column="scene" property="scene"/>
+    <result column="code_hash" property="codeHash"/>
+    <result column="attempts" property="attempts"/>
+    <result column="used" property="used"/>
+    <result column="expires_at" property="expiresAt"/>
+    <result column="sent_at" property="sentAt"/>
+    <result column="used_at" property="usedAt"/>
+  </resultMap>
+
+  <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.MediaVerifyCode"
+          useGeneratedKeys="true" keyProperty="id">
+    insert into media_verify_code (target, channel, scene, code_hash, attempts, used, expires_at, sent_at)
+    values (#{target}, #{channel}, #{scene}, #{codeHash}, 0, 0, #{expiresAt}, now())
+  </insert>
+
+  <!-- MAX_ATTEMPTS 与 VerifyCodeService.MAX_ATTEMPTS 同值；改一处必须改两处。 -->
+  <select id="selectLatestUsable" resultMap="BaseResultMap">
+    select id, target, channel, scene, code_hash, attempts, used, expires_at, sent_at, used_at
+    from media_verify_code
+    where target = #{target} and scene = #{scene}
+      and used = 0 and attempts &lt; 5 and expires_at &gt; #{now}
+    order by id desc limit 1
+  </select>
+
+  <update id="markUsed">
+    update media_verify_code set used = 1, used_at = #{now} where id = #{id} and used = 0
+  </update>
+
+  <update id="increaseAttempts">
+    update media_verify_code set attempts = attempts + 1 where id = #{id}
+  </update>
+
+  <select id="countSentSince" resultType="int">
+    select count(*) from media_verify_code where target = #{target} and sent_at &gt; #{since}
+  </select>
+</mapper>

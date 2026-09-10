@@ -12,19 +12,22 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuthService {
 
+    /** 验证码登录场景，对应 platform_sms_config.login_template_id。 */
+    private static final String SCENE_LOGIN = "LOGIN";
+
     private final SysUserMapper sysUserMapper;
     private final JwtService jwtService;
+    private final VerifyCodeService verifyCodeService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private final Map<String, String> otpStore = new ConcurrentHashMap<>();
 
-    public AuthService(SysUserMapper sysUserMapper, JwtService jwtService) {
+    public AuthService(SysUserMapper sysUserMapper, JwtService jwtService, VerifyCodeService verifyCodeService) {
         this.sysUserMapper = sysUserMapper;
         this.jwtService = jwtService;
+        this.verifyCodeService = verifyCodeService;
     }
 
     public Map<String, Object> loginByPassword(String username, String password, String requiredRole) {
@@ -44,31 +47,30 @@ public class AuthService {
         return tokenResult(user);
     }
 
+    /**
+     * 发邮箱验证码。
+     *
+     * <p>响应里<b>不带验证码</b>：把码回给调用方等于取消了「必须持有该邮箱」这个前提，
+     * 任何能访问本接口的人都能登录任意已有用户。通道未配置时由发送器抛错，不静默成功。
+     */
     public Map<String, Object> sendEmailOtp(String email) {
-        String code = "123456";
-        otpStore.put("email:" + email, code);
+        verifyCodeService.sendEmailCode(email, SCENE_LOGIN);
         Map<String, Object> result = new HashMap<>();
         result.put("sent", true);
-        result.put("stub_code", code);
-        result.put("message", "MVP stub: OTP not actually emailed");
         return result;
     }
 
+    /** 发手机验证码。同样不回显验证码。 */
     public Map<String, Object> sendPhoneOtp(String phone) {
-        String code = "123456";
-        otpStore.put("phone:" + phone, code);
+        verifyCodeService.sendPhoneCode(phone, SCENE_LOGIN);
         Map<String, Object> result = new HashMap<>();
         result.put("sent", true);
-        result.put("stub_code", code);
-        result.put("message", "MVP stub: OTP not actually SMS-sent");
         return result;
     }
 
     public Map<String, Object> loginByEmailOtp(String email, String code, String requiredRole) {
-        String expect = otpStore.get("email:" + email);
-        if (expect == null || !expect.equals(code)) {
-            throw new BizException(401, "invalid email otp");
-        }
+        // consume 校验通过即把该码置为已用；同一个码不能登录第二次。
+        verifyCodeService.consume(email, code, SCENE_LOGIN);
         SysUserExample example = new SysUserExample();
         example.createCriteria().andEmailEqualTo(email).andStatusEqualTo("active");
         List<SysUser> users = sysUserMapper.selectByExample(example);
@@ -83,10 +85,7 @@ public class AuthService {
     }
 
     public Map<String, Object> loginByPhoneOtp(String phone, String code, String requiredRole) {
-        String expect = otpStore.get("phone:" + phone);
-        if (expect == null || !expect.equals(code)) {
-            throw new BizException(401, "invalid phone otp");
-        }
+        verifyCodeService.consume(phone, code, SCENE_LOGIN);
         SysUserExample example = new SysUserExample();
         example.createCriteria().andPhoneEqualTo(phone).andStatusEqualTo("active");
         List<SysUser> users = sysUserMapper.selectByExample(example);
