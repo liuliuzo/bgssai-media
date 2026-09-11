@@ -4,7 +4,6 @@ html.bgssai-shell-pane body {
   max-width: 100%;
   min-height: 100%;
   margin: 0;
-  overflow-x: hidden;
   background: #f5f5f5;
   -webkit-tap-highlight-color: transparent;
 }
@@ -18,12 +17,15 @@ html.bgssai-shell-pane body {
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
+  overflow-x: hidden;
   background: #f5f5f5;
 }
 
 .bgssai-shell-pane .shell-topbar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 20;
   display: flex;
   align-items: center;
@@ -62,13 +64,15 @@ html.bgssai-shell-pane body {
   flex: 1;
   width: 100%;
   max-width: none;
-  padding: 12px 12px 80px;
+  padding: 60px 12px 80px;
   box-sizing: border-box;
 }
 
 .bgssai-shell-pane .shell-tabbar {
-  position: sticky;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 20;
   display: flex;
   width: 100%;
