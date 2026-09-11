@@ -50,4 +50,9 @@ public class AuthController {
         return ApiResponse.ok(authService.loginByPhoneOtp(
                 body.get("phone"), body.get("code"), RoleCodes.USER));
     }
+
+    @PostMapping("/oauth/login")
+    public ApiResponse<Map<String, Object>> oauthLogin(@RequestBody Map<String, String> body) {
+        return ApiResponse.ok(authService.loginByOauth(body.get("provider"), RoleCodes.USER));
+    }
 }
