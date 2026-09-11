@@ -9,6 +9,7 @@ import {
   sendPhoneOtp,
   loginByPhoneOtp,
   loginByOauth,
+  prepareChatLogin,
 } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
@@ -110,6 +111,22 @@ export default function LoginPage() {
       handleLoginSuccess(result);
     } catch (err) {
       message.error(err instanceof Error ? err.message : '登录失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onChat = async () => {
+    setLoading(true);
+    try {
+      const prep = await prepareChatLogin();
+      if (prep.status === 'READY' && prep.authorize_url) {
+        window.location.assign(prep.authorize_url);
+        return;
+      }
+      message.info(prep.message || 'Chat 第三方登录已预留，尚未开通真实授权');
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Chat 登录不可用');
     } finally {
       setLoading(false);
     }
@@ -247,6 +264,9 @@ export default function LoginPage() {
             </Button>
           ))}
         </div>
+        <Button block style={{ marginTop: 8 }} onClick={onChat} disabled={loading}>
+          Chat 第三方登录（预留）
+        </Button>
       </Card>
     </div>
   );

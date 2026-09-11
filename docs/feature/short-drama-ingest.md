@@ -1,5 +1,7 @@
 # Short drama ingest (shared contract)
 
+Canonical write-up: [docs/contracts/short-to-media-publish.md](../contracts/short-to-media-publish.md).
+
 Extends the merged MVP scaffold (`media_drama` / `media_episode` / `media_ingest_log`) with the **bgssai-short shared publish contract**.
 
 Legacy admin path remains: `POST /api/ingest/short/publish` + `X-Ingest-Token` (also accepts `X-Bgssai-Ingest-Token`).
@@ -61,8 +63,9 @@ Re-ingest same `idempotency_key` updates title/`video_url` and returns the same 
 
 - `GET /bgssai/user/media/shorts?q=&page=1&page_size=20`
 - `GET /bgssai/user/media/shorts/{media_id}`
+- Authenticated user app: `GET /api/shorts` and `GET /api/shorts/{media_id}` (JWT `Jwttoken`, role USER)
 
-Also available via existing authenticated drama feed UI after ingest.
+Also available via existing authenticated drama feed UI after ingest. Web UI: `/shorts`.
 
 ## Storage
 

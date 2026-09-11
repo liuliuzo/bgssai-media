@@ -1,5 +1,5 @@
 import client from './client';
-import type { LoginResult } from '@/types/api';
+import type { ChatOauthPrepare, LoginResult } from '@/types/api';
 
 export async function loginByPassword(username: string, password: string) {
   const { data } = await client.post<LoginResult>('/auth/login', {
@@ -44,6 +44,19 @@ export async function loginByPhoneOtp(phone: string, code: string) {
 export async function loginByOauth(provider: string) {
   const { data } = await client.post<LoginResult>('/auth/oauth/login', {
     provider,
+  });
+  return data;
+}
+
+export async function prepareChatLogin() {
+  const { data } = await client.get<ChatOauthPrepare>('/auth/chat/prepare');
+  return data;
+}
+
+export async function completeChatLogin(code: string, state: string) {
+  const { data } = await client.post<LoginResult>('/auth/chat/callback', {
+    code,
+    state,
   });
   return data;
 }

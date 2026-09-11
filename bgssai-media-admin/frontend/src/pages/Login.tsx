@@ -68,7 +68,7 @@ export default function Login() {
           </Form.Item>
         </Form>
         <Text type="secondary" style={{ fontSize: 12 }}>
-          提示：账号 admin / 密码 admin123
+          提示：账号 admin / 密码 admin123。管理员不接入 Chat 或用户第三方登录。
         </Text>
       </Card>
     </div>

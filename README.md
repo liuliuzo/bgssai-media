@@ -3,9 +3,9 @@
 媒体播放器 + 短剧播放/分发平台（MVP）。
 
 - 通用 Web 播放器（MP4 / WebM / HLS）
-- 短剧首页、详情、分集播放
-- Admin 剧集/分集 CRUD、上下架、摄入日志
-- bgssai-short 服务端发布摄入 API
+- 短剧首页、详情、分集播放；Short 契约目录 `/shorts`
+- Admin 剧集/分集 CRUD、上下架、摄入日志（不接 Chat）
+- bgssai-short 服务端发布摄入 API（共享契约 + packager）
 - MCP 连接器（对照 blog）：用户端 PAT + `/api/mcp` 只读工具；Admin 连接器说明页
 
 产品愿景见 [PRODUCT_VISION.md](PRODUCT_VISION.md)。编码规范见 [docs/BGSSAI-Standards.md](docs/BGSSAI-Standards.md)。
@@ -71,7 +71,7 @@ cd bgssai-media-user/frontend && npm install && npm run dev
 - Admin：http://localhost:3001 账号 `admin` / `admin123`
 - User：http://localhost:3002 账号 `demo` / `user123`
 
-未登录默认进入登录页。用户端另支持邮箱/手机 OTP stub（固定验证码 `123456`）。
+未登录默认进入登录页。用户端支持邮箱/手机 OTP（真实投递通道，未配置则失败）；Chat 第三方登录为 PREP，不签发会话。管理员仅密码登录，不接 Chat。
 
 ## 评审可验证路径
 
@@ -79,16 +79,16 @@ cd bgssai-media-user/frontend && npm install && npm run dev
 2. 「通用播放器」打开公开 URL 或本地 MP4/WebM 文件
 3. Admin 登录后可增改剧集/分集、上下架，查看摄入日志；「MCP 连接器」页可见五款 AI 客户端说明
 4. 用户端「设置」创建 MCP PAT，用 Bearer 调用 `POST /api/mcp`（见 [docs/feature/mcp.md](docs/feature/mcp.md)）
-5. short 发布摄入（示例）：
+5. short → media 发布闭环（推荐契约）：
 
 ```bash
-curl -s -X POST http://127.0.0.1:8080/api/ingest/short/publish \
-  -H 'Content-Type: application/json' \
-  -H 'X-Ingest-Token: local-ingest-token-change-me' \
-  -d '{"external_ref":"short-demo-ref-002","title":"摄入测试","status":"published","episodes":[{"ep_no":1,"title":"EP1","media_url":"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4","status":"published"}]}'
+# 用户端 8081
+chmod +x scripts/publish-short-smoke.sh
+MEDIA_BASE_URL=http://127.0.0.1:8081 ./scripts/publish-short-smoke.sh
 ```
 
-契约见 [docs/api/short-publish.md](docs/api/short-publish.md)。MCP API 见 [docs/api/mcp.md](docs/api/mcp.md)。
+登录用户端后打开 `/shorts` 播放 READY 条目。契约见 [docs/contracts/short-to-media-publish.md](docs/contracts/short-to-media-publish.md)。
+MCP API 见 [docs/api/mcp.md](docs/api/mcp.md)。short 仓实现说明见 [docs/contracts/bgssai-short-implement.md](docs/contracts/bgssai-short-implement.md)。
 
 ## 构建检查
 
