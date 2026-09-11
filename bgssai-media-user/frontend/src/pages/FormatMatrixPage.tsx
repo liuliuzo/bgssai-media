@@ -3,7 +3,7 @@ import data from '@/data/format-matrix.json';
 
 export default function FormatMatrixPage() {
   return (
-    <div style={{ padding: 24, maxWidth: 960, margin: '0 auto' }}>
+    <div className="format-matrix-page" style={{ padding: 24, maxWidth: 960, margin: '0 auto' }}>
       <Typography.Title level={3}>格式支持矩阵</Typography.Title>
       <Alert
         type="info"
