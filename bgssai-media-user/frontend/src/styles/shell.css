@@ -1,0 +1,158 @@
+html.bgssai-shell-pane,
+html.bgssai-shell-pane body {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  background: #f5f5f5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bgssai-shell-pane #root {
+  min-height: 100%;
+}
+
+.bgssai-shell-pane .shell-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f5f5f5;
+}
+
+.bgssai-shell-pane .shell-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 10px;
+  padding-top: env(safe-area-inset-top, 0);
+  background: #001529;
+  color: #fff;
+}
+
+.bgssai-shell-pane .shell-brand {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bgssai-shell-pane .shell-user {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.bgssai-shell-pane .shell-topbar .ant-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  color: #fff;
+}
+
+.bgssai-shell-pane .shell-content {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  padding: 12px 12px 80px;
+  box-sizing: border-box;
+}
+
+.bgssai-shell-pane .shell-tabbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  width: 100%;
+  min-height: 56px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+}
+
+.bgssai-shell-pane .shell-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: 6px 2px;
+  border: 0;
+  background: transparent;
+  color: #595959;
+  font-size: 11px;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.bgssai-shell-pane .shell-tab--active {
+  color: #1677ff;
+  font-weight: 600;
+}
+
+.bgssai-shell-pane .shell-tab .anticon {
+  font-size: 18px;
+}
+
+.bgssai-shell-pane .shell-login,
+.bgssai-shell-pane .shell-callback {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: stretch;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.bgssai-shell-pane .shell-login .ant-card,
+.bgssai-shell-pane .shell-callback .ant-card {
+  width: 100%;
+  max-width: none;
+}
+
+.bgssai-shell-pane .ant-btn,
+.bgssai-shell-pane .ant-input,
+.bgssai-shell-pane .ant-input-affix-wrapper,
+.bgssai-shell-pane .ant-input-search .ant-btn {
+  min-height: 44px;
+}
+
+.bgssai-shell-pane .ant-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bgssai-shell-pane .ant-card-meta-title {
+  white-space: normal;
+}
+
+.bgssai-shell-pane .universal-player--short {
+  max-width: 100%;
+}
+
+.bgssai-shell-pane .ant-list-item-action {
+  margin-inline-start: 12px;
+}
+
+.bgssai-shell-pane .ant-input-search {
+  max-width: 100% !important;
+}
+
+.bgssai-shell-pane .format-matrix-page {
+  padding: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+}

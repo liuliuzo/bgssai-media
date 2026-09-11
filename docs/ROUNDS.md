@@ -20,3 +20,11 @@
 | 用户 Short 目录/播放 | `/api/shorts`, `/shorts` UI | 完成 |
 | Chat 登录预留 / admin 隔离 | `ChatOauthService`, admin `/api/auth/policy` | PREP |
 | short 仓对等 PR | 无法 clone | **blocked** |
+
+## Round 7（USER 壳内窄栏）
+
+| 目标 | 落点 | 状态 |
+| --- | --- | --- |
+| 探测 `bgssai_shell=1` / `chat_pane=1` | `bgssai-media-user/frontend/src/shell` | 完成（本仓 MVP） |
+| 窄栏触控底栏，桌面独立不变 | `AppLayout` + `styles/shell.css` | 完成 |
+| Admin / desktop 跳过 | 文档声明 | 完成 |

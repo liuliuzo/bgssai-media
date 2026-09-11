@@ -9,28 +9,78 @@ import {
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+import { useShellMode } from '@/shell/useShellMode';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
+
+const NAV_ITEMS = [
+  { key: '/', icon: <HomeOutlined />, label: '首页', to: '/' },
+  { key: '/shorts', icon: <PlayCircleOutlined />, label: 'Short 发布', to: '/shorts' },
+  { key: '/continue', icon: <HistoryOutlined />, label: '继续观看', to: '/continue' },
+  { key: '/player', icon: <PlayCircleOutlined />, label: '通用播放器', to: '/player' },
+  { key: '/formats', icon: <ProfileOutlined />, label: '格式支持', to: '/formats' },
+  { key: '/settings', icon: <SettingOutlined />, label: '设置', to: '/settings' },
+];
+
+const SHELL_TABS = [
+  { key: '/', icon: <HomeOutlined />, label: '首页', to: '/' },
+  { key: '/shorts', icon: <PlayCircleOutlined />, label: 'Short', to: '/shorts' },
+  { key: '/continue', icon: <HistoryOutlined />, label: '继续', to: '/continue' },
+  { key: '/player', icon: <PlayCircleOutlined />, label: '播放', to: '/player' },
+  { key: '/settings', icon: <SettingOutlined />, label: '设置', to: '/settings' },
+];
+
+function useSelectedKey(pathname: string, inShell: boolean): string {
+  if (pathname.startsWith('/shorts')) return '/shorts';
+  if (pathname.startsWith('/continue')) return '/continue';
+  if (pathname.startsWith('/player')) return '/player';
+  if (inShell && pathname.startsWith('/play/')) return '/player';
+  if (pathname.startsWith('/formats')) return '/formats';
+  if (pathname.startsWith('/settings')) return '/settings';
+  return '/';
+}
 
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { username, logout } = useAuthStore();
-
-  const selectedKey = (() => {
-    if (location.pathname.startsWith('/shorts')) return '/shorts';
-    if (location.pathname.startsWith('/continue')) return '/continue';
-    if (location.pathname.startsWith('/player')) return '/player';
-    if (location.pathname.startsWith('/formats')) return '/formats';
-    if (location.pathname.startsWith('/settings')) return '/settings';
-    return '/';
-  })();
+  const { inShell } = useShellMode();
+  const selectedKey = useSelectedKey(location.pathname, inShell);
 
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
   };
+
+  if (inShell) {
+    return (
+      <div className="shell-app">
+        <header className="shell-topbar">
+          <span className="shell-brand">BGSSAI 媒体</span>
+          <span className="shell-user">{username}</span>
+          <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
+            退出
+          </Button>
+        </header>
+        <main className="shell-content">
+          <Outlet />
+        </main>
+        <nav className="shell-tabbar" aria-label="壳内主导航">
+          {SHELL_TABS.map((item) => (
+            <Link
+              key={item.key}
+              to={item.to}
+              className={selectedKey === item.key ? 'shell-tab shell-tab--active' : 'shell-tab'}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+    );
+  }
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -50,38 +100,11 @@ export default function AppLayout() {
             theme="dark"
             mode="horizontal"
             selectedKeys={[selectedKey]}
-            items={[
-              {
-                key: '/',
-                icon: <HomeOutlined />,
-                label: <Link to="/">首页</Link>,
-              },
-              {
-                key: '/shorts',
-                icon: <PlayCircleOutlined />,
-                label: <Link to="/shorts">Short 发布</Link>,
-              },
-              {
-                key: '/continue',
-                icon: <HistoryOutlined />,
-                label: <Link to="/continue">继续观看</Link>,
-              },
-              {
-                key: '/player',
-                icon: <PlayCircleOutlined />,
-                label: <Link to="/player">通用播放器</Link>,
-              },
-              {
-                key: '/formats',
-                icon: <ProfileOutlined />,
-                label: <Link to="/formats">格式支持</Link>,
-              },
-              {
-                key: '/settings',
-                icon: <SettingOutlined />,
-                label: <Link to="/settings">设置</Link>,
-              },
-            ]}
+            items={NAV_ITEMS.map((item) => ({
+              key: item.key,
+              icon: item.icon,
+              label: <Link to={item.to}>{item.label}</Link>,
+            }))}
           />
         </Space>
         <Space>

@@ -13,8 +13,10 @@ import {
 } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
+import { useShellMode } from '@/shell/useShellMode';
 
 export default function LoginPage() {
+  const { inShell } = useShellMode();
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -134,16 +136,17 @@ export default function LoginPage() {
 
   return (
     <div
+      className="shell-login"
       style={{
         minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: inShell ? 'flex-start' : 'center',
         justifyContent: 'center',
         background: '#f0f2f5',
-        padding: 16,
+        padding: inShell ? 12 : 16,
       }}
     >
-      <Card title="用户登录" style={{ width: 420, maxWidth: '100%' }}>
+      <Card title="用户登录" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
         <Alert
           type="info"
           showIcon

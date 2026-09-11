@@ -71,6 +71,8 @@ cd bgssai-media-user/frontend && npm install && npm run dev
 - Admin：http://localhost:3001 账号 `admin` / `admin123`
 - User：http://localhost:3002 账号 `demo` / `user123`
 
+Bot 壳内窄栏：给用户端 URL 加 `bgssai_shell=1` 或 `chat_pane=1`（见 [docs/feature/MOBILE-IN-BOT-SHELL.md](docs/feature/MOBILE-IN-BOT-SHELL.md)）。无参数时保持桌面独立布局。Admin 与桌面播放器不接入。
+
 未登录默认进入登录页。用户端支持邮箱/手机 OTP（真实投递通道，未配置则失败）；Chat 第三方登录为 PREP，不签发会话。管理员仅密码登录，不接 Chat。
 
 ## 评审可验证路径

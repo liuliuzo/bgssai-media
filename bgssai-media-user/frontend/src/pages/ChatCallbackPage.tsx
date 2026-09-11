@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Spin, Typography } from 'antd';
 import { Link, useSearchParams } from 'react-router-dom';
 import { completeChatLogin } from '@/api/auth';
+import { useShellMode } from '@/shell/useShellMode';
 
 export default function ChatCallbackPage() {
+  const { inShell } = useShellMode();
   const [params] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,16 +25,17 @@ export default function ChatCallbackPage() {
 
   return (
     <div
+      className="shell-callback"
       style={{
         minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: inShell ? 'flex-start' : 'center',
         justifyContent: 'center',
         background: '#f0f2f5',
-        padding: 16,
+        padding: inShell ? 12 : 16,
       }}
     >
-      <Card title="Chat 第三方登录" style={{ width: 480, maxWidth: '100%' }}>
+      <Card title="Chat 第三方登录" style={{ width: inShell ? '100%' : 480, maxWidth: '100%' }}>
         {loading ? (
           <Spin />
         ) : (
