@@ -8,6 +8,7 @@ import {
   loginByEmailOtp,
   sendPhoneOtp,
   loginByPhoneOtp,
+  loginByOauth,
 } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
@@ -94,6 +95,18 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const result = await loginByPhoneOtp(values.phone, values.code);
+      handleLoginSuccess(result);
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '登录失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onOauth = async (provider: string) => {
+    setLoading(true);
+    try {
+      const result = await loginByOauth(provider);
       handleLoginSuccess(result);
     } catch (err) {
       message.error(err instanceof Error ? err.message : '登录失败');
@@ -219,6 +232,21 @@ export default function LoginPage() {
             },
           ]}
         />
+        <div style={{ marginTop: 16, textAlign: 'center', color: '#8c8c8c', fontSize: 12 }}>
+          或使用第三方账号
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+          {[
+            ['WECHAT', '微信'],
+            ['DOUYIN', '抖音'],
+            ['BAIDU', '百度'],
+            ['ALIPAY', '支付宝'],
+          ].map(([key, label]) => (
+            <Button key={key} onClick={() => onOauth(key)} disabled={loading}>
+              {label}
+            </Button>
+          ))}
+        </div>
       </Card>
     </div>
   );

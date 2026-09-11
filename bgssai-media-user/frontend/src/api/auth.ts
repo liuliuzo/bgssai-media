@@ -40,3 +40,10 @@ export async function loginByPhoneOtp(phone: string, code: string) {
   });
   return data;
 }
+
+export async function loginByOauth(provider: string) {
+  const { data } = await client.post<LoginResult>('/auth/oauth/login', {
+    provider,
+  });
+  return data;
+}

@@ -16,6 +16,17 @@ CREATE TABLE IF NOT EXISTS sys_user (
   KEY idx_sys_user_role (role_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS user_identity (
+  id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id    BIGINT       NOT NULL,
+  provider   VARCHAR(20)  NOT NULL COMMENT 'WECHAT / DOUYIN / BAIDU / ALIPAY',
+  open_id    VARCHAR(128) NOT NULL,
+  nickname   VARCHAR(64)  NULL,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_media_identity (provider, open_id),
+  KEY idx_media_identity_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS media_drama (
   id            BIGINT PRIMARY KEY AUTO_INCREMENT,
   title         VARCHAR(256) NOT NULL,
