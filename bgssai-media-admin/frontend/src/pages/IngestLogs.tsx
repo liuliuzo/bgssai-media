@@ -70,7 +70,7 @@ export default function IngestLogs() {
   ];
 
   return (
-    <Card title="入库日志">
+    <Card title="入库日志" extra="short → media 契约摄入（READY 才可播）">
       <Table
         rowKey="id"
         loading={loading}

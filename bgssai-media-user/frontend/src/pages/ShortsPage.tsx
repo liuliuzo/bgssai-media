@@ -1,32 +1,32 @@
 import { useEffect, useState } from 'react';
-import { Card, Col, Empty, Input, Pagination, Row, Spin, Typography, Image } from 'antd';
+import { Card, Col, Empty, Input, Pagination, Row, Spin, Tag, Typography, Image } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { fetchFeed } from '@/api/drama';
-import type { MediaDrama } from '@/types/api';
+import { fetchShorts } from '@/api/shorts';
+import type { ShortPlayItem } from '@/types/api';
 
 const { Title, Paragraph } = Typography;
 
-export default function HomePage() {
-  const [dramas, setDramas] = useState<MediaDrama[]>([]);
+export default function ShortsPage() {
+  const [items, setItems] = useState<ShortPlayItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
-  const [pageNum, setPageNum] = useState(1);
+  const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 12;
 
-  const loadFeed = async (page: number, kw?: string) => {
+  const load = async (nextPage: number, q?: string) => {
     setLoading(true);
     try {
-      const result = await fetchFeed({
-        page_num: page,
+      const result = await fetchShorts({
+        page: nextPage,
         page_size: pageSize,
-        keyword: kw || undefined,
+        q: q || undefined,
       });
-      setDramas(result.list || []);
+      setItems(result.list || []);
       setTotal(result.total || 0);
     } catch {
-      setDramas([]);
+      setItems([]);
       setTotal(0);
     } finally {
       setLoading(false);
@@ -34,50 +34,47 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    loadFeed(pageNum, keyword);
-  }, [pageNum, keyword]);
-
-  const handleSearch = (value: string) => {
-    setKeyword(value);
-    setPageNum(1);
-  };
+    load(page, keyword);
+  }, [page, keyword]);
 
   return (
     <div>
-      <Title level={3}>短剧推荐</Title>
+      <Title level={3}>Short 发布短剧</Title>
       <Paragraph type="secondary">
-        手工上架与 short 摄入剧集都在此目录。Short 契约目录见{' '}
-        <Link to="/shorts">Short 发布</Link>。
+        来自 bgssai-short 的成品摄入。仅 READY 且带播放地址的条目可播。
       </Paragraph>
       <Input.Search
-        placeholder="搜索短剧"
+        placeholder="搜索已发布短剧"
         allowClear
         enterButton={<SearchOutlined />}
         style={{ maxWidth: 400, marginBottom: 24 }}
-        onSearch={handleSearch}
+        onSearch={(value) => {
+          setKeyword(value);
+          setPage(1);
+        }}
       />
       <Spin spinning={loading}>
-        {dramas.length === 0 && !loading ? (
-          <Empty description="暂无短剧" />
+        {items.length === 0 && !loading ? (
+          <Empty description="暂无已摄入短剧。请用 short 发布契约或 scripts/publish-short-smoke.sh 写入。" />
         ) : (
           <Row gutter={[16, 16]}>
-            {dramas.map((drama) => (
-              <Col key={drama.id} xs={12} sm={8} md={6} lg={6}>
-                <Link to={`/drama/${drama.id}`}>
+            {items.map((item) => (
+              <Col key={item.media_id} xs={12} sm={8} md={6} lg={6}>
+                <Link to={`/shorts/${encodeURIComponent(item.media_id)}`}>
                   <Card
                     hoverable
                     cover={
-                      drama.cover_url ? (
+                      item.cover_url ? (
                         <Image
-                          alt={drama.title}
-                          src={drama.cover_url}
+                          alt={item.title || item.media_id}
+                          src={item.cover_url}
                           preview={false}
-                          style={{ height: 200, objectFit: 'cover' }}
+                          style={{ height: 220, objectFit: 'cover' }}
                         />
                       ) : (
                         <div
                           style={{
-                            height: 200,
+                            height: 220,
                             background: '#f5f5f5',
                             display: 'flex',
                             alignItems: 'center',
@@ -91,11 +88,16 @@ export default function HomePage() {
                     }
                   >
                     <Card.Meta
-                      title={drama.title}
+                      title={item.title || item.media_id}
                       description={
-                        <Paragraph ellipsis={{ rows: 2 }} type="secondary" style={{ marginBottom: 0 }}>
-                          {drama.description || '暂无简介'}
-                        </Paragraph>
+                        <>
+                          <Tag color={item.playable ? 'green' : 'default'}>
+                            {item.status || 'UNKNOWN'}
+                          </Tag>
+                          <Paragraph ellipsis={{ rows: 2 }} type="secondary" style={{ marginBottom: 0 }}>
+                            {item.source_system || 'bgssai-short'}
+                          </Paragraph>
+                        </>
                       }
                     />
                   </Card>
@@ -107,10 +109,10 @@ export default function HomePage() {
         {total > pageSize && (
           <Pagination
             style={{ marginTop: 24, textAlign: 'center' }}
-            current={pageNum}
+            current={page}
             pageSize={pageSize}
             total={total}
-            onChange={(page) => setPageNum(page)}
+            onChange={(next) => setPage(next)}
             showSizeChanger={false}
           />
         )}

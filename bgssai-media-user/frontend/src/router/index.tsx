@@ -2,9 +2,12 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from '@/components/Layout/AppLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
+import ChatCallbackPage from '@/pages/ChatCallbackPage';
 import HomePage from '@/pages/HomePage';
 import DramaDetailPage from '@/pages/DramaDetailPage';
 import EpisodePlayerPage from '@/pages/EpisodePlayerPage';
+import ShortsPage from '@/pages/ShortsPage';
+import ShortPlayerPage from '@/pages/ShortPlayerPage';
 import UniversalPlayerPage from '@/pages/UniversalPlayerPage';
 import ContinueWatchingPage from '@/pages/ContinueWatchingPage';
 import FormatMatrixPage from '@/pages/FormatMatrixPage';
@@ -32,6 +35,7 @@ export default function AppRouter() {
             </LoginRedirect>
           }
         />
+        <Route path="/login/chat/callback" element={<ChatCallbackPage />} />
         <Route
           element={
             <ProtectedRoute>
@@ -40,6 +44,8 @@ export default function AppRouter() {
           }
         >
           <Route index element={<HomePage />} />
+          <Route path="shorts" element={<ShortsPage />} />
+          <Route path="shorts/:mediaId" element={<ShortPlayerPage />} />
           <Route path="drama/:id" element={<DramaDetailPage />} />
           <Route path="play/episode/:id" element={<EpisodePlayerPage />} />
           <Route path="player" element={<UniversalPlayerPage />} />

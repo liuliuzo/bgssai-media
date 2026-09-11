@@ -19,6 +19,7 @@ export default function AppLayout() {
   const { username, logout } = useAuthStore();
 
   const selectedKey = (() => {
+    if (location.pathname.startsWith('/shorts')) return '/shorts';
     if (location.pathname.startsWith('/continue')) return '/continue';
     if (location.pathname.startsWith('/player')) return '/player';
     if (location.pathname.startsWith('/formats')) return '/formats';
@@ -54,6 +55,11 @@ export default function AppLayout() {
                 key: '/',
                 icon: <HomeOutlined />,
                 label: <Link to="/">首页</Link>,
+              },
+              {
+                key: '/shorts',
+                icon: <PlayCircleOutlined />,
+                label: <Link to="/shorts">Short 发布</Link>,
               },
               {
                 key: '/continue',

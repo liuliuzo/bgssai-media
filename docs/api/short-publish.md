@@ -1,5 +1,8 @@
 # API：bgssai-short → bgssai-media 发布摄入
 
+**Canonical contract:** [docs/contracts/short-to-media-publish.md](../contracts/short-to-media-publish.md)
+(schema: [short-drama-publish.schema.json](../contracts/short-drama-publish.schema.json)).
+
 ## 概述
 
 short 侧成品短剧通过服务端调用本接口发布到 media。使用共享摄入令牌（配置项 `bgssai.media.ingest.token`，勿写入 git 真密钥；local 示例见 `application-local.properties`）。
@@ -43,9 +46,11 @@ Header：
 
 统一结构 `{ "code", "message", "success", "result" }`。成功时 `result` 含 `drama_id` 与摄入日志 id。
 
-## short 侧调用提示（stub）
+## short 侧调用提示
 
-配置 media 基址与 ingest token，在成品「发布到渠道」时 POST 上述 payload。本 PR 不修改 bgssai-short 代码。
+配置 media 基址与 ingest token，在成品「发布到 media」时 POST 共享契约 payload。
+Packager: `ShortDramaPublishJob` / `ShortDramaPublishClient`。
+short 仓实现说明（本 Agent 无法推送 short）：[bgssai-short-implement.md](../contracts/bgssai-short-implement.md)。
 
 ## 本机冒烟
 

@@ -3,6 +3,7 @@ package com.bgssai.media.user.controller;
 import com.bgssai.media.common.auth.RoleCodes;
 import com.bgssai.media.common.service.AuthService;
 import com.bgssai.media.common.web.ApiResponse;
+import com.bgssai.media.user.auth.ChatOauthService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -12,9 +13,11 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final ChatOauthService chatOauthService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, ChatOauthService chatOauthService) {
         this.authService = authService;
+        this.chatOauthService = chatOauthService;
     }
 
     @PostMapping("/login")
@@ -54,5 +57,17 @@ public class AuthController {
     @PostMapping("/oauth/login")
     public ApiResponse<Map<String, Object>> oauthLogin(@RequestBody Map<String, String> body) {
         return ApiResponse.ok(authService.loginByOauth(body.get("provider"), RoleCodes.USER));
+    }
+
+    @GetMapping("/chat/prepare")
+    public ApiResponse<Map<String, Object>> chatPrepare() {
+        return ApiResponse.ok(chatOauthService.prepare());
+    }
+
+    @PostMapping("/chat/callback")
+    public ApiResponse<Map<String, Object>> chatCallback(@RequestBody Map<String, String> body) {
+        return ApiResponse.ok(chatOauthService.complete(
+                body == null ? null : body.get("code"),
+                body == null ? null : body.get("state")));
     }
 }
