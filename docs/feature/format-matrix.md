@@ -33,3 +33,18 @@ fixtures 由 ffmpeg 生成，经 cvlc 打开验证 demux/decode。
 
 
 Fixture inventory and encoder caveats: `bgssai-media-desktop/fixtures/README.md`.
+
+## MEDIA-01 commercial TODO (honest)
+
+These items are **not** closed by ingest unit tests or by marking ingest `READY` under REFERENCE mode.
+
+| # | TODO | State |
+| --- | --- | --- |
+| 1 | Desktop libVLC smoke across full owner matrix on CI agent with VLC installed | PENDING |
+| 2 | Web UniversalPlayer sample set: MP4 / WebM / HLS with owned fixtures (not third-party demos only) | PENDING |
+| 3 | Packaged installers (Windows/macOS/Linux) with documented VLC dependency | PENDING |
+| 4 | Live bgssai-short publish → media ingest → catalog → UniversalPlayer playback | PENDING |
+| 5 | OBS mode: real endpoint/bucket credentials + asset presence check beyond key string | PENDING |
+| 6 | Codec edge cases (HEVC/AV1/HDR) signed off against sample library | PENDING |
+
+Do not mark MEDIA-01 commercial-complete until the live Short E2E and format sample gates above are executed and recorded in `docs/review/acceptance-*.md`.

@@ -76,12 +76,12 @@
     update media_ingest_log
     <set>
       <if test="externalRef != null">external_ref = #{externalRef},</if>
-      <if test="dramaId != null">drama_id = #{dramaId},</if>
+      drama_id = #{dramaId},
       <if test="payloadJson != null">payload_json = #{payloadJson},</if>
       <if test="status != null">status = #{status},</if>
       <if test="message != null">message = #{message},</if>
-      <if test="mediaId != null">media_id = #{mediaId},</if>
-      <if test="playUrl != null">play_url = #{playUrl},</if>
+      media_id = #{mediaId},
+      play_url = #{playUrl},
     </set>
     where idempotency_key = #{idempotencyKey}
   </update>
@@ -89,10 +89,13 @@
   <select id="listRecentContract" resultMap="BaseResultMap">
     select <include refid="Base_Column_List"/> from media_ingest_log
     where media_id is not null and media_id != ''
+      and status = 'READY'
     order by id desc
     limit #{limit} offset #{offset}
   </select>
   <select id="countContract" resultType="long">
-    select count(1) from media_ingest_log where media_id is not null and media_id != ''
+    select count(1) from media_ingest_log
+    where media_id is not null and media_id != ''
+      and status = 'READY'
   </select>
 </mapper>

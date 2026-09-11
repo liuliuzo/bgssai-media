@@ -1,6 +1,7 @@
 package com.bgssai.media.user.controller;
 
 import com.bgssai.media.common.dto.ShortDramaIngestRequest;
+import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.service.ShortDramaContractService;
 import com.bgssai.media.common.web.ApiResponse;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +32,14 @@ public class ShortDramaIngestController {
             @RequestBody ShortDramaIngestRequest body) {
         String token = firstNonBlank(bgssaiToken, legacyToken, bearer(authorization));
         shortDramaContractService.assertToken(token);
-        return ApiResponse.ok(shortDramaContractService.ingest(body));
+        Map<String, Object> result = shortDramaContractService.ingest(body);
+        if (IngestStatus.FAILED.equals(result.get("status"))) {
+            String message = result.get("message") == null
+                    ? "ingest failed"
+                    : String.valueOf(result.get("message"));
+            return ApiResponse.fail(422, message, result);
+        }
+        return ApiResponse.ok(result);
     }
 
     private static String bearer(String authorization) {
