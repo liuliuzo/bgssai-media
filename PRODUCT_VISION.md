@@ -1,5 +1,7 @@
 # bgssai-media 产品愿景
 
+当前校准版本：2026-09-11。完整产品规划见 [产品线验收基线](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/feature/product-line-acceptance.md)；实现和验证状态见本仓 `docs/review/acceptance-20260911.md`。规划目标不等于验收通过。
+
 ## 一句话
 
 **bgssai-media** 是 BGSSAI 的**媒体播放器 + 短剧播放/分发平台**：既能像 VLC 一样打开主流媒体格式本地播放，又承接 **bgssai-short** 已完成短剧的发布与分发（short 明确不做分发/渠道，分发归属本仓）。
