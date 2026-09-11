@@ -3,6 +3,7 @@ package com.bgssai.media.admin.controller;
 import com.bgssai.media.common.aop.NeedAop;
 import com.bgssai.media.common.auth.RoleCodes;
 import com.bgssai.media.common.domain.MediaIngestLog;
+import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.service.IngestService;
 import com.bgssai.media.common.web.ApiResponse;
 import com.bgssai.media.common.web.PageResult;
@@ -33,7 +34,14 @@ public class IngestController {
             token = authorization.substring(7).trim();
         }
         ingestService.assertToken(token);
-        return ApiResponse.ok(ingestService.publishFromShort(body));
+        Map<String, Object> result = ingestService.publishFromShort(body);
+        if (IngestStatus.FAILED.equals(result.get("status"))) {
+            String message = result.get("message") == null
+                    ? "ingest failed"
+                    : String.valueOf(result.get("message"));
+            return ApiResponse.fail(422, message, result);
+        }
+        return ApiResponse.ok(result);
     }
 
     @GetMapping("/logs")

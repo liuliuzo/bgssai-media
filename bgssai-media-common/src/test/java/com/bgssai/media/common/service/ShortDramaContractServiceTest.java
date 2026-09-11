@@ -4,6 +4,8 @@ import com.bgssai.media.common.domain.MediaDrama;
 import com.bgssai.media.common.domain.MediaEpisode;
 import com.bgssai.media.common.domain.MediaIngestLog;
 import com.bgssai.media.common.dto.ShortDramaIngestRequest;
+import com.bgssai.media.common.ingest.IngestStatus;
+import com.bgssai.media.common.ingest.MediaStorageGate;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
@@ -36,6 +38,8 @@ class ShortDramaContractServiceTest {
     @Mock IngestService ingestService;
 
     ShortDramaContractService service;
+    MediaStorageGate referenceGate;
+    MediaStorageGate blankGate;
     final AtomicReference<MediaIngestLog> ingest = new AtomicReference<>();
     final AtomicReference<MediaDrama> drama = new AtomicReference<>();
     final AtomicReference<MediaEpisode> episode = new AtomicReference<>();
@@ -43,12 +47,26 @@ class ShortDramaContractServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ShortDramaContractService(
-                mediaDramaMapper, mediaEpisodeMapper, mediaIngestLogMapper, new ObjectMapper(), ingestService);
+        referenceGate = new MediaStorageGate("REFERENCE", "", "", "", "");
+        blankGate = new MediaStorageGate("", "", "", "", "");
+        service = newService(referenceGate);
+        stubMappers();
+    }
 
+    private ShortDramaContractService newService(MediaStorageGate gate) {
+        return new ShortDramaContractService(
+                mediaDramaMapper, mediaEpisodeMapper, mediaIngestLogMapper,
+                new ObjectMapper(), ingestService, gate);
+    }
+
+    private void stubMappers() {
         when(mediaIngestLogMapper.selectByIdempotencyKey(anyString())).thenAnswer(inv -> {
             MediaIngestLog cur = ingest.get();
             return cur != null && inv.getArgument(0).equals(cur.getIdempotencyKey()) ? cur : null;
+        });
+        when(mediaIngestLogMapper.selectByMediaId(anyString())).thenAnswer(inv -> {
+            MediaIngestLog cur = ingest.get();
+            return cur != null && inv.getArgument(0).equals(cur.getMediaId()) ? cur : null;
         });
         when(mediaDramaMapper.selectByExample(any())).thenAnswer(inv ->
                 drama.get() == null ? List.of() : List.of(drama.get()));
@@ -63,6 +81,7 @@ class ShortDramaContractServiceTest {
             MediaDrama cur = drama.get();
             if (patch.getTitle() != null) cur.setTitle(patch.getTitle());
             if (patch.getCoverUrl() != null) cur.setCoverUrl(patch.getCoverUrl());
+            if (patch.getStatus() != null) cur.setStatus(patch.getStatus());
             drama.set(cur);
             return 1;
         });
@@ -81,6 +100,7 @@ class ShortDramaContractServiceTest {
             if (patch.getTitle() != null) cur.setTitle(patch.getTitle());
             if (patch.getMediaUrl() != null) cur.setMediaUrl(patch.getMediaUrl());
             if (patch.getDurationSec() != null) cur.setDurationSec(patch.getDurationSec());
+            if (patch.getStatus() != null) cur.setStatus(patch.getStatus());
             episode.set(cur);
             return 1;
         });
@@ -98,24 +118,67 @@ class ShortDramaContractServiceTest {
     }
 
     @Test
-    void happyPath() {
+    void happyPathMarksReadyNotPublished() {
         Map<String, Object> result = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
         assertTrue(String.valueOf(result.get("media_id")).startsWith("m_ep_"));
         assertEquals("https://cdn.example/a.mp4", result.get("play_url"));
-        assertEquals("PUBLISHED", result.get("status"));
+        assertEquals(IngestStatus.READY, result.get("status"));
+        assertEquals(Boolean.TRUE, result.get("playable"));
+        assertEquals(IngestStatus.READY, ingest.get().getStatus());
     }
 
     @Test
-    void duplicateUpdatesSameMediaId() {
+    void unconfiguredStorageFailsWithoutPlayUrl() {
+        service = newService(blankGate);
+        Map<String, Object> result = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
+        assertEquals(IngestStatus.FAILED, result.get("status"));
+        assertEquals(Boolean.FALSE, result.get("playable"));
+        assertNull(result.get("play_url"));
+        assertNull(result.get("media_id"));
+        assertNull(ingest.get().getPlayUrl());
+        assertEquals(IngestStatus.FAILED, ingest.get().getStatus());
+        assertTrue(String.valueOf(result.get("message")).contains("storage not configured"));
+        verify(mediaDramaMapper, never()).insertSelective(any());
+    }
+
+    @Test
+    void missingAssetFailsWithoutPlayUrl() {
+        ShortDramaIngestRequest req = sample("short:w1:e1:f2", "", "Ep1");
+        Map<String, Object> result = service.ingest(req);
+        assertEquals(IngestStatus.FAILED, result.get("status"));
+        assertNull(result.get("play_url"));
+        assertTrue(String.valueOf(result.get("message")).contains("asset missing"));
+        assertFalse(IngestStatus.isPlayable(String.valueOf(result.get("status"))));
+    }
+
+    @Test
+    void duplicateUpdatesSameMediaIdWhenReady() {
         Map<String, Object> r1 = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
         Map<String, Object> r2 = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/b.mp4", "Ep1b"));
         assertEquals(r1.get("media_id"), r2.get("media_id"));
         assertEquals("https://cdn.example/b.mp4", r2.get("play_url"));
+        assertEquals(IngestStatus.READY, r2.get("status"));
         assertEquals("Ep1b", drama.get().getTitle());
     }
 
     @Test
-    void badVideoRejected() {
+    void detailHidesPlayUrlWhenFailed() {
+        service = newService(blankGate);
+        Map<String, Object> failed = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
+        assertEquals(IngestStatus.FAILED, failed.get("status"));
+        // Force a media_id onto the failed log to prove detail still refuses playable claim.
+        MediaIngestLog log = ingest.get();
+        log.setMediaId("m_ep_fake");
+        log.setPlayUrl("https://cdn.example/should-not-expose.mp4");
+        ingest.set(log);
+        Map<String, Object> detail = service.detail("m_ep_fake");
+        assertEquals(IngestStatus.FAILED, detail.get("status"));
+        assertEquals(Boolean.FALSE, detail.get("playable"));
+        assertNull(detail.get("play_url"));
+    }
+
+    @Test
+    void badVideoSchemeRejected() {
         ShortDramaIngestRequest req = sample("short:w1:e1:f1", "ftp://x", "Ep1");
         BizException ex = assertThrows(BizException.class, () -> service.ingest(req));
         assertEquals(400, ex.getCode());
@@ -148,6 +211,7 @@ class ShortDramaContractServiceTest {
         n.setExternalRef(d.getExternalRef()); n.setSource(d.getSource()); n.setStatus(d.getStatus());
         return n;
     }
+
     private static MediaEpisode copyEp(MediaEpisode e) {
         MediaEpisode n = new MediaEpisode();
         n.setId(e.getId()); n.setDramaId(e.getDramaId()); n.setEpNo(e.getEpNo());
@@ -155,11 +219,13 @@ class ShortDramaContractServiceTest {
         n.setStorageKey(e.getStorageKey()); n.setStatus(e.getStatus());
         return n;
     }
+
     private static MediaIngestLog copyLog(MediaIngestLog r) {
         MediaIngestLog n = new MediaIngestLog();
         n.setId(r.getId()); n.setExternalRef(r.getExternalRef()); n.setDramaId(r.getDramaId());
         n.setIdempotencyKey(r.getIdempotencyKey()); n.setMediaId(r.getMediaId());
         n.setPlayUrl(r.getPlayUrl()); n.setStatus(r.getStatus()); n.setPayloadJson(r.getPayloadJson());
+        n.setMessage(r.getMessage());
         return n;
     }
 }

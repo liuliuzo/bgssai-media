@@ -43,7 +43,7 @@ Outside `local`, blank token config → `code=503`.
   "code": 0,
   "message": "ok",
   "success": true,
-  "result": { "media_id": "m_ep_...", "play_url": "https://...", "status": "PUBLISHED" }
+  "result": { "media_id": "m_ep_...", "play_url": "https://...", "status": "READY" }
 }
 ```
 
@@ -110,3 +110,12 @@ curl -sS "$BASE/bgssai/user/media/shorts/<media_id>"
 ```bash
 mvn -pl bgssai-media-common,bgssai-media-user -am test
 ```
+
+
+## MEDIA-01 status
+
+Ingest result `status` is one of `PENDING` / `FAILED` / `READY`.
+
+- Unconfigured storage or missing asset → `FAILED` (`success=false`, `code=422`), no `play_url`.
+- Catalog/detail only treat `READY` as playable.
+- See `docs/feature/media-01-commercial-gate.md`.
