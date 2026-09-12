@@ -87,6 +87,21 @@ test('catalog invents no license or filing numbers', () => {
   assert.equal(LICENSE_PATTERN.test(blob), false);
 });
 
+test('link modules use zh and en href helpers, not /legal/*', () => {
+  const files = [
+    resolve(here, 'LegalLinks.tsx'),
+    resolve(here, '../../../../bgssai-media-admin/frontend/src/legal/LegalLinks.tsx'),
+  ];
+  for (const file of files) {
+    const src = readFileSync(file, 'utf8');
+    assert.match(src, /legalHrefZh/);
+    assert.match(src, /legalHrefEn/);
+    assert.equal(src.includes('/legal/'), false);
+    assert.equal(src.includes('/legal/terms'), false);
+    assert.equal(src.includes('/legal/privacy'), false);
+  }
+});
+
 test('user and admin catalogs stay identical', () => {
   const userSrc = readFileSync(resolve(here, 'catalog.ts'), 'utf8');
   const adminSrc = readFileSync(

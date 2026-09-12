@@ -29,6 +29,10 @@
   gap: 2px 0;
 }
 
+.legal-strip__item {
+  white-space: nowrap;
+}
+
 .legal-strip__nav a {
   color: #595959;
   text-decoration: underline;

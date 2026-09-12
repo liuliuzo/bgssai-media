@@ -25,7 +25,7 @@ export default function LegalLinks({ variant }: Props) {
       <p className="legal-strip__intro">{intro}</p>
       <nav className="legal-strip__nav" aria-label="官网法务页 Legal pages">
         {LEGAL_PAGES.map((page, index) => (
-          <span key={page.id}>
+          <span key={page.id} className="legal-strip__item">
             {index > 0 ? <span className="legal-strip__sep" aria-hidden="true"> | </span> : null}
             <a
               href={legalHrefZh(page)}
