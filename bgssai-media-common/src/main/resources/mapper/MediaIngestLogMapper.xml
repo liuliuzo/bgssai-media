@@ -87,14 +87,21 @@
   </update>
 
   <select id="listRecentContract" resultMap="BaseResultMap">
-    select <include refid="Base_Column_List"/> from media_ingest_log
-    where media_id is not null and media_id != ''
-      and status = 'READY'
-    order by id desc
+    select l.id, l.external_ref, l.drama_id, l.payload_json, l.status, l.message,
+           l.idempotency_key, l.media_id, l.play_url, l.created_at
+    from media_ingest_log l
+    inner join (
+      select media_id, max(id) as id
+      from media_ingest_log
+      where media_id is not null and media_id != ''
+        and status = 'READY'
+      group by media_id
+    ) latest on latest.id = l.id
+    order by l.id desc
     limit #{limit} offset #{offset}
   </select>
   <select id="countContract" resultType="long">
-    select count(1) from media_ingest_log
+    select count(distinct media_id) from media_ingest_log
     where media_id is not null and media_id != ''
       and status = 'READY'
   </select>

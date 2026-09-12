@@ -74,6 +74,7 @@ export interface ShortPlayItem {
   source_system?: string;
   duration_sec?: number;
   message?: string;
+  idempotency_key?: string;
 }
 
 export interface ShortCatalogResult {

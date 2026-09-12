@@ -16,6 +16,10 @@ public class ShortDramaIngestRequest {
     private String language = "zh-CN";
     private List<String> tags = new ArrayList<>();
     private String idempotencyKey;
+    /** Optional pack status from short (READY / APPROVED). Omitted = approved READY pack. */
+    private String status;
+    /** Optional approval flag from short. false is rejected; null/true accepted. */
+    private Boolean approved;
 
     public String getSourceSystem() { return sourceSystem; }
     public void setSourceSystem(String sourceSystem) { this.sourceSystem = sourceSystem; }
@@ -41,4 +45,8 @@ public class ShortDramaIngestRequest {
     public void setTags(List<String> tags) { this.tags = tags; }
     public String getIdempotencyKey() { return idempotencyKey; }
     public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public Boolean getApproved() { return approved; }
+    public void setApproved(Boolean approved) { this.approved = approved; }
 }

@@ -124,6 +124,8 @@ class ShortDramaContractServiceTest {
         assertEquals("https://cdn.example/a.mp4", result.get("play_url"));
         assertEquals(IngestStatus.READY, result.get("status"));
         assertEquals(Boolean.TRUE, result.get("playable"));
+        assertEquals(Boolean.FALSE, result.get("replayed"));
+        assertEquals("short:w1:e1:f1", result.get("idempotency_key"));
         assertEquals(IngestStatus.READY, ingest.get().getStatus());
     }
 
@@ -152,13 +154,94 @@ class ShortDramaContractServiceTest {
     }
 
     @Test
-    void duplicateUpdatesSameMediaIdWhenReady() {
+    void replayReturnsExistingCatalogWithoutSecondInsert() {
         Map<String, Object> r1 = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
+        assertEquals(Boolean.FALSE, r1.get("replayed"));
         Map<String, Object> r2 = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/b.mp4", "Ep1b"));
         assertEquals(r1.get("media_id"), r2.get("media_id"));
-        assertEquals("https://cdn.example/b.mp4", r2.get("play_url"));
+        assertEquals(r1.get("ingest_log_id"), r2.get("ingest_log_id"));
+        assertEquals("https://cdn.example/a.mp4", r2.get("play_url"));
         assertEquals(IngestStatus.READY, r2.get("status"));
-        assertEquals("Ep1b", drama.get().getTitle());
+        assertEquals(Boolean.TRUE, r2.get("playable"));
+        assertEquals(Boolean.TRUE, r2.get("replayed"));
+        assertEquals("short:w1:e1:f1", r2.get("idempotency_key"));
+        assertEquals("Ep1", drama.get().getTitle());
+        verify(mediaIngestLogMapper, times(1)).insertSelective(any());
+        verify(mediaDramaMapper, times(1)).insertSelective(any());
+        verify(mediaEpisodeMapper, times(1)).insertSelective(any());
+        verify(mediaIngestLogMapper, never()).updateByIdempotencyKey(any());
+    }
+
+    @Test
+    void acceptsReadyApprovedPack() {
+        ShortDramaIngestRequest req = sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1");
+        req.setStatus(IngestStatus.READY);
+        req.setApproved(Boolean.TRUE);
+        Map<String, Object> result = service.ingest(req);
+        assertEquals(IngestStatus.READY, result.get("status"));
+        assertEquals(Boolean.TRUE, result.get("playable"));
+        assertTrue(String.valueOf(result.get("media_id")).startsWith("m_ep_"));
+    }
+
+    @Test
+    void rejectsUnapprovedPack() {
+        ShortDramaIngestRequest req = sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1");
+        req.setApproved(Boolean.FALSE);
+        BizException ex = assertThrows(BizException.class, () -> service.ingest(req));
+        assertEquals(422, ex.getCode());
+        verify(mediaIngestLogMapper, never()).insertSelective(any());
+    }
+
+    @Test
+    void rejectsDraftPackStatus() {
+        ShortDramaIngestRequest req = sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1");
+        req.setStatus("DRAFT");
+        BizException ex = assertThrows(BizException.class, () -> service.ingest(req));
+        assertEquals(422, ex.getCode());
+    }
+
+    @Test
+    void failedThenReadyUpgradesSameKey() {
+        service = newService(blankGate);
+        Map<String, Object> failed = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
+        assertEquals(IngestStatus.FAILED, failed.get("status"));
+        service = newService(referenceGate);
+        Map<String, Object> ready = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
+        assertEquals(IngestStatus.READY, ready.get("status"));
+        assertEquals(Boolean.FALSE, ready.get("replayed"));
+        assertEquals(failed.get("ingest_log_id"), ready.get("ingest_log_id"));
+        assertTrue(String.valueOf(ready.get("media_id")).startsWith("m_ep_"));
+        verify(mediaIngestLogMapper, times(1)).insertSelective(any());
+        verify(mediaIngestLogMapper, times(1)).updateByIdempotencyKey(any());
+    }
+
+    @Test
+    void rejectsMismatchedIdempotencyKey() {
+        ShortDramaIngestRequest req = sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1");
+        req.setIdempotencyKey("short:other:e1:f1");
+        BizException ex = assertThrows(BizException.class, () -> service.ingest(req));
+        assertEquals(400, ex.getCode());
+    }
+
+    @Test
+    void duplicateKeyRaceReturnsExistingReadyCatalog() {
+        MediaIngestLog winner = new MediaIngestLog();
+        winner.setId(99L);
+        winner.setIdempotencyKey("short:w1:e1:f1");
+        winner.setMediaId("m_ep_99");
+        winner.setPlayUrl("https://cdn.example/a.mp4");
+        winner.setStatus(IngestStatus.READY);
+        when(mediaIngestLogMapper.selectByIdempotencyKey(eq("short:w1:e1:f1")))
+                .thenReturn(null)
+                .thenReturn(winner);
+        when(mediaIngestLogMapper.insertSelective(any()))
+                .thenThrow(new org.springframework.dao.DuplicateKeyException("uk_ingest_idempotency"));
+        Map<String, Object> raced = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
+        assertEquals("m_ep_99", raced.get("media_id"));
+        assertEquals("https://cdn.example/a.mp4", raced.get("play_url"));
+        assertEquals(Boolean.TRUE, raced.get("replayed"));
+        assertEquals(IngestStatus.READY, raced.get("status"));
+        assertEquals("short:w1:e1:f1", raced.get("idempotency_key"));
     }
 
     @Test
@@ -193,15 +276,18 @@ class ShortDramaContractServiceTest {
     }
 
     private static ShortDramaIngestRequest sample(String key, String url, String title) {
+        String[] parts = key.split(":");
         ShortDramaIngestRequest req = new ShortDramaIngestRequest();
         req.setSourceSystem("bgssai-short");
-        req.setSourceWorkId("w1");
-        req.setSourceEpisodeId("1");
-        req.setSourceFilmId("f1");
+        req.setSourceWorkId(parts.length > 1 ? parts[1] : "w1");
+        req.setSourceEpisodeId(parts.length > 2 ? parts[2] : "e1");
+        req.setSourceFilmId(parts.length > 3 ? parts[3] : "f1");
         req.setTitle(title);
         req.setVideoUrl(url);
         req.setIdempotencyKey(key);
         req.setDurationSec(10);
+        req.setStatus(IngestStatus.READY);
+        req.setApproved(Boolean.TRUE);
         return req;
     }
 

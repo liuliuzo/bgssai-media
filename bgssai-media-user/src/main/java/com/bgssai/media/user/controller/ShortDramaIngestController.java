@@ -29,9 +29,16 @@ public class ShortDramaIngestController {
             @RequestHeader(value = "X-Bgssai-Ingest-Token", required = false) String bgssaiToken,
             @RequestHeader(value = "X-Ingest-Token", required = false) String legacyToken,
             @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyHeader,
             @RequestBody ShortDramaIngestRequest body) {
         String token = firstNonBlank(bgssaiToken, legacyToken, bearer(authorization));
         shortDramaContractService.assertToken(token);
+        if (body != null
+                && (body.getIdempotencyKey() == null || body.getIdempotencyKey().isBlank())
+                && idempotencyHeader != null
+                && !idempotencyHeader.isBlank()) {
+            body.setIdempotencyKey(idempotencyHeader.trim());
+        }
         Map<String, Object> result = shortDramaContractService.ingest(body);
         if (IngestStatus.FAILED.equals(result.get("status"))) {
             String message = result.get("message") == null

@@ -1,6 +1,7 @@
 package com.bgssai.media.common.publish;
 
 import com.bgssai.media.common.dto.ShortDramaIngestRequest;
+import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.web.BizException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,8 @@ class ShortDramaPublishJobTest {
         assertEquals("Demo Episode", req.getTitle());
         assertEquals("https://example.com/ep1.mp4", req.getVideoUrl());
         assertEquals("short:w1:e1:f1", req.getIdempotencyKey());
+        assertEquals(IngestStatus.READY, req.getStatus());
+        assertEquals(Boolean.TRUE, req.getApproved());
         assertEquals(Integer.valueOf(15), req.getDurationSec());
         assertEquals(List.of("demo"), req.getTags());
     }
@@ -70,6 +73,8 @@ class ShortDramaPublishJobTest {
         assertTrue(json.contains("source_work_id"));
         assertTrue(json.contains("idempotency_key"));
         assertTrue(json.contains("video_url"));
+        assertTrue(json.contains("\"status\":\"READY\"") || json.contains("\"status\": \"READY\""));
+        assertTrue(json.contains("\"approved\":true") || json.contains("\"approved\": true"));
         assertFalse(json.contains("sourceWorkId"));
     }
 

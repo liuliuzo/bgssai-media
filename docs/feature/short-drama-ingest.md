@@ -34,6 +34,8 @@ Outside `local`, blank token config → `code=503`.
   "aspect_ratio": "9:16",
   "language": "zh-CN",
   "tags": [],
+  "status": "READY",
+  "approved": true,
   "idempotency_key": "short:{work_id}:{episode_id}:{film_id}"
 }
 ```
@@ -45,7 +47,7 @@ Outside `local`, blank token config → `code=503`.
   "code": 0,
   "message": "ok",
   "success": true,
-  "result": { "media_id": "m_ep_...", "play_url": "https://...", "status": "READY" }
+  "result": { "media_id": "m_ep_...", "play_url": "https://...", "status": "READY", "playable": true, "replayed": false, "idempotency_key": "short:w1:e1:f1" }
 }
 ```
 
@@ -57,7 +59,9 @@ Outside `local`, blank token config → `code=503`.
 | episode/film | `media_episode` upsert by `(drama_id, ep_no)`；`media_url=video_url`，`storage_key=film:{source_film_id}` |
 | idempotency | `media_ingest_log.idempotency_key` UNIQUE；`media_id` / `play_url` columns |
 
-Re-ingest same `idempotency_key` updates title/`video_url` and returns the same `media_id`.
+Same `idempotency_key` + existing READY catalog → return that entry (`replayed=true`), no second row.
+FAILED then READY on the same key upserts the existing log. Unapproved / non-READY packs → `code=422`.
+Header `Idempotency-Key` is accepted when the body omits the key.
 
 ## Catalog
 

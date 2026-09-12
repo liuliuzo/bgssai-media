@@ -24,6 +24,14 @@
     "aspect_ratio": { "type": "string", "default": "9:16" },
     "language": { "type": "string", "default": "zh-CN" },
     "tags": { "type": "array", "items": { "type": "string" } },
+    "status": {
+      "type": "string",
+      "description": "Optional pack status from short. READY or APPROVED accepted. Omitted = approved READY pack."
+    },
+    "approved": {
+      "type": ["boolean", "null"],
+      "description": "Optional approval flag from short. false is rejected. null/true accepted."
+    },
     "idempotency_key": {
       "type": "string",
       "pattern": "^short:[^:]+:[^:]+:[^:]+$"

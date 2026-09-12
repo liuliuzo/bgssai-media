@@ -19,7 +19,7 @@
 | 共享发布契约 + JSON Schema + packager/client | 完成（本仓） |
 | media 摄入 / 列表 / UniversalPlayer 播放路径 | 完成（本仓 MVP） |
 | 用户 Chat 第三方登录 PREP；admin 隔离 | 完成（不签发 Chat 会话） |
-| bgssai-short 仓 publish API/job PR | **未推送**（仓 404，见 `docs/contracts/bgssai-short-implement.md`） |
+| bgssai-short 仓 publish API/job PR | 用户称 PR #54 已合并；本 Agent 仍无法 clone 私仓复核 |
 | 真实 Short 工作室 → 播放 E2E | PENDING |
 
 ## 后续

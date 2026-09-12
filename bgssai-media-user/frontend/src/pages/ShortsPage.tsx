@@ -39,12 +39,14 @@ export default function ShortsPage() {
 
   return (
     <div>
-      <Title level={3}>Short 发布短剧</Title>
+      <Title level={3}>Short 发布短剧 / Short catalog</Title>
       <Paragraph type="secondary">
-        来自 bgssai-short 的成品摄入。仅 READY 且带播放地址的条目可播。
+        来自 bgssai-short 的成品摄入。仅 READY 且带播放地址的条目可播。同一幂等键重复发布不会产生第二条目录。
+        Ingested from bgssai-short. Only READY items with a play URL are playable. Replaying the same
+        idempotency key does not create a second catalog entry.
       </Paragraph>
       <Input.Search
-        placeholder="搜索已发布短剧"
+        placeholder="搜索已发布短剧 / Search published shorts"
         allowClear
         enterButton={<SearchOutlined />}
         style={{ maxWidth: 400, marginBottom: 24 }}
@@ -55,7 +57,7 @@ export default function ShortsPage() {
       />
       <Spin spinning={loading}>
         {items.length === 0 && !loading ? (
-          <Empty description="暂无已摄入短剧。请用 short 发布契约或 scripts/publish-short-smoke.sh 写入。" />
+          <Empty description="暂无已摄入短剧。请用 short 发布契约或 scripts/publish-short-smoke.sh 写入。 / No ingested shorts yet. Publish via the short contract or scripts/publish-short-smoke.sh." />
         ) : (
           <Row gutter={[16, 16]}>
             {items.map((item) => (
