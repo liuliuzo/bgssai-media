@@ -160,3 +160,20 @@ html.bgssai-shell-pane body {
   max-width: none !important;
   margin: 0 !important;
 }
+
+.bgssai-shell-pane .legal-strip {
+  margin-top: 20px;
+  padding: 0 4px 8px;
+  text-align: left;
+  font-size: 11px;
+}
+
+.bgssai-shell-pane .legal-strip--footer {
+  padding: 8px 4px 12px;
+}
+
+.bgssai-shell-pane .legal-strip__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 0;
+}

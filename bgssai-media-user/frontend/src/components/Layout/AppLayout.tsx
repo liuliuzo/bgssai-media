@@ -10,6 +10,7 @@ import {
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useShellMode } from '@/shell/useShellMode';
+import LegalLinks from '@/legal/LegalLinks';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -65,6 +66,7 @@ export default function AppLayout() {
         </header>
         <main className="shell-content">
           <Outlet />
+          <LegalLinks variant="footer" />
         </main>
         <nav className="shell-tabbar" aria-label="壳内主导航">
           {SHELL_TABS.map((item) => (
@@ -122,6 +124,7 @@ export default function AppLayout() {
       <Content style={{ padding: '24px', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
         <Outlet />
       </Content>
+      <LegalLinks variant="footer" />
     </Layout>
   );
 }

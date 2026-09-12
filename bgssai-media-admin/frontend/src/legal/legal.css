@@ -1,0 +1,36 @@
+.legal-strip {
+  margin-top: 16px;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.legal-strip--footer {
+  margin: 0;
+  padding: 8px 24px 20px;
+}
+
+.legal-strip__intro,
+.legal-strip__review,
+.legal-strip__nav {
+  margin: 0 0 6px;
+}
+
+.legal-strip__review {
+  margin-bottom: 0;
+  letter-spacing: 0.02em;
+}
+
+.legal-strip__nav a {
+  color: #595959;
+  text-decoration: underline;
+}
+
+.legal-strip__nav a:hover {
+  color: #1677ff;
+}
+
+.legal-strip__sep {
+  color: #d9d9d9;
+}

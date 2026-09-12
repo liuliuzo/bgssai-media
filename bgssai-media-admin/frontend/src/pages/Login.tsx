@@ -4,6 +4,7 @@ import { LockOutlined } from '@ant-design/icons';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { login } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
+import LegalLinks from '../legal/LegalLinks';
 
 const { Title, Text } = Typography;
 
@@ -70,6 +71,7 @@ export default function Login() {
         <Text type="secondary" style={{ fontSize: 12 }}>
           提示：账号 admin / 密码 admin123。管理员不接入 Chat 或用户第三方登录。
         </Text>
+        <LegalLinks variant="admin-outbound" />
       </Card>
     </div>
   );
