@@ -73,7 +73,7 @@ cd bgssai-media-user/frontend && npm install && npm run dev
 
 Bot 壳内窄栏：给用户端 URL 加 `bgssai_shell=1` 或 `chat_pane=1`（见 [docs/feature/MOBILE-IN-BOT-SHELL.md](docs/feature/MOBILE-IN-BOT-SHELL.md)）。无参数时保持桌面独立布局。Admin 与桌面播放器不接入。
 
-未登录默认进入登录页。用户端支持邮箱/手机 OTP（真实投递通道，未配置则失败）；Chat 第三方登录为 PREP，不签发会话。管理员仅密码登录，不接 Chat。用户登录页与页脚、管理端页脚外链至官网 5 条法务页（双语标签，**需法务审阅**，不展示自造证照编号）；见 [docs/feature/legal-fan-out.md](docs/feature/legal-fan-out.md)。
+未登录默认进入登录页。用户端支持邮箱/手机 OTP（真实投递通道，未配置则失败）；Chat 第三方登录为 PREP，不签发会话。管理员仅密码登录，不接 Chat。用户登录页与页脚、管理端页脚外链至官网 5 条权威法务页（中文 + `/en/`，**需法务审阅**，不展示自造证照编号）；见 [docs/feature/legal-fan-out.md](docs/feature/legal-fan-out.md)。
 
 ## 评审可验证路径
 
@@ -81,7 +81,7 @@ Bot 壳内窄栏：给用户端 URL 加 `bgssai_shell=1` 或 `chat_pane=1`（见
 2. 「通用播放器」打开公开 URL 或本地 MP4/WebM 文件
 3. Admin 登录后可增改剧集/分集、上下架，查看摄入日志；「MCP 连接器」页可见五款 AI 客户端说明
 4. 用户端「设置」创建 MCP PAT，用 Bearer 调用 `POST /api/mcp`（见 [docs/feature/mcp.md](docs/feature/mcp.md)）
-5. 用户登录页与登录后页脚可见 5 条官网法务双语外链；Admin 登录页与页脚仅外链、无“登录即同意”。均标明需法务审阅，无证照编号
+5. 用户登录页与登录后页脚可见 5 条官网权威法务中英外链（`/terms-of-service/`、`/privacy-policy/`、`/personal-information-inventory/`、`/third-party-sharing/`、`/app-permissions/` 及对应 `/en/`）；Admin 登录页与页脚仅外链、无“登录即同意”。均标明需法务审阅，无证照编号
 6. short → media 发布闭环（推荐契约）：
 
 ```bash

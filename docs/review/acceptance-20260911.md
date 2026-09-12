@@ -2,27 +2,28 @@
 
 日期：2026-09-12。需求版本：2026-09-11。
 
-基线：`origin/develop`；本轮分支 `cursor/legal-fan-out-38bb`。
+基线：`origin/develop`；本轮分支 `cursor/legal-outbound-urls-154c`。
 
 完整目标：[产品线验收基线](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/feature/product-line-acceptance.md)。
 
 ## 结论
 
-**PARTIAL**。本轮补齐 **USER 登录/页脚 + ADMIN 外链** 指向官网 5 条权威法务页（双语标签）。
+**PARTIAL**。本轮将 **USER 登录/页脚 + ADMIN 外链** 对齐官网 5 条权威法务页（中文 slug + `/en/`）。
 不得把文件存在或单测通过写成全功能通过。法务状态：**需法务审阅**。
 
-仍为 **PENDING**：官网仓清单逐条对读（本 Agent 无法读取 `bgssai-website`）、官网 5 页生产可用性、法务终稿、证照公示、用户同意留痕、short 仓对等 publish API、真实 Short 工作室 → UniversalPlayer E2E、全格式 live 样本、播放器安装包、完整 Chat OAuth、境内四家真实授权。
+仍为 **PENDING**：官网仓清单逐条对读（本 Agent 无法读取 `bgssai-website`）、官网其余 3 页生产可用性、法务终稿、证照公示、用户同意留痕、short 仓对等 publish API、真实 Short 工作室 → UniversalPlayer E2E、全格式 live 样本、播放器安装包、完整 Chat OAuth、境内四家真实授权。
 
-## 本轮（法务 fan-out）
+## 本轮（法务 URL 对齐官网权威页）
 
 | 项 | 状态 |
 | --- | --- |
-| USER 登录页 5 条双语外链 | DONE（本仓 UI；**需法务审阅**） |
-| USER 页脚 5 条双语外链（桌面 + 壳内） | DONE（本仓 UI；**需法务审阅**） |
+| USER 登录页 5 条中英外链 | DONE（本仓 UI；**需法务审阅**） |
+| USER 页脚 5 条中英外链（桌面 + 壳内） | DONE（本仓 UI；**需法务审阅**） |
 | ADMIN 仅外链，无用户授权句 | DONE（本仓 UI） |
+| URL 与官网权威 slug 完全一致 | DONE（禁 `/legal/*` 与错误 host） |
 | 不编造证照/许可证编号 | DONE（本仓未写编号） |
 | 官网 checklist 原文对读 | **NOT READ**（`bgssai-website` GitHub 404） |
-| 官网 5 页 live + 法务终稿 | PENDING |
+| 官网 5 页 live + 法务终稿 | PENDING（terms / privacy 已发布；其余 3 slug 待官网发布） |
 
 说明：[docs/feature/legal-fan-out.md](../feature/legal-fan-out.md)。
 
