@@ -22,9 +22,17 @@
   letter-spacing: 0.02em;
 }
 
+.legal-strip__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px 0;
+}
+
 .legal-strip__nav a {
   color: #595959;
   text-decoration: underline;
+  white-space: nowrap;
 }
 
 .legal-strip__nav a:hover {
