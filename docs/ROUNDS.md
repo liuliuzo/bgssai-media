@@ -33,7 +33,8 @@
 
 | 目标 | 落点 | 状态 |
 | --- | --- | --- |
-| USER 登录 + 页脚双语外链 5 条官网法务页 | `frontend/src/legal` + Login / AppLayout | 完成（本仓 MVP） |
+| USER 登录 + 页脚中英外链 5 条官网权威法务页 | `frontend/src/legal` + Login / AppLayout | 完成（本仓 MVP） |
 | ADMIN 仅外链，无用户授权句 | Admin Login + AdminLayout 页脚 | 完成 |
 | 不编造证照编号；标明需法务审阅 | `docs/feature/legal-fan-out.md` | 完成（**需法务审阅**） |
-| 官网 5 页生产可用性 / 法务终稿 | 依赖 `bgssai-website` | PENDING |
+| URL 对齐官网权威 slug（禁 `/legal/*`） | `catalog.ts` 中英各 5 条 | 完成（本仓） |
+| 官网 5 页生产可用性 / 法务终稿 | 依赖官网发布 | PENDING |

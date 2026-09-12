@@ -1,8 +1,8 @@
 import {
   LEGAL_PAGES,
   LEGAL_REVIEW_STATUS,
-  bilingualLabel,
-  legalHref,
+  legalHrefEn,
+  legalHrefZh,
 } from './catalog';
 
 type LegalLinksVariant = 'admin-outbound' | 'footer';
@@ -28,12 +28,25 @@ export default function LegalLinks({ variant }: Props) {
           <span key={page.id}>
             {index > 0 ? <span className="legal-strip__sep" aria-hidden="true"> | </span> : null}
             <a
-              href={legalHref(page)}
+              href={legalHrefZh(page)}
               target="_blank"
               rel="noopener noreferrer"
               data-legal-id={page.id}
+              data-legal-lang="zh"
             >
-              {bilingualLabel(page)}
+              {page.labelZh}
+            </a>
+            <span className="legal-strip__lang" aria-hidden="true">
+              {' / '}
+            </span>
+            <a
+              href={legalHrefEn(page)}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-legal-id={page.id}
+              data-legal-lang="en"
+            >
+              {page.labelEn}
             </a>
           </span>
         ))}
