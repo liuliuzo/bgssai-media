@@ -28,3 +28,12 @@
 | 探测 `bgssai_shell=1` / `chat_pane=1` | `bgssai-media-user/frontend/src/shell` | 完成（本仓 MVP） |
 | 窄栏触控底栏，桌面独立不变 | `AppLayout` + `styles/shell.css` | 完成 |
 | Admin / desktop 跳过 | 文档声明 | 完成 |
+
+## Round 8（官网法务外链）
+
+| 目标 | 落点 | 状态 |
+| --- | --- | --- |
+| USER 登录 + 页脚双语外链 5 条官网法务页 | `frontend/src/legal` + Login / AppLayout | 完成（本仓 MVP） |
+| ADMIN 仅外链，无用户授权句 | Admin Login + AdminLayout 页脚 | 完成 |
+| 不编造证照编号；标明需法务审阅 | `docs/feature/legal-fan-out.md` | 完成（**需法务审阅**） |
+| 官网 5 页生产可用性 / 法务终稿 | 依赖 `bgssai-website` | PENDING |

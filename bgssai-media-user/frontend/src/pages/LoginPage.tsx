@@ -14,6 +14,7 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
 import { useShellMode } from '@/shell/useShellMode';
+import LegalLinks from '@/legal/LegalLinks';
 
 export default function LoginPage() {
   const { inShell } = useShellMode();
@@ -270,6 +271,7 @@ export default function LoginPage() {
         <Button block style={{ marginTop: 8 }} onClick={onChat} disabled={loading}>
           Chat 第三方登录（预留）
         </Button>
+        <LegalLinks variant="user-consent" />
       </Card>
     </div>
   );
