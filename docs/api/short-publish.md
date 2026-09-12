@@ -38,9 +38,13 @@ Header：
 }
 ```
 
-## 幂等
+## 幂等（遗留 admin 路径）
 
 以 `external_ref` 为唯一键 upsert 剧集；分集按 `(drama_id, ep_no)` upsert。重复调用覆盖元数据与分集列表中出现的集。
+该路径不写 `media_id`，不进入 `/api/shorts` 契约目录。
+
+short PR #54 使用的共享契约路径见 [short-to-media-publish.md](../contracts/short-to-media-publish.md)：
+`idempotency_key` UNIQUE；READY 重放返回已有目录项。
 
 ## 响应
 

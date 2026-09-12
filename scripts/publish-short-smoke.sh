@@ -21,15 +21,25 @@ PAYLOAD=$(cat <<JSON
   "aspect_ratio": "9:16",
   "language": "zh-CN",
   "tags": ["smoke"],
+  "status": "READY",
+  "approved": true,
   "idempotency_key": "short:${WORK_ID}:${EP_ID}:${FILM_ID}"
 }
 JSON
 )
 
 echo "POST ${BASE}/bgssai/user/media/ingest/short-drama"
+FIRST=$(curl -sS -X POST "${BASE}/bgssai/user/media/ingest/short-drama" \
+  -H "Content-Type: application/json" \
+  -H "X-Bgssai-Ingest-Token: ${TOKEN}" \
+  -H "Idempotency-Key: short:${WORK_ID}:${EP_ID}:${FILM_ID}" \
+  -d "${PAYLOAD}")
+echo "${FIRST}"
+echo "POST replay (same idempotency_key; must return existing catalog, replayed=true)"
 curl -sS -X POST "${BASE}/bgssai/user/media/ingest/short-drama" \
   -H "Content-Type: application/json" \
   -H "X-Bgssai-Ingest-Token: ${TOKEN}" \
+  -H "Idempotency-Key: short:${WORK_ID}:${EP_ID}:${FILM_ID}" \
   -d "${PAYLOAD}"
 echo
 echo "GET ${BASE}/bgssai/user/media/shorts?q=Short"

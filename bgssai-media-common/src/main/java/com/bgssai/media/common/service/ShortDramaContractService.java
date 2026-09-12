@@ -12,6 +12,7 @@ import com.bgssai.media.common.ingest.MediaStorageGate;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
+import com.bgssai.media.common.publish.ShortDramaPublishJob;
 import com.bgssai.media.common.web.BizException;
 import com.bgssai.media.common.web.PageResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,13 +22,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Shared bgssai-short publish contract mapped onto media_drama / media_episode.
  * MEDIA-01: only {@link IngestStatus#READY} is playable. Unconfigured storage or
  * missing asset → {@link IngestStatus#FAILED} (never fake READY / play_url).
+ *
+ * <p>Idempotency (short PR #54): UNIQUE {@code idempotency_key}. Replay of a READY
+ * pack returns the existing catalog entry and does not insert a second row.
  */
 @Service
 public class ShortDramaContractService {
@@ -61,17 +67,18 @@ public class ShortDramaContractService {
     @Transactional
     public Map<String, Object> ingest(ShortDramaIngestRequest req) {
         validate(req);
+        assertApprovedReadyPack(req);
         String storageKey = "film:" + req.getSourceFilmId();
         IngestReadiness readiness = IngestReadiness.evaluate(
                 mediaStorageGate, req.getVideoUrl(), storageKey);
 
         MediaIngestLog existing = mediaIngestLogMapper.selectByIdempotencyKey(req.getIdempotencyKey());
+        if (isReadyCatalog(existing)) {
+            return replayReady(existing);
+        }
         try {
             if (readiness.isFailed()) {
                 return recordFailed(existing, req, readiness.getMessage());
-            }
-            if (existing != null && existing.getMediaId() != null) {
-                return updateExisting(existing, req, readiness);
             }
             if (existing != null) {
                 return updateExisting(existing, req, readiness);
@@ -81,6 +88,9 @@ public class ShortDramaContractService {
             MediaIngestLog winner = mediaIngestLogMapper.selectByIdempotencyKey(req.getIdempotencyKey());
             if (winner == null) {
                 throw new BizException(409, "idempotency race unresolved");
+            }
+            if (isReadyCatalog(winner)) {
+                return replayReady(winner);
             }
             if (readiness.isFailed()) {
                 return recordFailed(winner, req, readiness.getMessage());
@@ -106,7 +116,7 @@ public class ShortDramaContractService {
         log.setMessage(readiness.getMessage());
         log.setPayloadJson(toJson(req));
         mediaIngestLogMapper.insertSelective(log);
-        return readyResult(mediaId, playUrl, log.getId());
+        return readyResult(mediaId, playUrl, log.getId(), req.getIdempotencyKey(), false);
     }
 
     private Map<String, Object> updateExisting(
@@ -124,7 +134,7 @@ public class ShortDramaContractService {
         existing.setMessage(readiness.getMessage());
         existing.setPayloadJson(toJson(req));
         mediaIngestLogMapper.updateByIdempotencyKey(existing);
-        return readyResult(mediaId, playUrl, existing.getId());
+        return readyResult(mediaId, playUrl, existing.getId(), req.getIdempotencyKey(), false);
     }
 
     private Map<String, Object> recordFailed(
@@ -141,7 +151,7 @@ public class ShortDramaContractService {
             log.setMessage(reason);
             log.setPayloadJson(toJson(req));
             mediaIngestLogMapper.insertSelective(log);
-            return failedResult(log.getId(), reason);
+            return failedResult(log.getId(), reason, req.getIdempotencyKey());
         }
         existing.setExternalRef(workRef);
         existing.setDramaId(null);
@@ -151,7 +161,7 @@ public class ShortDramaContractService {
         existing.setMessage(reason);
         existing.setPayloadJson(toJson(req));
         mediaIngestLogMapper.updateByIdempotencyKey(existing);
-        return failedResult(existing.getId(), reason);
+        return failedResult(existing.getId(), reason, req.getIdempotencyKey());
     }
 
     private MediaDrama upsertDrama(String workRef, ShortDramaIngestRequest req, boolean playableReady) {
@@ -168,8 +178,18 @@ public class ShortDramaContractService {
             drama.setStatus(dramaStatus);
             drama.setSource("bgssai-short");
             drama.setExternalRef(workRef);
-            mediaDramaMapper.insertSelective(drama);
-            return mediaDramaMapper.selectByPrimaryKey(drama.getId());
+            try {
+                mediaDramaMapper.insertSelective(drama);
+                return mediaDramaMapper.selectByPrimaryKey(drama.getId());
+            } catch (DuplicateKeyException race) {
+                MediaDramaExample raced = new MediaDramaExample();
+                raced.createCriteria().andExternalRefEqualTo(workRef);
+                List<MediaDrama> winner = mediaDramaMapper.selectByExample(raced);
+                if (winner.isEmpty()) {
+                    throw race;
+                }
+                existing = winner;
+            }
         }
         MediaDrama drama = existing.get(0);
         MediaDrama patch = new MediaDrama();
@@ -198,8 +218,18 @@ public class ShortDramaContractService {
             ep.setMediaUrl(req.getVideoUrl());
             ep.setStorageKey(storageKey);
             ep.setStatus(epStatus);
-            mediaEpisodeMapper.insertSelective(ep);
-            return mediaEpisodeMapper.selectByPrimaryKey(ep.getId());
+            try {
+                mediaEpisodeMapper.insertSelective(ep);
+                return mediaEpisodeMapper.selectByPrimaryKey(ep.getId());
+            } catch (DuplicateKeyException race) {
+                MediaEpisodeExample raced = new MediaEpisodeExample();
+                raced.createCriteria().andDramaIdEqualTo(dramaId).andEpNoEqualTo(epNo);
+                List<MediaEpisode> winner = mediaEpisodeMapper.selectByExample(raced);
+                if (winner.isEmpty()) {
+                    throw race;
+                }
+                epExisting = winner;
+            }
         }
         MediaEpisode ep = epExisting.get(0);
         MediaEpisode patch = new MediaEpisode();
@@ -223,6 +253,7 @@ public class ShortDramaContractService {
         detail.put("media_id", log.getMediaId());
         detail.put("status", status);
         detail.put("playable", IngestStatus.isPlayable(status));
+        detail.put("idempotency_key", log.getIdempotencyKey());
         detail.put("storage_mode", mediaStorageGate.getMode().isEmpty() ? "UNCONFIGURED" : mediaStorageGate.getMode());
         detail.put("message", log.getMessage());
         // Never expose play_url unless READY — no fake playable success.
@@ -249,6 +280,7 @@ public class ShortDramaContractService {
         long total = mediaIngestLogMapper.countContract();
         List<MediaIngestLog> logs = mediaIngestLogMapper.listRecentContract(pageSize, (page - 1) * pageSize);
         List<Map<String, Object>> list = new ArrayList<>();
+        Set<String> seenMediaIds = new HashSet<>();
         for (MediaIngestLog log : logs) {
             if (log.getMediaId() == null || log.getMediaId().isBlank()) {
                 continue;
@@ -256,7 +288,11 @@ public class ShortDramaContractService {
             if (!IngestStatus.isPlayable(log.getStatus())) {
                 continue;
             }
+            if (!seenMediaIds.add(log.getMediaId())) {
+                continue;
+            }
             Map<String, Object> item = detail(log.getMediaId());
+            item.put("idempotency_key", log.getIdempotencyKey());
             if (q != null && !q.isBlank()) {
                 String hay = String.valueOf(item).toLowerCase();
                 if (!hay.contains(q.toLowerCase())) {
@@ -291,17 +327,36 @@ public class ShortDramaContractService {
         if (value != null) map.put(key, value);
     }
 
-    private static Map<String, Object> readyResult(String mediaId, String playUrl, Long ingestLogId) {
+    private static boolean isReadyCatalog(MediaIngestLog log) {
+        return log != null
+                && log.getMediaId() != null
+                && !log.getMediaId().isBlank()
+                && IngestStatus.isPlayable(log.getStatus());
+    }
+
+    private Map<String, Object> replayReady(MediaIngestLog existing) {
+        return readyResult(
+                existing.getMediaId(),
+                existing.getPlayUrl(),
+                existing.getId(),
+                existing.getIdempotencyKey(),
+                true);
+    }
+
+    private static Map<String, Object> readyResult(
+            String mediaId, String playUrl, Long ingestLogId, String idempotencyKey, boolean replayed) {
         Map<String, Object> result = new HashMap<>();
         result.put("media_id", mediaId);
         result.put("play_url", playUrl);
         result.put("status", IngestStatus.READY);
         result.put("playable", true);
         result.put("ingest_log_id", ingestLogId);
+        result.put("idempotency_key", idempotencyKey);
+        result.put("replayed", replayed);
         return result;
     }
 
-    private static Map<String, Object> failedResult(Long ingestLogId, String message) {
+    private static Map<String, Object> failedResult(Long ingestLogId, String message, String idempotencyKey) {
         Map<String, Object> result = new HashMap<>();
         result.put("status", IngestStatus.FAILED);
         result.put("playable", false);
@@ -309,6 +364,8 @@ public class ShortDramaContractService {
         result.put("ingest_log_id", ingestLogId);
         result.put("play_url", null);
         result.put("media_id", null);
+        result.put("replayed", false);
+        result.put("idempotency_key", idempotencyKey);
         return result;
     }
 
@@ -339,6 +396,13 @@ public class ShortDramaContractService {
         require(req.getSourceFilmId(), "source_film_id");
         require(req.getTitle(), "title");
         require(req.getIdempotencyKey(), "idempotency_key");
+        String expectedKey = ShortDramaPublishJob.idempotencyKey(
+                req.getSourceWorkId(), req.getSourceEpisodeId(), req.getSourceFilmId());
+        if (!expectedKey.equals(req.getIdempotencyKey().trim())) {
+            throw new BizException(400,
+                    "idempotency_key must be short:{source_work_id}:{source_episode_id}:{source_film_id}");
+        }
+        req.setIdempotencyKey(expectedKey);
         // Allow blank video_url through to FAILED (missing asset) after storage check.
         if (req.getVideoUrl() != null && !req.getVideoUrl().isBlank()
                 && !req.getVideoUrl().startsWith("http://")
@@ -356,5 +420,25 @@ public class ShortDramaContractService {
 
     private static void require(String v, String field) {
         if (v == null || v.isBlank()) throw new BizException(400, field + " required");
+    }
+
+    /**
+     * Short publishes only READY approved packs (PR #54). Omitted status/approved
+     * stays compatible with the original contract body.
+     */
+    void assertApprovedReadyPack(ShortDramaIngestRequest req) {
+        if (req.getApproved() != null && !req.getApproved()) {
+            throw new BizException(422, "pack not approved");
+        }
+        String status = req.getStatus();
+        if (status == null || status.isBlank()) {
+            return;
+        }
+        String normalized = status.trim();
+        if (IngestStatus.READY.equalsIgnoreCase(normalized)
+                || "APPROVED".equalsIgnoreCase(normalized)) {
+            return;
+        }
+        throw new BizException(422, "only READY approved packs are accepted");
     }
 }

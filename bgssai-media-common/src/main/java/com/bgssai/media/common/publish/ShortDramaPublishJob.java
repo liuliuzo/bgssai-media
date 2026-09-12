@@ -1,6 +1,7 @@
 package com.bgssai.media.common.publish;
 
 import com.bgssai.media.common.dto.ShortDramaIngestRequest;
+import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.web.BizException;
 
 import java.util.ArrayList;
@@ -57,6 +58,8 @@ public final class ShortDramaPublishJob {
         req.setLanguage(blankToDefault(language, "zh-CN"));
         req.setTags(tags == null ? new ArrayList<>() : new ArrayList<>(tags));
         req.setIdempotencyKey(idempotencyKey(sourceWorkId, sourceEpisodeId, sourceFilmId));
+        req.setStatus(IngestStatus.READY);
+        req.setApproved(Boolean.TRUE);
         if (req.getDurationSec() < 0) {
             throw new BizException(400, "duration_sec must be >= 0");
         }
