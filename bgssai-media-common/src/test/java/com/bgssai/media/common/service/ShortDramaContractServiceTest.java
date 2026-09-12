@@ -234,8 +234,8 @@ class ShortDramaContractServiceTest {
         when(mediaIngestLogMapper.selectByIdempotencyKey(eq("short:w1:e1:f1")))
                 .thenReturn(null)
                 .thenReturn(winner);
-        when(mediaIngestLogMapper.insertSelective(any()))
-                .thenThrow(new org.springframework.dao.DuplicateKeyException("uk_ingest_idempotency"));
+        doThrow(new org.springframework.dao.DuplicateKeyException("uk_ingest_idempotency"))
+                .when(mediaIngestLogMapper).insertSelective(any());
         Map<String, Object> raced = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mp4", "Ep1"));
         assertEquals("m_ep_99", raced.get("media_id"));
         assertEquals("https://cdn.example/a.mp4", raced.get("play_url"));
