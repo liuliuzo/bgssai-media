@@ -1,11 +1,14 @@
 package com.bgssai.media.user.controller;
 
 import com.bgssai.media.common.auth.RoleCodes;
+import com.bgssai.media.common.oauth.OAuthAuthorizeResult;
 import com.bgssai.media.common.service.AuthService;
 import com.bgssai.media.common.web.ApiResponse;
 import com.bgssai.media.user.auth.ChatOauthService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -56,7 +59,40 @@ public class AuthController {
 
     @PostMapping("/oauth/login")
     public ApiResponse<Map<String, Object>> oauthLogin(@RequestBody Map<String, String> body) {
-        return ApiResponse.ok(authService.loginByOauth(body.get("provider"), RoleCodes.USER));
+        if (body.get("code") != null && !body.get("code").isBlank()) {
+            return ApiResponse.ok(authService.completeOauth(
+                    body.get("provider"), body.get("code"), body.get("state"), RoleCodes.USER));
+        }
+        return ApiResponse.ok(toMap(authService.buildOauthAuthorize(body.get("provider"))));
+    }
+
+    @PostMapping("/oauth/authorize")
+    public ApiResponse<Map<String, Object>> oauthAuthorize(@RequestBody Map<String, String> body) {
+        return ApiResponse.ok(toMap(authService.buildOauthAuthorize(body.get("provider"))));
+    }
+
+    @PostMapping("/oauth/callback")
+    public ApiResponse<Map<String, Object>> oauthCallback(@RequestBody Map<String, String> body) {
+        return ApiResponse.ok(authService.completeOauth(
+                body.get("provider"), body.get("code"), body.get("state"), RoleCodes.USER));
+    }
+
+    @GetMapping("/oauth/{channel}/callback")
+    public RedirectView oauthBrowserCallback(
+            @PathVariable("channel") String channel,
+            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "state", required = false) String state) {
+        String provider = "bgssai".equalsIgnoreCase(channel) ? "CHAT" : channel.toUpperCase();
+        return new RedirectView("/login?provider=" + provider
+                + "&code=" + (code == null ? "" : code)
+                + "&state=" + (state == null ? "" : state));
+    }
+
+    private static Map<String, Object> toMap(OAuthAuthorizeResult result) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("authorize_url", result.getAuthorizeUrl());
+        map.put("state", result.getState());
+        return map;
     }
 
     @GetMapping("/chat/prepare")

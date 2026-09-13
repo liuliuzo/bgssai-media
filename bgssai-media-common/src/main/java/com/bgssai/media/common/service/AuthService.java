@@ -7,6 +7,12 @@ import com.bgssai.media.common.domain.SysUserExample;
 import com.bgssai.media.common.domain.UserIdentity;
 import com.bgssai.media.common.mapper.SysUserMapper;
 import com.bgssai.media.common.mapper.UserIdentityMapper;
+import com.bgssai.media.common.oauth.ChatOAuthService;
+import com.bgssai.media.common.oauth.CnOAuthClient;
+import com.bgssai.media.common.oauth.OAuthAuthorizeResult;
+import com.bgssai.media.common.oauth.OAuthSettings;
+import com.bgssai.media.common.oauth.OAuthStateStore;
+import com.bgssai.media.common.oauth.OAuthUserInfo;
 import com.bgssai.media.common.web.BizException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,20 +30,30 @@ public class AuthService {
     /** 验证码登录场景，对应 platform_sms_config.login_template_id。 */
     private static final String SCENE_LOGIN = "LOGIN";
     private static final Set<String> CN_PROVIDERS = Set.of("WECHAT", "DOUYIN", "BAIDU", "ALIPAY");
-    private static final String DEMO_OPEN_ID = "demo";
+    private static final Set<String> CHAT_PROVIDERS = Set.of("CHAT", "BGSSAI");
 
     private final SysUserMapper sysUserMapper;
     private final UserIdentityMapper userIdentityMapper;
     private final JwtService jwtService;
     private final VerifyCodeService verifyCodeService;
+    private final OAuthSettings oauthSettings;
+    private final OAuthStateStore oauthStateStore;
+    private final CnOAuthClient cnOAuthClient;
+    private final ChatOAuthService chatOAuthService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public AuthService(SysUserMapper sysUserMapper, UserIdentityMapper userIdentityMapper,
-                       JwtService jwtService, VerifyCodeService verifyCodeService) {
+                       JwtService jwtService, VerifyCodeService verifyCodeService,
+                       OAuthSettings oauthSettings, OAuthStateStore oauthStateStore,
+                       CnOAuthClient cnOAuthClient, ChatOAuthService chatOAuthService) {
         this.sysUserMapper = sysUserMapper;
         this.userIdentityMapper = userIdentityMapper;
         this.jwtService = jwtService;
         this.verifyCodeService = verifyCodeService;
+        this.oauthSettings = oauthSettings;
+        this.oauthStateStore = oauthStateStore;
+        this.cnOAuthClient = cnOAuthClient;
+        this.chatOAuthService = chatOAuthService;
     }
 
     public Map<String, Object> loginByPassword(String username, String password, String requiredRole) {
@@ -106,12 +122,53 @@ public class AuthService {
         return tokenResult(user);
     }
 
-    public Map<String, Object> loginByOauth(String rawProvider, String requiredRole) {
+    public OAuthAuthorizeResult buildOauthAuthorize(String rawProvider) {
         String provider = rawProvider == null ? "" : rawProvider.trim().toUpperCase(Locale.ROOT);
+        if (CHAT_PROVIDERS.contains(provider)) {
+            return chatOAuthService.buildAuthorize();
+        }
         if (!CN_PROVIDERS.contains(provider)) {
             throw new BizException(400, "unsupported login provider");
         }
-        UserIdentity existing = userIdentityMapper.findByProviderOpenId(provider, DEMO_OPEN_ID);
+        if (!oauthSettings.configured(provider)) {
+            throw new BizException(400, "未配置该登录方式");
+        }
+        String state = oauthStateStore.issue(provider, null);
+        OAuthAuthorizeResult result = new OAuthAuthorizeResult();
+        result.setAuthorizeUrl(cnOAuthClient.buildAuthorizeUrl(provider, state));
+        result.setState(state);
+        return result;
+    }
+
+    public Map<String, Object> loginByOauth(String rawProvider, String requiredRole) {
+        throw new BizException(400, oauthSettings.configured(rawProvider) ? "授权码不能为空" : "未配置该登录方式");
+    }
+
+    public Map<String, Object> completeOauth(String rawProvider, String code, String state, String requiredRole) {
+        String provider = rawProvider == null ? "" : rawProvider.trim().toUpperCase(Locale.ROOT);
+        String trimmedCode = code == null ? "" : code.trim();
+        if (trimmedCode.isEmpty()) {
+            throw new BizException(400, oauthSettings.configured(provider) ? "授权码不能为空" : "未配置该登录方式");
+        }
+        OAuthUserInfo profile;
+        String storedProvider = provider;
+        if (CHAT_PROVIDERS.contains(provider)) {
+            profile = chatOAuthService.exchange(trimmedCode, state);
+            storedProvider = "CHAT";
+        } else if (CN_PROVIDERS.contains(provider)) {
+            OAuthStateStore.Entry entry = oauthStateStore.consume(state);
+            if (entry == null || !provider.equals(entry.provider)) {
+                throw new BizException(400, "授权已过期，请重新发起");
+            }
+            profile = cnOAuthClient.exchange(provider, trimmedCode);
+        } else {
+            throw new BizException(400, "unsupported login provider");
+        }
+        if (profile == null || profile.getOpenId() == null || profile.getOpenId().isBlank()
+                || "demo".equalsIgnoreCase(profile.getOpenId())) {
+            throw new BizException(400, "未配置该登录方式");
+        }
+        UserIdentity existing = userIdentityMapper.findByProviderOpenId(storedProvider, profile.getOpenId());
         if (existing != null) {
             SysUser user = sysUserMapper.selectByPrimaryKey(existing.getUserId());
             if (user == null) {
@@ -122,12 +179,17 @@ public class AuthService {
             }
             return tokenResult(user);
         }
-        SysUser user = provisionUser(provider.toLowerCase(Locale.ROOT) + "_demo", null, null, requiredRole);
+        String username = storedProvider.toLowerCase(Locale.ROOT) + "_"
+                + profile.getOpenId().replaceAll("[^a-zA-Z0-9]", "");
+        if (username.length() > 40) {
+            username = username.substring(0, 40);
+        }
+        SysUser user = provisionUser(username, null, null, requiredRole);
         UserIdentity identity = new UserIdentity();
         identity.setUserId(user.getId());
-        identity.setProvider(provider);
-        identity.setOpenId(DEMO_OPEN_ID);
-        identity.setNickname(user.getUsername());
+        identity.setProvider(storedProvider);
+        identity.setOpenId(profile.getOpenId());
+        identity.setNickname(profile.getNickname() == null ? user.getUsername() : profile.getNickname());
         userIdentityMapper.insert(identity);
         return tokenResult(user);
     }

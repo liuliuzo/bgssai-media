@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from '@/components/Layout/AppLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
+import BotDownloadPage from '@/pages/download/BotDownloadPage';
 import ChatCallbackPage from '@/pages/ChatCallbackPage';
 import HomePage from '@/pages/HomePage';
 import DramaDetailPage from '@/pages/DramaDetailPage';
@@ -35,6 +36,7 @@ export default function AppRouter() {
             </LoginRedirect>
           }
         />
+        <Route path="/download/bot" element={<BotDownloadPage />} />
         <Route path="/login/chat/callback" element={<ChatCallbackPage />} />
         <Route
           element={

@@ -42,8 +42,17 @@ export async function loginByPhoneOtp(phone: string, code: string) {
 }
 
 export async function loginByOauth(provider: string) {
-  const { data } = await client.post<LoginResult>('/auth/oauth/login', {
+  const { data } = await client.post<{ authorize_url: string; state: string }>('/auth/oauth/authorize', {
     provider,
+  });
+  return data;
+}
+
+export async function completeOauth(provider: string, code: string, state: string) {
+  const { data } = await client.post<LoginResult>('/auth/oauth/callback', {
+    provider,
+    code,
+    state,
   });
   return data;
 }
