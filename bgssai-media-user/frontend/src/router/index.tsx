@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from '@/components/Layout/AppLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
+import BotDownloadPage from '@/pages/download/BotDownloadPage';
 import HomePage from '@/pages/HomePage';
 import DramaDetailPage from '@/pages/DramaDetailPage';
 import EpisodePlayerPage from '@/pages/EpisodePlayerPage';
@@ -32,6 +33,7 @@ export default function AppRouter() {
             </LoginRedirect>
           }
         />
+        <Route path="/download/bot" element={<BotDownloadPage />} />
         <Route
           element={
             <ProtectedRoute>

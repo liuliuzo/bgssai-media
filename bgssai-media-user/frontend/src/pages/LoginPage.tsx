@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Card, Form, Input, Tabs, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   loginByPassword,
   sendEmailOtp,
@@ -9,6 +9,8 @@ import {
   sendPhoneOtp,
   loginByPhoneOtp,
   loginByOauth,
+  completeOauth,
+  chatAuthUrl,
 } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
@@ -22,8 +24,42 @@ export default function LoginPage() {
   const [phoneCodeSent, setPhoneCodeSent] = useState(false);
   const [emailForm] = Form.useForm();
   const [phoneForm] = Form.useForm();
+  const finishing = useRef(false);
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    if (!code || !state || finishing.current) return;
+    finishing.current = true;
+    let provider = params.get('provider') || '';
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('bgssai-media-oauth') || '{}') as {
+        provider?: string;
+      };
+      if (saved.provider) provider = saved.provider;
+    } catch {
+      /* ignore */
+    }
+    if (!provider) provider = 'CHAT';
+    setLoading(true);
+    completeOauth(provider, code, state)
+      .then((result) => {
+        try {
+          sessionStorage.removeItem('bgssai-media-oauth');
+        } catch {
+          /* ignore */
+        }
+        handleLoginSuccess(result);
+      })
+      .catch((err) => {
+        finishing.current = false;
+        message.error(err instanceof Error ? err.message : '授权失败');
+      })
+      .finally(() => setLoading(false));
+  }, [location.search]);
 
   const handleLoginSuccess = (result: LoginResult) => {
     setAuth(result.token, result.user_id, result.username);
@@ -103,14 +139,34 @@ export default function LoginPage() {
     }
   };
 
-  const onOauth = async (provider: string) => {
+  const startOauth = async (provider: string) => {
     setLoading(true);
     try {
-      const result = await loginByOauth(provider);
-      handleLoginSuccess(result);
+      const data = await loginByOauth(provider);
+      try {
+        sessionStorage.setItem('bgssai-media-oauth', JSON.stringify({ provider, state: data.state }));
+      } catch {
+        /* ignore */
+      }
+      window.location.href = data.authorize_url;
     } catch (err) {
       message.error(err instanceof Error ? err.message : '登录失败');
-    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onChat = async () => {
+    setLoading(true);
+    try {
+      const data = await chatAuthUrl();
+      try {
+        sessionStorage.setItem('bgssai-media-oauth', JSON.stringify({ provider: 'CHAT', state: data.state }));
+      } catch {
+        /* ignore */
+      }
+      window.location.href = data.authorize_url;
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '登录失败');
       setLoading(false);
     }
   };
@@ -235,6 +291,9 @@ export default function LoginPage() {
         <div style={{ marginTop: 16, textAlign: 'center', color: '#8c8c8c', fontSize: 12 }}>
           或使用第三方账号
         </div>
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <Link to="/download/bot">下载 BGSSAI Bot</Link>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
           {[
             ['WECHAT', '微信'],
@@ -242,11 +301,14 @@ export default function LoginPage() {
             ['BAIDU', '百度'],
             ['ALIPAY', '支付宝'],
           ].map(([key, label]) => (
-            <Button key={key} onClick={() => onOauth(key)} disabled={loading}>
+            <Button key={key} onClick={() => startOauth(key)} disabled={loading}>
               {label}
             </Button>
           ))}
         </div>
+        <Button style={{ marginTop: 8 }} block onClick={onChat} disabled={loading}>
+          用 Chat 登录
+        </Button>
       </Card>
     </div>
   );
