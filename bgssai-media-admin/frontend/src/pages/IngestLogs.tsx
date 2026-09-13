@@ -5,11 +5,14 @@ import { fetchIngestLogs } from '../api/ingest';
 import type { MediaIngestLog } from '../types';
 
 const statusTag = (status?: string) => {
-  if (status === 'success') {
-    return <Tag color="green">成功</Tag>;
+  if (status === 'READY' || status === 'success') {
+    return <Tag color="green">READY</Tag>;
   }
-  if (status === 'failed' || status === 'error') {
-    return <Tag color="red">失败</Tag>;
+  if (status === 'PENDING') {
+    return <Tag color="gold">PENDING</Tag>;
+  }
+  if (status === 'FAILED' || status === 'failed' || status === 'error') {
+    return <Tag color="red">FAILED</Tag>;
   }
   return <Tag>{status || '未知'}</Tag>;
 };
@@ -67,7 +70,7 @@ export default function IngestLogs() {
   ];
 
   return (
-    <Card title="入库日志">
+    <Card title="入库日志" extra="short → media 契约摄入（READY 才可播）">
       <Table
         rowKey="id"
         loading={loading}

@@ -45,6 +45,10 @@ export default function HomePage() {
   return (
     <div>
       <Title level={3}>短剧推荐</Title>
+      <Paragraph type="secondary">
+        手工上架与 short 摄入剧集都在此目录。Short 契约目录见{' '}
+        <Link to="/shorts">Short 发布</Link>。
+      </Paragraph>
       <Input.Search
         placeholder="搜索短剧"
         allowClear

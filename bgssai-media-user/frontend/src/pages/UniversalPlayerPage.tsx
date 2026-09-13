@@ -13,10 +13,12 @@ import {
 import { UploadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import UniversalPlayer from '@/components/UniversalPlayer';
 import type { PlaylistItem } from '@/types/api';
+import { useShellMode } from '@/shell/useShellMode';
 
 const { Title, Text } = Typography;
 
 export default function UniversalPlayerPage() {
+  const { inShell } = useShellMode();
   const [urlInput, setUrlInput] = useState('');
   const [titleInput, setTitleInput] = useState('');
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
@@ -80,16 +82,29 @@ export default function UniversalPlayerPage() {
             />
           </Form.Item>
           <Form.Item label="视频地址">
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                placeholder="https://example.com/video.mp4 或 .m3u8"
-              />
-              <Button type="primary" icon={<PlusOutlined />} onClick={addUrlToPlaylist}>
-                添加到列表
-              </Button>
-            </Space.Compact>
+            {inShell ? (
+              <Space direction="vertical" style={{ width: '100%' }} size={8}>
+                <Input
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder="https://example.com/video.mp4 或 .m3u8"
+                />
+                <Button type="primary" block icon={<PlusOutlined />} onClick={addUrlToPlaylist}>
+                  添加到列表
+                </Button>
+              </Space>
+            ) : (
+              <Space.Compact style={{ width: '100%' }}>
+                <Input
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder="https://example.com/video.mp4 或 .m3u8"
+                />
+                <Button type="primary" icon={<PlusOutlined />} onClick={addUrlToPlaylist}>
+                  添加到列表
+                </Button>
+              </Space.Compact>
+            )}
           </Form.Item>
           <Form.Item label="本地文件">
             <Upload beforeUpload={handleLocalFile} showUploadList={false} accept="video/*">

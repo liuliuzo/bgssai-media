@@ -17,12 +17,14 @@ import {
   DeleteOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import {
   createMcpToken,
   listMcpTokens,
   revokeMcpToken,
   type McpTokenView,
 } from '@/api/mcp';
+import { useShellMode } from '@/shell/useShellMode';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -55,6 +57,7 @@ const CONNECTORS = [
 ] as const;
 
 export default function SettingsPage() {
+  const { inShell } = useShellMode();
   const [tokens, setTokens] = useState<McpTokenView[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -165,6 +168,11 @@ export default function SettingsPage() {
           把 Claude、Codex、Cursor、Grok Bot、bgssai-bot 连到 BGSSAI
           媒体：检索已发布短剧、查看分集、读取你的继续观看进度（只读）。
         </Paragraph>
+        {inShell && (
+          <Paragraph style={{ marginTop: 8, marginBottom: 0 }}>
+            <Link to="/formats">格式支持矩阵</Link>
+          </Paragraph>
+        )}
       </div>
 
       <Row gutter={[16, 16]}>

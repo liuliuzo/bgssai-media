@@ -10,12 +10,15 @@ import {
   loginByPhoneOtp,
   loginByOauth,
   completeOauth,
-  chatAuthUrl,
+  prepareChatLogin,
 } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
+import { useShellMode } from '@/shell/useShellMode';
+import LegalLinks from '@/legal/LegalLinks';
 
 export default function LoginPage() {
+  const { inShell } = useShellMode();
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -158,31 +161,32 @@ export default function LoginPage() {
   const onChat = async () => {
     setLoading(true);
     try {
-      const data = await chatAuthUrl();
-      try {
-        sessionStorage.setItem('bgssai-media-oauth', JSON.stringify({ provider: 'CHAT', state: data.state }));
-      } catch {
-        /* ignore */
+      const prep = await prepareChatLogin();
+      if (prep.status === 'READY' && prep.authorize_url) {
+        window.location.assign(prep.authorize_url);
+        return;
       }
-      window.location.href = data.authorize_url;
+      message.info(prep.message || 'Chat 第三方登录已预留，尚未开通真实授权');
     } catch (err) {
-      message.error(err instanceof Error ? err.message : '登录失败');
+      message.error(err instanceof Error ? err.message : 'Chat 登录不可用');
+    } finally {
       setLoading(false);
     }
   };
 
   return (
     <div
+      className="shell-login"
       style={{
         minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: inShell ? 'flex-start' : 'center',
         justifyContent: 'center',
         background: '#f0f2f5',
-        padding: 16,
+        padding: inShell ? 12 : 16,
       }}
     >
-      <Card title="用户登录" style={{ width: 420, maxWidth: '100%' }}>
+      <Card title="用户登录" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
         <Alert
           type="info"
           showIcon
@@ -306,9 +310,10 @@ export default function LoginPage() {
             </Button>
           ))}
         </div>
-        <Button style={{ marginTop: 8 }} block onClick={onChat} disabled={loading}>
+        <Button block style={{ marginTop: 8 }} onClick={onChat} disabled={loading}>
           用 Chat 登录
         </Button>
+        <LegalLinks variant="user-consent" />
       </Card>
     </div>
   );

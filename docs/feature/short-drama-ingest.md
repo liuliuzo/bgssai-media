@@ -1,5 +1,7 @@
 # Short drama ingest (shared contract)
 
+Canonical write-up: [docs/contracts/short-to-media-publish.md](../contracts/short-to-media-publish.md).
+
 Extends the merged MVP scaffold (`media_drama` / `media_episode` / `media_ingest_log`) with the **bgssai-short shared publish contract**.
 
 Legacy admin path remains: `POST /api/ingest/short/publish` + `X-Ingest-Token` (also accepts `X-Bgssai-Ingest-Token`).
@@ -32,6 +34,8 @@ Outside `local`, blank token config → `code=503`.
   "aspect_ratio": "9:16",
   "language": "zh-CN",
   "tags": [],
+  "status": "READY",
+  "approved": true,
   "idempotency_key": "short:{work_id}:{episode_id}:{film_id}"
 }
 ```
@@ -43,7 +47,7 @@ Outside `local`, blank token config → `code=503`.
   "code": 0,
   "message": "ok",
   "success": true,
-  "result": { "media_id": "m_ep_...", "play_url": "https://...", "status": "PUBLISHED" }
+  "result": { "media_id": "m_ep_...", "play_url": "https://...", "status": "READY", "playable": true, "replayed": false, "idempotency_key": "short:w1:e1:f1" }
 }
 ```
 
@@ -55,14 +59,17 @@ Outside `local`, blank token config → `code=503`.
 | episode/film | `media_episode` upsert by `(drama_id, ep_no)`；`media_url=video_url`，`storage_key=film:{source_film_id}` |
 | idempotency | `media_ingest_log.idempotency_key` UNIQUE；`media_id` / `play_url` columns |
 
-Re-ingest same `idempotency_key` updates title/`video_url` and returns the same `media_id`.
+Same `idempotency_key` + existing READY catalog → return that entry (`replayed=true`), no second row.
+FAILED then READY on the same key upserts the existing log. Unapproved / non-READY packs → `code=422`.
+Header `Idempotency-Key` is accepted when the body omits the key.
 
 ## Catalog
 
 - `GET /bgssai/user/media/shorts?q=&page=1&page_size=20`
 - `GET /bgssai/user/media/shorts/{media_id}`
+- Authenticated user app: `GET /api/shorts` and `GET /api/shorts/{media_id}` (JWT `Jwttoken`, role USER)
 
-Also available via existing authenticated drama feed UI after ingest.
+Also available via existing authenticated drama feed UI after ingest. Web UI: `/shorts`.
 
 ## Storage
 
@@ -110,3 +117,12 @@ curl -sS "$BASE/bgssai/user/media/shorts/<media_id>"
 ```bash
 mvn -pl bgssai-media-common,bgssai-media-user -am test
 ```
+
+
+## MEDIA-01 status
+
+Ingest result `status` is one of `PENDING` / `FAILED` / `READY`.
+
+- Unconfigured storage or missing asset → `FAILED` (`success=false`, `code=422`), no `play_url`.
+- Catalog/detail only treat `READY` as playable.
+- See `docs/feature/media-01-commercial-gate.md`.

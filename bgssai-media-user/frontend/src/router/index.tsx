@@ -3,9 +3,12 @@ import AppLayout from '@/components/Layout/AppLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
 import BotDownloadPage from '@/pages/download/BotDownloadPage';
+import ChatCallbackPage from '@/pages/ChatCallbackPage';
 import HomePage from '@/pages/HomePage';
 import DramaDetailPage from '@/pages/DramaDetailPage';
 import EpisodePlayerPage from '@/pages/EpisodePlayerPage';
+import ShortsPage from '@/pages/ShortsPage';
+import ShortPlayerPage from '@/pages/ShortPlayerPage';
 import UniversalPlayerPage from '@/pages/UniversalPlayerPage';
 import ContinueWatchingPage from '@/pages/ContinueWatchingPage';
 import FormatMatrixPage from '@/pages/FormatMatrixPage';
@@ -34,6 +37,7 @@ export default function AppRouter() {
           }
         />
         <Route path="/download/bot" element={<BotDownloadPage />} />
+        <Route path="/login/chat/callback" element={<ChatCallbackPage />} />
         <Route
           element={
             <ProtectedRoute>
@@ -42,6 +46,8 @@ export default function AppRouter() {
           }
         >
           <Route index element={<HomePage />} />
+          <Route path="shorts" element={<ShortsPage />} />
+          <Route path="shorts/:mediaId" element={<ShortPlayerPage />} />
           <Route path="drama/:id" element={<DramaDetailPage />} />
           <Route path="play/episode/:id" element={<EpisodePlayerPage />} />
           <Route path="player" element={<UniversalPlayerPage />} />

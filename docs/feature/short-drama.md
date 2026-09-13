@@ -10,6 +10,8 @@
 
 首页已发布剧集 → 详情+分集列表 → 分集播放 → 继续观看入口（stub）
 
+Short 契约目录：`/shorts` 列表 → `/shorts/{media_id}` 用 UniversalPlayer 播放 READY 条目。
+
 ## 管理端
 
 剧集/分集 CRUD、发布/下架、查看 short 摄入日志

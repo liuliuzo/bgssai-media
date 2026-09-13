@@ -2,8 +2,27 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>BGSSAI 媒体 - 用户端</title>
+    <script>
+      (function () {
+        try {
+          var q = String(location.search || '') + String(location.hash || '');
+          var stored = false;
+          try {
+            stored =
+              sessionStorage.getItem('bgssai_shell') === '1' ||
+              sessionStorage.getItem('chat_pane') === '1';
+          } catch (e) {}
+          var on = /(?:[?&#](?:bgssai_shell|chat_pane)=(1|true|yes))\b/i.test(q);
+          var off = /(?:[?&#](?:bgssai_shell|chat_pane)=(0|false|no))\b/i.test(q);
+          if ((on || stored) && !off) {
+            document.documentElement.classList.add('bgssai-shell-pane');
+            document.documentElement.setAttribute('data-bgssai-shell', '1');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

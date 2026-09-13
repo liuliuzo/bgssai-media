@@ -6,6 +6,9 @@ import com.bgssai.media.common.domain.MediaEpisode;
 import com.bgssai.media.common.domain.MediaEpisodeExample;
 import com.bgssai.media.common.domain.MediaIngestLog;
 import com.bgssai.media.common.domain.MediaIngestLogExample;
+import com.bgssai.media.common.ingest.IngestReadiness;
+import com.bgssai.media.common.ingest.IngestStatus;
+import com.bgssai.media.common.ingest.MediaStorageGate;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
@@ -30,18 +33,21 @@ public class IngestService {
     private final MediaIngestLogMapper mediaIngestLogMapper;
     private final ObjectMapper objectMapper;
     private final String ingestToken;
+    private final MediaStorageGate mediaStorageGate;
 
     public IngestService(
             MediaDramaMapper mediaDramaMapper,
             MediaEpisodeMapper mediaEpisodeMapper,
             MediaIngestLogMapper mediaIngestLogMapper,
             ObjectMapper objectMapper,
-            @Value("${bgssai.media.ingest.token}") String ingestToken) {
+            @Value("${bgssai.media.ingest.token}") String ingestToken,
+            MediaStorageGate mediaStorageGate) {
         this.mediaDramaMapper = mediaDramaMapper;
         this.mediaEpisodeMapper = mediaEpisodeMapper;
         this.mediaIngestLogMapper = mediaIngestLogMapper;
         this.objectMapper = objectMapper;
         this.ingestToken = ingestToken;
+        this.mediaStorageGate = mediaStorageGate;
     }
 
     public void assertToken(String token) {
@@ -80,6 +86,31 @@ public class IngestService {
         if (title == null || title.isBlank()) {
             throw new BizException(400, "title required");
         }
+
+        IngestReadiness batchReadiness = evaluatePublishPayload(payload);
+        if (batchReadiness.isFailed()) {
+            MediaIngestLog log = new MediaIngestLog();
+            log.setExternalRef(externalRef);
+            log.setDramaId(null);
+            try {
+                log.setPayloadJson(objectMapper.writeValueAsString(payload));
+            } catch (Exception e) {
+                log.setPayloadJson(String.valueOf(payload));
+            }
+            log.setStatus(IngestStatus.FAILED);
+            log.setMessage(batchReadiness.getMessage());
+            mediaIngestLogMapper.insertSelective(log);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("status", IngestStatus.FAILED);
+            result.put("playable", false);
+            result.put("message", batchReadiness.getMessage());
+            result.put("ingest_log_id", log.getId());
+            result.put("drama_id", null);
+            result.put("external_ref", externalRef);
+            return result;
+        }
+
         String status = stringVal(payload.get("status"));
         if (status == null || status.isBlank()) status = "published";
 
@@ -122,16 +153,18 @@ public class IngestService {
                 List<MediaEpisode> epExisting = mediaEpisodeMapper.selectByExample(epExample);
                 String epTitle = stringVal(epMap.get("title"));
                 if (epTitle == null) epTitle = "EP" + epNo;
-                String epStatus = stringVal(epMap.get("status"));
-                if (epStatus == null || epStatus.isBlank()) epStatus = "published";
+                String mediaUrl = stringVal(epMap.get("media_url"));
+                String storageKey = stringVal(epMap.get("storage_key"));
+                IngestReadiness epReady = IngestReadiness.evaluate(mediaStorageGate, mediaUrl, storageKey);
+                String epStatus = epReady.isReady() ? "published" : "draft";
                 if (epExisting.isEmpty()) {
                     MediaEpisode ep = new MediaEpisode();
                     ep.setDramaId(drama.getId());
                     ep.setEpNo(epNo);
                     ep.setTitle(epTitle);
                     ep.setDurationSec(intVal(epMap.get("duration_sec")));
-                    ep.setMediaUrl(stringVal(epMap.get("media_url")));
-                    ep.setStorageKey(stringVal(epMap.get("storage_key")));
+                    ep.setMediaUrl(mediaUrl);
+                    ep.setStorageKey(storageKey);
                     ep.setStatus(epStatus);
                     mediaEpisodeMapper.insertSelective(ep);
                 } else {
@@ -140,8 +173,8 @@ public class IngestService {
                     patch.setId(ep.getId());
                     patch.setTitle(epTitle);
                     patch.setDurationSec(intVal(epMap.get("duration_sec")));
-                    patch.setMediaUrl(stringVal(epMap.get("media_url")));
-                    patch.setStorageKey(stringVal(epMap.get("storage_key")));
+                    patch.setMediaUrl(mediaUrl);
+                    patch.setStorageKey(storageKey);
                     patch.setStatus(epStatus);
                     mediaEpisodeMapper.updateByPrimaryKeySelective(patch);
                 }
@@ -156,15 +189,50 @@ public class IngestService {
         } catch (Exception e) {
             log.setPayloadJson(String.valueOf(payload));
         }
-        log.setStatus("success");
-        log.setMessage("upsert ok");
+        log.setStatus(IngestStatus.READY);
+        log.setMessage(batchReadiness.getMessage());
         mediaIngestLogMapper.insertSelective(log);
 
         Map<String, Object> result = new HashMap<>();
         result.put("drama_id", drama.getId());
         result.put("ingest_log_id", log.getId());
         result.put("external_ref", externalRef);
+        result.put("status", IngestStatus.READY);
+        result.put("playable", true);
         return result;
+    }
+
+    /**
+     * Batch publish fails closed: storage must be configured and at least one episode
+     * must carry a resolvable asset reference. Empty episode list = missing asset.
+     */
+    IngestReadiness evaluatePublishPayload(Map<String, Object> payload) {
+        String storageFail = mediaStorageGate.unconfiguredReason();
+        if (storageFail != null) {
+            return IngestReadiness.failed(storageFail);
+        }
+        Object episodesObj = payload.get("episodes");
+        if (!(episodesObj instanceof List<?> episodes) || episodes.isEmpty()) {
+            return IngestReadiness.failed("asset missing: episodes required with media_url or storage_key");
+        }
+        boolean anyReady = false;
+        String lastFail = "asset missing: no episode with media_url or storage_key";
+        for (Object item : episodes) {
+            if (!(item instanceof Map<?, ?> epMapRaw)) continue;
+            @SuppressWarnings("unchecked")
+            Map<String, Object> epMap = (Map<String, Object>) epMapRaw;
+            IngestReadiness ep = IngestReadiness.evaluate(
+                    mediaStorageGate, stringVal(epMap.get("media_url")), stringVal(epMap.get("storage_key")));
+            if (ep.isReady()) {
+                anyReady = true;
+            } else {
+                lastFail = ep.getMessage();
+            }
+        }
+        if (!anyReady) {
+            return IngestReadiness.failed(lastFail);
+        }
+        return IngestReadiness.ready("storage configured and at least one episode asset present");
     }
 
     public PageResult<MediaIngestLog> pageLogs(int pageNum, int pageSize) {
