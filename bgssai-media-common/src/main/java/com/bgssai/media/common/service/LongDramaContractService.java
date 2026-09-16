@@ -12,6 +12,7 @@ import com.bgssai.media.common.ingest.MediaStorageGate;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
+import com.bgssai.media.common.probe.MediaAssetProbe;
 import com.bgssai.media.common.publish.LongDramaPublishJob;
 import com.bgssai.media.common.source.SourceRefs;
 import com.bgssai.media.common.web.BizException;
@@ -44,6 +45,7 @@ public class LongDramaContractService {
     private final ObjectMapper objectMapper;
     private final IngestService ingestService;
     private final MediaStorageGate mediaStorageGate;
+    private final MediaAssetProbe mediaAssetProbe;
 
     public LongDramaContractService(
             MediaDramaMapper mediaDramaMapper,
@@ -51,13 +53,15 @@ public class LongDramaContractService {
             MediaIngestLogMapper mediaIngestLogMapper,
             ObjectMapper objectMapper,
             IngestService ingestService,
-            MediaStorageGate mediaStorageGate) {
+            MediaStorageGate mediaStorageGate,
+            MediaAssetProbe mediaAssetProbe) {
         this.mediaDramaMapper = mediaDramaMapper;
         this.mediaEpisodeMapper = mediaEpisodeMapper;
         this.mediaIngestLogMapper = mediaIngestLogMapper;
         this.objectMapper = objectMapper;
         this.ingestService = ingestService;
         this.mediaStorageGate = mediaStorageGate;
+        this.mediaAssetProbe = mediaAssetProbe;
     }
 
     public void assertToken(String token) {
@@ -70,7 +74,7 @@ public class LongDramaContractService {
         assertApprovedReadyPack(req);
         String storageKey = SourceRefs.filmStorageKey(SourceRefs.NS_LONG, req.getSourceFilmId());
         IngestReadiness readiness = IngestReadiness.evaluate(
-                mediaStorageGate, req.getVideoUrl(), storageKey);
+                mediaStorageGate, mediaAssetProbe, req.getVideoUrl(), storageKey);
 
         MediaIngestLog existing = mediaIngestLogMapper.selectByIdempotencyKey(req.getIdempotencyKey());
         if (isReadyCatalog(existing)) {
@@ -79,6 +83,9 @@ public class LongDramaContractService {
         try {
             if (readiness.isFailed()) {
                 return recordFailed(existing, req, readiness.getMessage());
+            }
+            if (readiness.isPending()) {
+                return recordPending(existing, req, readiness.getMessage());
             }
             if (existing != null) {
                 return updateExisting(existing, req, readiness);
@@ -94,6 +101,9 @@ public class LongDramaContractService {
             }
             if (readiness.isFailed()) {
                 return recordFailed(winner, req, readiness.getMessage());
+            }
+            if (readiness.isPending()) {
+                return recordPending(winner, req, readiness.getMessage());
             }
             return updateExisting(winner, req, readiness);
         }
@@ -139,6 +149,37 @@ public class LongDramaContractService {
         existing.setPayloadJson(toJson(req));
         mediaIngestLogMapper.updateByIdempotencyKey(existing);
         return readyResult(mediaId, playUrl, existing.getId(), req.getIdempotencyKey(), false, req);
+    }
+
+    /**
+     * MEDIA-01: asset unverified so far (origin timed out, 5xx, or storage_key only). Held under
+     * the same idempotency key so a retry updates this row, and no media_id / play_url leaks out.
+     */
+    private Map<String, Object> recordPending(
+            MediaIngestLog existing, LongDramaIngestRequest req, String reason) {
+        String workRef = SourceRefs.workRef(SourceRefs.NS_LONG, req.getSourceWorkId());
+        if (existing == null) {
+            MediaIngestLog log = new MediaIngestLog();
+            log.setExternalRef(workRef);
+            log.setDramaId(null);
+            log.setIdempotencyKey(req.getIdempotencyKey());
+            log.setMediaId(null);
+            log.setPlayUrl(null);
+            log.setStatus(IngestStatus.PENDING);
+            log.setMessage(reason);
+            log.setPayloadJson(toJson(req));
+            mediaIngestLogMapper.insertSelective(log);
+            return pendingResult(log.getId(), reason, req.getIdempotencyKey());
+        }
+        existing.setExternalRef(workRef);
+        existing.setDramaId(null);
+        existing.setMediaId(null);
+        existing.setPlayUrl(null);
+        existing.setStatus(IngestStatus.PENDING);
+        existing.setMessage(reason);
+        existing.setPayloadJson(toJson(req));
+        mediaIngestLogMapper.updateByIdempotencyKey(existing);
+        return pendingResult(existing.getId(), reason, req.getIdempotencyKey());
     }
 
     private Map<String, Object> recordFailed(
@@ -432,6 +473,21 @@ public class LongDramaContractService {
             result.put("source_version", req.getSourceVersion());
             result.put("source_system", req.getSourceSystem());
         }
+        return result;
+    }
+
+    private static Map<String, Object> pendingResult(
+            Long ingestLogId, String message, String idempotencyKey) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", IngestStatus.PENDING);
+        result.put("playable", false);
+        result.put("retryable", true);
+        result.put("message", message);
+        result.put("ingest_log_id", ingestLogId);
+        result.put("play_url", null);
+        result.put("media_id", null);
+        result.put("replayed", false);
+        result.put("idempotency_key", idempotencyKey);
         return result;
     }
 

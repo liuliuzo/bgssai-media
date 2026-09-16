@@ -3,6 +3,8 @@ package com.bgssai.media.common.service;
 import com.bgssai.media.common.domain.MediaIngestLog;
 import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.ingest.MediaStorageGate;
+import com.bgssai.media.common.probe.MediaAssetProbe;
+import com.bgssai.media.common.probe.StubMediaAssetProbe;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
@@ -45,9 +47,13 @@ class IngestServiceTest {
     }
 
     private IngestService service(MediaStorageGate gate) {
+        return service(gate, StubMediaAssetProbe.playable());
+    }
+
+    private IngestService service(MediaStorageGate gate, MediaAssetProbe probe) {
         return new IngestService(
                 mediaDramaMapper, mediaEpisodeMapper, mediaIngestLogMapper,
-                new ObjectMapper(), "test-token", gate);
+                new ObjectMapper(), "test-token", gate, probe);
     }
 
     @Test

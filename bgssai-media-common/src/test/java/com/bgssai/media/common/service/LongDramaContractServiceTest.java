@@ -9,6 +9,8 @@ import com.bgssai.media.common.dto.LongDramaIngestRequest;
 import com.bgssai.media.common.dto.ShortDramaIngestRequest;
 import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.ingest.MediaStorageGate;
+import com.bgssai.media.common.probe.MediaAssetProbe;
+import com.bgssai.media.common.probe.StubMediaAssetProbe;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
@@ -56,9 +58,11 @@ class LongDramaContractServiceTest {
     final Map<String, MediaEpisode> episodeByDramaEp = new HashMap<>();
     final Map<Long, MediaEpisode> episodeById = new HashMap<>();
     final AtomicLong ids = new AtomicLong(1);
+    StubMediaAssetProbe probe;
 
     @BeforeEach
     void setUp() {
+        probe = StubMediaAssetProbe.playable();
         referenceGate = new MediaStorageGate("REFERENCE", "", "", "", "");
         blankGate = new MediaStorageGate("", "", "", "", "");
         longService = newLong(referenceGate);
@@ -67,15 +71,19 @@ class LongDramaContractServiceTest {
     }
 
     private LongDramaContractService newLong(MediaStorageGate gate) {
+        return newLong(gate, probe);
+    }
+
+    private LongDramaContractService newLong(MediaStorageGate gate, MediaAssetProbe probe) {
         return new LongDramaContractService(
                 mediaDramaMapper, mediaEpisodeMapper, mediaIngestLogMapper,
-                snakeMapper(), ingestService, gate);
+                snakeMapper(), ingestService, gate, probe);
     }
 
     private ShortDramaContractService newShort(MediaStorageGate gate) {
         return new ShortDramaContractService(
                 mediaDramaMapper, mediaEpisodeMapper, mediaIngestLogMapper,
-                snakeMapper(), ingestService, gate);
+                snakeMapper(), ingestService, gate, probe);
     }
 
     private void stubMappers() {

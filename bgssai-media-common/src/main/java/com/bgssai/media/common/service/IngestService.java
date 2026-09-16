@@ -12,6 +12,7 @@ import com.bgssai.media.common.ingest.MediaStorageGate;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
+import com.bgssai.media.common.probe.MediaAssetProbe;
 import com.bgssai.media.common.web.BizException;
 import com.bgssai.media.common.web.PageResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +35,7 @@ public class IngestService {
     private final ObjectMapper objectMapper;
     private final String ingestToken;
     private final MediaStorageGate mediaStorageGate;
+    private final MediaAssetProbe mediaAssetProbe;
 
     public IngestService(
             MediaDramaMapper mediaDramaMapper,
@@ -41,13 +43,15 @@ public class IngestService {
             MediaIngestLogMapper mediaIngestLogMapper,
             ObjectMapper objectMapper,
             @Value("${bgssai.media.ingest.token}") String ingestToken,
-            MediaStorageGate mediaStorageGate) {
+            MediaStorageGate mediaStorageGate,
+            MediaAssetProbe mediaAssetProbe) {
         this.mediaDramaMapper = mediaDramaMapper;
         this.mediaEpisodeMapper = mediaEpisodeMapper;
         this.mediaIngestLogMapper = mediaIngestLogMapper;
         this.objectMapper = objectMapper;
         this.ingestToken = ingestToken;
         this.mediaStorageGate = mediaStorageGate;
+        this.mediaAssetProbe = mediaAssetProbe;
     }
 
     public void assertToken(String token) {
@@ -88,7 +92,7 @@ public class IngestService {
         }
 
         IngestReadiness batchReadiness = evaluatePublishPayload(payload);
-        if (batchReadiness.isFailed()) {
+        if (batchReadiness.isFailed() || batchReadiness.isPending()) {
             MediaIngestLog log = new MediaIngestLog();
             log.setExternalRef(externalRef);
             log.setDramaId(null);
@@ -97,13 +101,14 @@ public class IngestService {
             } catch (Exception e) {
                 log.setPayloadJson(String.valueOf(payload));
             }
-            log.setStatus(IngestStatus.FAILED);
+            log.setStatus(batchReadiness.getStatus());
             log.setMessage(batchReadiness.getMessage());
             mediaIngestLogMapper.insertSelective(log);
 
             Map<String, Object> result = new HashMap<>();
-            result.put("status", IngestStatus.FAILED);
+            result.put("status", batchReadiness.getStatus());
             result.put("playable", false);
+            result.put("retryable", batchReadiness.isPending());
             result.put("message", batchReadiness.getMessage());
             result.put("ingest_log_id", log.getId());
             result.put("drama_id", null);
@@ -155,7 +160,8 @@ public class IngestService {
                 if (epTitle == null) epTitle = "EP" + epNo;
                 String mediaUrl = stringVal(epMap.get("media_url"));
                 String storageKey = stringVal(epMap.get("storage_key"));
-                IngestReadiness epReady = IngestReadiness.evaluate(mediaStorageGate, mediaUrl, storageKey);
+                IngestReadiness epReady = IngestReadiness.evaluate(
+                        mediaStorageGate, mediaAssetProbe, mediaUrl, storageKey);
                 String epStatus = epReady.isReady() ? "published" : "draft";
                 if (epExisting.isEmpty()) {
                     MediaEpisode ep = new MediaEpisode();
@@ -203,8 +209,10 @@ public class IngestService {
     }
 
     /**
-     * Batch publish fails closed: storage must be configured and at least one episode
-     * must carry a resolvable asset reference. Empty episode list = missing asset.
+     * Batch publish fails closed: storage must be configured and at least one episode must
+     * carry an asset that a real probe could fetch and recognise. Empty episode list = missing
+     * asset. When no episode is playable but at least one is merely unverified, the whole batch
+     * is PENDING so the publisher retries rather than treating it as a permanent failure.
      */
     IngestReadiness evaluatePublishPayload(Map<String, Object> payload) {
         String storageFail = mediaStorageGate.unconfiguredReason();
@@ -216,21 +224,30 @@ public class IngestService {
             return IngestReadiness.failed("asset missing: episodes required with media_url or storage_key");
         }
         boolean anyReady = false;
+        boolean anyPending = false;
+        String lastPending = null;
         String lastFail = "asset missing: no episode with media_url or storage_key";
         for (Object item : episodes) {
             if (!(item instanceof Map<?, ?> epMapRaw)) continue;
             @SuppressWarnings("unchecked")
             Map<String, Object> epMap = (Map<String, Object>) epMapRaw;
             IngestReadiness ep = IngestReadiness.evaluate(
-                    mediaStorageGate, stringVal(epMap.get("media_url")), stringVal(epMap.get("storage_key")));
+                    mediaStorageGate,
+                    mediaAssetProbe,
+                    stringVal(epMap.get("media_url")),
+                    stringVal(epMap.get("storage_key")));
             if (ep.isReady()) {
                 anyReady = true;
+            } else if (ep.isPending()) {
+                anyPending = true;
+                lastPending = ep.getMessage();
             } else {
                 lastFail = ep.getMessage();
             }
         }
         if (!anyReady) {
-            return IngestReadiness.failed(lastFail);
+            // Unverified is not the same as unusable: keep the retry open instead of burning it.
+            return anyPending ? IngestReadiness.pending(lastPending) : IngestReadiness.failed(lastFail);
         }
         return IngestReadiness.ready("storage configured and at least one episode asset present");
     }
