@@ -1,11 +1,12 @@
 # bgssai-media
 
-媒体播放器 + 短剧播放/分发平台（MVP）。
+播放器 + 视频播放平台（MVP）。播放器对照 VLC；平台对标 YouTube / YouTube Shorts。
 
-- 通用 Web 播放器（MP4 / WebM / HLS）
-- 短剧首页、详情、分集播放；Short 契约目录 `/shorts`
+- 通用播放：桌面 libVLC 播主流格式；Web 播 MP4 / WebM / HLS
+- YouTube Shorts 流：短剧首页、详情、分集播放；契约目录 `/shorts`
+- YouTube 正片 / 剧集流：承接 `bgssai-long` 长剧成片（摄入契约推进中）
 - Admin 剧集/分集 CRUD、上下架、摄入日志（不接 Chat）
-- bgssai-short 服务端发布摄入 API（共享契约 + packager）
+- `bgssai-short` / `bgssai-long` 成片可直接发布到本平台
 - MCP 连接器（对照 blog）：用户端 PAT + `/api/mcp` 只读工具；Admin 连接器说明页
 
 产品愿景见 [PRODUCT_VISION.md](PRODUCT_VISION.md)。编码规范见 [docs/BGSSAI-Standards.md](docs/BGSSAI-Standards.md)。

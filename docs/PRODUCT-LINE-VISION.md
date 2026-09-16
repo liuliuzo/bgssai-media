@@ -15,5 +15,5 @@
 
 有用户端的应用须支持账号密码、邮箱验证码、手机验证码登录。管理端不开放注册，仅 DML 种子账号。未登录默认进登录页。
 
-**本仓**：境内 B2C；媒体播放器 + 短剧分发；承接 bgssai-short 成品发布（short 不做渠道）。
-闭环契约见 `docs/contracts/short-to-media-publish.md`。用户端预留 Chat 第三方登录；admin 不接 Chat。
+**本仓**：境内 B2C。播放器对照 VLC，必须能播主流格式；平台对标 YouTube / YouTube Shorts。承接 `bgssai-short` 短剧成片与 `bgssai-long` 长剧成片直接发布播放（制作仓不做渠道）。
+Short 闭环契约见 `docs/contracts/short-to-media-publish.md`。用户端预留 Chat 第三方登录；admin 不接 Chat。

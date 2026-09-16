@@ -1,6 +1,8 @@
 # 功能：播放器
 
-## Web 短剧端
+播放器对照 VLC，必须能播主流格式。Web 端服务 YouTube / YouTube Shorts 式平台；完整容器/编码矩阵在桌面 libVLC。
+
+## Web 短剧端（YouTube Shorts 流）
 
 - 组件：`bgssai-media-user/frontend` UniversalPlayer（video.js + hls.js）
 - 支持：MP4 / WebM / HLS
