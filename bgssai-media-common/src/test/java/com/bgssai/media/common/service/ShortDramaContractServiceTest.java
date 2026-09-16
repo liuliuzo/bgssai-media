@@ -6,6 +6,9 @@ import com.bgssai.media.common.domain.MediaIngestLog;
 import com.bgssai.media.common.dto.ShortDramaIngestRequest;
 import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.ingest.MediaStorageGate;
+import com.bgssai.media.common.probe.MediaAssetProbe;
+import com.bgssai.media.common.probe.MediaProbeResult;
+import com.bgssai.media.common.probe.StubMediaAssetProbe;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
@@ -45,9 +48,11 @@ class ShortDramaContractServiceTest {
     final AtomicReference<MediaDrama> drama = new AtomicReference<>();
     final AtomicReference<MediaEpisode> episode = new AtomicReference<>();
     final AtomicLong ids = new AtomicLong(1);
+    StubMediaAssetProbe probe;
 
     @BeforeEach
     void setUp() {
+        probe = StubMediaAssetProbe.playable();
         referenceGate = new MediaStorageGate("REFERENCE", "", "", "", "");
         blankGate = new MediaStorageGate("", "", "", "", "");
         service = newService(referenceGate);
@@ -55,9 +60,13 @@ class ShortDramaContractServiceTest {
     }
 
     private ShortDramaContractService newService(MediaStorageGate gate) {
+        return newService(gate, probe);
+    }
+
+    private ShortDramaContractService newService(MediaStorageGate gate, MediaAssetProbe probe) {
         return new ShortDramaContractService(
                 mediaDramaMapper, mediaEpisodeMapper, mediaIngestLogMapper,
-                snakeMapper(), ingestService, gate);
+                snakeMapper(), ingestService, gate, probe);
     }
 
     private void stubMappers() {
@@ -128,6 +137,60 @@ class ShortDramaContractServiceTest {
         assertEquals(Boolean.FALSE, result.get("replayed"));
         assertEquals("short:w1:e1:f1", result.get("idempotency_key"));
         assertEquals(IngestStatus.READY, ingest.get().getStatus());
+    }
+
+    @Test
+    void deadAssetIsFailedAndHandsOutNoPlayUrl() {
+        String url = "https://cdn.example/gone.mp4";
+        service = newService(referenceGate, StubMediaAssetProbe.playable()
+                .on(url, MediaProbeResult.rejected("asset dead: origin returned 404", 404, "")));
+        Map<String, Object> result = service.ingest(sample("short:w1:e1:f1", url, "Ep1"));
+        assertEquals(IngestStatus.FAILED, result.get("status"));
+        assertEquals(Boolean.FALSE, result.get("playable"));
+        assertNull(result.get("play_url"));
+        assertNull(result.get("media_id"));
+        assertEquals(IngestStatus.FAILED, ingest.get().getStatus());
+    }
+
+    @Test
+    void htmlMasqueradingAsVideoIsFailed() {
+        String url = "https://cdn.example/login.mp4";
+        service = newService(referenceGate, StubMediaAssetProbe.playable()
+                .on(url, MediaProbeResult.rejected("asset is an HTML page, not media (status 200)", 200,
+                        "text/html")));
+        Map<String, Object> result = service.ingest(sample("short:w1:e1:f1", url, "Ep1"));
+        assertEquals(IngestStatus.FAILED, result.get("status"));
+        assertNull(result.get("play_url"));
+    }
+
+    @Test
+    void inconclusiveProbeIsPendingAndRetryable() {
+        String url = "https://cdn.example/flaky.mp4";
+        service = newService(referenceGate, StubMediaAssetProbe.playable()
+                .on(url, MediaProbeResult.retryable("asset probe inconclusive: origin returned 503", 503)));
+        Map<String, Object> result = service.ingest(sample("short:w1:e1:f1", url, "Ep1"));
+        assertEquals(IngestStatus.PENDING, result.get("status"));
+        assertEquals(Boolean.FALSE, result.get("playable"));
+        assertEquals(Boolean.TRUE, result.get("retryable"));
+        assertNull(result.get("play_url"));
+        assertEquals(IngestStatus.PENDING, ingest.get().getStatus());
+    }
+
+    @Test
+    void retryAfterPendingReusesTheSameLogRowAndCanStillReachReady() {
+        String url = "https://cdn.example/flaky.mp4";
+        ShortDramaContractService flaky = newService(referenceGate, StubMediaAssetProbe.playable()
+                .on(url, MediaProbeResult.retryable("asset probe inconclusive: origin returned 503", 503)));
+        Map<String, Object> first = flaky.ingest(sample("short:w1:e1:f1", url, "Ep1"));
+        assertEquals(IngestStatus.PENDING, first.get("status"));
+        Long firstLogId = (Long) first.get("ingest_log_id");
+
+        ShortDramaContractService recovered = newService(referenceGate, StubMediaAssetProbe.playable());
+        Map<String, Object> second = recovered.ingest(sample("short:w1:e1:f1", url, "Ep1"));
+        assertEquals(IngestStatus.READY, second.get("status"));
+        assertEquals(firstLogId, second.get("ingest_log_id"),
+                "the retry must update the held row, not open a second one");
+        assertEquals(url, second.get("play_url"));
     }
 
     @Test
