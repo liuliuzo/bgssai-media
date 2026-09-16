@@ -11,6 +11,7 @@ import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
 import com.bgssai.media.common.web.BizException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +57,7 @@ class ShortDramaContractServiceTest {
     private ShortDramaContractService newService(MediaStorageGate gate) {
         return new ShortDramaContractService(
                 mediaDramaMapper, mediaEpisodeMapper, mediaIngestLogMapper,
-                new ObjectMapper(), ingestService, gate);
+                snakeMapper(), ingestService, gate);
     }
 
     private void stubMappers() {
@@ -313,5 +314,10 @@ class ShortDramaContractServiceTest {
         n.setPlayUrl(r.getPlayUrl()); n.setStatus(r.getStatus()); n.setPayloadJson(r.getPayloadJson());
         n.setMessage(r.getMessage());
         return n;
+    }
+    private static ObjectMapper snakeMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        return mapper;
     }
 }

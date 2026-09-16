@@ -15,5 +15,8 @@ public interface MediaIngestLogMapper {
     int updateByIdempotencyKey(MediaIngestLog row);
     List<MediaIngestLog> listRecentContract(@Param("limit") int limit, @Param("offset") int offset);
     long countContract();
+    List<MediaIngestLog> listRecentContractByPrefix(@Param("prefix") String prefix, @Param("limit") int limit, @Param("offset") int offset);
+    long countContractByPrefix(@Param("prefix") String prefix);
 }
+
 
