@@ -100,6 +100,12 @@ User app (JWT `Jwttoken`, role USER):
 Only READY items are listed as playable. Detail hides `play_url` unless READY.
 List is unique by `media_id` so a duplicate publish cannot appear twice.
 
+## Source namespace (MEDIA-02)
+
+Identifiers are built by `com.bgssai.media.common.source.SourceRefs`.
+Short wire formats are unchanged. Long uses `long:` prefixes so identical upstream IDs do not collide.
+See [long-to-media-publish.md](long-to-media-publish.md).
+
 ## Mapping
 
 | Contract | Storage |

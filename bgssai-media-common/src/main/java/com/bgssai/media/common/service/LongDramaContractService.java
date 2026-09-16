@@ -5,14 +5,14 @@ import com.bgssai.media.common.domain.MediaDramaExample;
 import com.bgssai.media.common.domain.MediaEpisode;
 import com.bgssai.media.common.domain.MediaEpisodeExample;
 import com.bgssai.media.common.domain.MediaIngestLog;
-import com.bgssai.media.common.dto.ShortDramaIngestRequest;
+import com.bgssai.media.common.dto.LongDramaIngestRequest;
 import com.bgssai.media.common.ingest.IngestReadiness;
 import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.ingest.MediaStorageGate;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
 import com.bgssai.media.common.mapper.MediaIngestLogMapper;
-import com.bgssai.media.common.publish.ShortDramaPublishJob;
+import com.bgssai.media.common.publish.LongDramaPublishJob;
 import com.bgssai.media.common.source.SourceRefs;
 import com.bgssai.media.common.web.BizException;
 import com.bgssai.media.common.web.PageResult;
@@ -29,16 +29,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Shared bgssai-short publish contract mapped onto media_drama / media_episode.
- * MEDIA-02: source refs via {@link SourceRefs} (short namespace); catalog filtered to short keys.
- * MEDIA-01: only {@link IngestStatus#READY} is playable. Unconfigured storage or
- * missing asset → {@link IngestStatus#FAILED} (never fake READY / play_url).
+ * MEDIA-02: bgssai-long publish contract on media_drama / media_episode.
  *
- * <p>Idempotency (short PR #54): UNIQUE {@code idempotency_key}. Replay of a READY
- * pack returns the existing catalog entry and does not insert a second row.
+ * <p>Namespaces via {@link SourceRefs} so Long and Short identical upstream IDs do not collide.
+ * Same episode + new {@code source_version} replaces assets on {@code (drama_id, ep_no)} while
+ * keeping a stable {@code media_id}; same version retries are idempotent.
  */
 @Service
-public class ShortDramaContractService {
+public class LongDramaContractService {
 
     private final MediaDramaMapper mediaDramaMapper;
     private final MediaEpisodeMapper mediaEpisodeMapper;
@@ -47,7 +45,7 @@ public class ShortDramaContractService {
     private final IngestService ingestService;
     private final MediaStorageGate mediaStorageGate;
 
-    public ShortDramaContractService(
+    public LongDramaContractService(
             MediaDramaMapper mediaDramaMapper,
             MediaEpisodeMapper mediaEpisodeMapper,
             MediaIngestLogMapper mediaIngestLogMapper,
@@ -67,10 +65,10 @@ public class ShortDramaContractService {
     }
 
     @Transactional
-    public Map<String, Object> ingest(ShortDramaIngestRequest req) {
+    public Map<String, Object> ingest(LongDramaIngestRequest req) {
         validate(req);
         assertApprovedReadyPack(req);
-        String storageKey = SourceRefs.filmStorageKey(SourceRefs.NS_SHORT, req.getSourceFilmId());
+        String storageKey = SourceRefs.filmStorageKey(SourceRefs.NS_LONG, req.getSourceFilmId());
         IngestReadiness readiness = IngestReadiness.evaluate(
                 mediaStorageGate, req.getVideoUrl(), storageKey);
 
@@ -101,8 +99,8 @@ public class ShortDramaContractService {
         }
     }
 
-    private Map<String, Object> insertNew(ShortDramaIngestRequest req, IngestReadiness readiness) {
-        String workRef = SourceRefs.workRef(SourceRefs.NS_SHORT, req.getSourceWorkId());
+    private Map<String, Object> insertNew(LongDramaIngestRequest req, IngestReadiness readiness) {
+        String workRef = SourceRefs.workRef(SourceRefs.NS_LONG, req.getSourceWorkId());
         MediaDrama drama = upsertDrama(workRef, req, true);
         MediaEpisode episode = upsertEpisode(drama.getId(), req, true);
         String mediaId = "m_ep_" + episode.getId();
@@ -118,15 +116,19 @@ public class ShortDramaContractService {
         log.setMessage(readiness.getMessage());
         log.setPayloadJson(toJson(req));
         mediaIngestLogMapper.insertSelective(log);
-        return readyResult(mediaId, playUrl, log.getId(), req.getIdempotencyKey(), false);
+        return readyResult(mediaId, playUrl, log.getId(), req.getIdempotencyKey(), false, req);
     }
 
     private Map<String, Object> updateExisting(
-            MediaIngestLog existing, ShortDramaIngestRequest req, IngestReadiness readiness) {
-        String workRef = SourceRefs.workRef(SourceRefs.NS_SHORT, req.getSourceWorkId());
+            MediaIngestLog existing, LongDramaIngestRequest req, IngestReadiness readiness) {
+        String workRef = SourceRefs.workRef(SourceRefs.NS_LONG, req.getSourceWorkId());
         MediaDrama drama = upsertDrama(workRef, req, true);
         MediaEpisode episode = upsertEpisode(drama.getId(), req, true);
         String mediaId = existing.getMediaId() != null ? existing.getMediaId() : ("m_ep_" + episode.getId());
+        // Prefer stable episode media_id when replacing versions of the same ep.
+        if (episode.getId() != null) {
+            mediaId = "m_ep_" + episode.getId();
+        }
         String playUrl = req.getVideoUrl();
         existing.setExternalRef(workRef);
         existing.setDramaId(drama.getId());
@@ -136,12 +138,12 @@ public class ShortDramaContractService {
         existing.setMessage(readiness.getMessage());
         existing.setPayloadJson(toJson(req));
         mediaIngestLogMapper.updateByIdempotencyKey(existing);
-        return readyResult(mediaId, playUrl, existing.getId(), req.getIdempotencyKey(), false);
+        return readyResult(mediaId, playUrl, existing.getId(), req.getIdempotencyKey(), false, req);
     }
 
     private Map<String, Object> recordFailed(
-            MediaIngestLog existing, ShortDramaIngestRequest req, String reason) {
-        String workRef = SourceRefs.workRef(SourceRefs.NS_SHORT, req.getSourceWorkId());
+            MediaIngestLog existing, LongDramaIngestRequest req, String reason) {
+        String workRef = SourceRefs.workRef(SourceRefs.NS_LONG, req.getSourceWorkId());
         if (existing == null) {
             MediaIngestLog log = new MediaIngestLog();
             log.setExternalRef(workRef);
@@ -166,7 +168,7 @@ public class ShortDramaContractService {
         return failedResult(existing.getId(), reason, req.getIdempotencyKey());
     }
 
-    private MediaDrama upsertDrama(String workRef, ShortDramaIngestRequest req, boolean playableReady) {
+    private MediaDrama upsertDrama(String workRef, LongDramaIngestRequest req, boolean playableReady) {
         MediaDramaExample example = new MediaDramaExample();
         example.createCriteria().andExternalRefEqualTo(workRef);
         List<MediaDrama> existing = mediaDramaMapper.selectByExample(example);
@@ -176,9 +178,9 @@ public class ShortDramaContractService {
             drama.setTitle(req.getTitle());
             drama.setCoverUrl(req.getCoverUrl());
             drama.setDescription((req.getLanguage() == null ? "zh-CN" : req.getLanguage()) + " / "
-                    + (req.getAspectRatio() == null ? "9:16" : req.getAspectRatio()));
+                    + (req.getAspectRatio() == null ? "16:9" : req.getAspectRatio()));
             drama.setStatus(dramaStatus);
-            drama.setSource(SourceRefs.SYSTEM_SHORT);
+            drama.setSource(SourceRefs.SYSTEM_LONG);
             drama.setExternalRef(workRef);
             try {
                 mediaDramaMapper.insertSelective(drama);
@@ -199,17 +201,17 @@ public class ShortDramaContractService {
         patch.setTitle(req.getTitle());
         patch.setCoverUrl(req.getCoverUrl());
         patch.setStatus(dramaStatus);
-        patch.setSource(SourceRefs.SYSTEM_SHORT);
+        patch.setSource(SourceRefs.SYSTEM_LONG);
         mediaDramaMapper.updateByPrimaryKeySelective(patch);
         return mediaDramaMapper.selectByPrimaryKey(drama.getId());
     }
 
-    private MediaEpisode upsertEpisode(Long dramaId, ShortDramaIngestRequest req, boolean playableReady) {
+    private MediaEpisode upsertEpisode(Long dramaId, LongDramaIngestRequest req, boolean playableReady) {
         int epNo = resolveEpNo(req.getSourceEpisodeId());
         MediaEpisodeExample epExample = new MediaEpisodeExample();
         epExample.createCriteria().andDramaIdEqualTo(dramaId).andEpNoEqualTo(epNo);
         List<MediaEpisode> epExisting = mediaEpisodeMapper.selectByExample(epExample);
-        String storageKey = SourceRefs.filmStorageKey(SourceRefs.NS_SHORT, req.getSourceFilmId());
+        String storageKey = SourceRefs.filmStorageKey(SourceRefs.NS_LONG, req.getSourceFilmId());
         String epStatus = playableReady ? "published" : "draft";
         if (epExisting.isEmpty()) {
             MediaEpisode ep = new MediaEpisode();
@@ -247,7 +249,7 @@ public class ShortDramaContractService {
 
     public Map<String, Object> detail(String mediaId) {
         MediaIngestLog log = mediaIngestLogMapper.selectByMediaId(mediaId);
-        if (log == null) {
+        if (log == null || !SourceRefs.isLongWorkRef(log.getExternalRef())) {
             throw new BizException(404, "media not found");
         }
         String status = log.getStatus() == null ? IngestStatus.FAILED : log.getStatus();
@@ -258,7 +260,6 @@ public class ShortDramaContractService {
         detail.put("idempotency_key", log.getIdempotencyKey());
         detail.put("storage_mode", mediaStorageGate.getMode().isEmpty() ? "UNCONFIGURED" : mediaStorageGate.getMode());
         detail.put("message", log.getMessage());
-        // Never expose play_url unless READY — no fake playable success.
         if (IngestStatus.isPlayable(status) && log.getPlayUrl() != null && !log.getPlayUrl().isBlank()) {
             detail.put("play_url", log.getPlayUrl());
             detail.put("video_url", log.getPlayUrl());
@@ -271,6 +272,8 @@ public class ShortDramaContractService {
             detail.put("title", drama.getTitle());
             detail.put("cover_url", drama.getCoverUrl());
             detail.put("source_system", drama.getSource());
+            detail.put("drama_id", drama.getId());
+            detail.put("external_ref", drama.getExternalRef());
         }
         mergePayload(detail, log.getPayloadJson());
         return detail;
@@ -279,7 +282,7 @@ public class ShortDramaContractService {
     public PageResult<Map<String, Object>> list(String q, int page, int pageSize) {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 100) pageSize = 20;
-        String prefix = SourceRefs.contractPrefix(SourceRefs.NS_SHORT);
+        String prefix = SourceRefs.contractPrefix(SourceRefs.NS_LONG);
         long total = mediaIngestLogMapper.countContractByPrefix(prefix);
         List<MediaIngestLog> logs = mediaIngestLogMapper.listRecentContractByPrefix(
                 prefix, pageSize, (page - 1) * pageSize);
@@ -308,6 +311,60 @@ public class ShortDramaContractService {
         return new PageResult<>(total, page, pageSize, list);
     }
 
+    /**
+     * Cross-episode query for one Long work, ordered by {@code ep_no} ascending.
+     * Each item is the latest READY cut for that episode (stable media_id).
+     */
+    public Map<String, Object> listEpisodesByWork(String sourceWorkId) {
+        require(sourceWorkId, "source_work_id");
+        String workRef = SourceRefs.workRef(SourceRefs.NS_LONG, sourceWorkId);
+        MediaDramaExample example = new MediaDramaExample();
+        example.createCriteria().andExternalRefEqualTo(workRef);
+        List<MediaDrama> dramas = mediaDramaMapper.selectByExample(example);
+        if (dramas.isEmpty()) {
+            throw new BizException(404, "work not found");
+        }
+        MediaDrama drama = dramas.get(0);
+        MediaEpisodeExample epExample = new MediaEpisodeExample();
+        epExample.createCriteria().andDramaIdEqualTo(drama.getId());
+        epExample.setOrderByClause("ep_no asc");
+        List<MediaEpisode> episodes = mediaEpisodeMapper.selectByExample(epExample);
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (MediaEpisode ep : episodes) {
+            String mediaId = "m_ep_" + ep.getId();
+            Map<String, Object> item = new HashMap<>();
+            item.put("episode_id", ep.getId());
+            item.put("ep_no", ep.getEpNo());
+            item.put("title", ep.getTitle());
+            item.put("duration_sec", ep.getDurationSec());
+            item.put("status", ep.getStatus());
+            item.put("media_id", mediaId);
+            item.put("storage_key", ep.getStorageKey());
+            MediaIngestLog log = mediaIngestLogMapper.selectByMediaId(mediaId);
+            if (log != null && IngestStatus.isPlayable(log.getStatus())) {
+                item.put("playable", true);
+                item.put("play_url", log.getPlayUrl());
+                item.put("ingest_status", log.getStatus());
+                item.put("idempotency_key", log.getIdempotencyKey());
+                mergePayload(item, log.getPayloadJson());
+            } else {
+                item.put("playable", false);
+                item.put("play_url", null);
+                item.put("ingest_status", log == null ? null : log.getStatus());
+            }
+            items.add(item);
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("source_work_id", sourceWorkId.trim());
+        result.put("external_ref", workRef);
+        result.put("drama_id", drama.getId());
+        result.put("title", drama.getTitle());
+        result.put("cover_url", drama.getCoverUrl());
+        result.put("source_system", drama.getSource());
+        result.put("episodes", items);
+        return result;
+    }
+
     private void mergePayload(Map<String, Object> detail, String payloadJson) {
         if (payloadJson == null || payloadJson.isBlank()) return;
         try {
@@ -316,6 +373,7 @@ public class ShortDramaContractService {
             putIfPresent(detail, "source_work_id", payload.get("source_work_id"));
             putIfPresent(detail, "source_episode_id", payload.get("source_episode_id"));
             putIfPresent(detail, "source_film_id", payload.get("source_film_id"));
+            putIfPresent(detail, "source_version", payload.get("source_version"));
             putIfPresent(detail, "aspect_ratio", payload.get("aspect_ratio"));
             putIfPresent(detail, "language", payload.get("language"));
             putIfPresent(detail, "duration_sec", payload.get("duration_sec"));
@@ -323,6 +381,8 @@ public class ShortDramaContractService {
             putIfPresent(detail, "title", payload.get("title"));
             putIfPresent(detail, "cover_url", payload.get("cover_url"));
             putIfPresent(detail, "source_system", payload.get("source_system"));
+            putIfPresent(detail, "review_note", payload.get("review_note"));
+            putIfPresent(detail, "approved", payload.get("approved"));
         } catch (Exception ignored) {
         }
     }
@@ -339,16 +399,24 @@ public class ShortDramaContractService {
     }
 
     private Map<String, Object> replayReady(MediaIngestLog existing) {
-        return readyResult(
+        Map<String, Object> result = readyResult(
                 existing.getMediaId(),
                 existing.getPlayUrl(),
                 existing.getId(),
                 existing.getIdempotencyKey(),
-                true);
+                true,
+                null);
+        mergePayload(result, existing.getPayloadJson());
+        return result;
     }
 
     private static Map<String, Object> readyResult(
-            String mediaId, String playUrl, Long ingestLogId, String idempotencyKey, boolean replayed) {
+            String mediaId,
+            String playUrl,
+            Long ingestLogId,
+            String idempotencyKey,
+            boolean replayed,
+            LongDramaIngestRequest req) {
         Map<String, Object> result = new HashMap<>();
         result.put("media_id", mediaId);
         result.put("play_url", playUrl);
@@ -357,6 +425,13 @@ public class ShortDramaContractService {
         result.put("ingest_log_id", ingestLogId);
         result.put("idempotency_key", idempotencyKey);
         result.put("replayed", replayed);
+        if (req != null) {
+            result.put("source_work_id", req.getSourceWorkId());
+            result.put("source_episode_id", req.getSourceEpisodeId());
+            result.put("source_film_id", req.getSourceFilmId());
+            result.put("source_version", req.getSourceVersion());
+            result.put("source_system", req.getSourceSystem());
+        }
         return result;
     }
 
@@ -393,21 +468,25 @@ public class ShortDramaContractService {
         return Math.floorMod(sourceEpisodeId.hashCode(), 1_000_000) + 1;
     }
 
-    private void validate(ShortDramaIngestRequest req) {
+    private void validate(LongDramaIngestRequest req) {
         require(req.getSourceSystem(), "source_system");
+        if (!SourceRefs.SYSTEM_LONG.equals(req.getSourceSystem().trim())) {
+            throw new BizException(400, "source_system must be bgssai-long");
+        }
+        req.setSourceSystem(SourceRefs.SYSTEM_LONG);
         require(req.getSourceWorkId(), "source_work_id");
         require(req.getSourceEpisodeId(), "source_episode_id");
         require(req.getSourceFilmId(), "source_film_id");
+        require(req.getSourceVersion(), "source_version");
         require(req.getTitle(), "title");
         require(req.getIdempotencyKey(), "idempotency_key");
-        String expectedKey = ShortDramaPublishJob.idempotencyKey(
-                req.getSourceWorkId(), req.getSourceEpisodeId(), req.getSourceFilmId());
+        String expectedKey = LongDramaPublishJob.idempotencyKey(
+                req.getSourceWorkId(), req.getSourceEpisodeId(), req.getSourceFilmId(), req.getSourceVersion());
         if (!expectedKey.equals(req.getIdempotencyKey().trim())) {
             throw new BizException(400,
-                    "idempotency_key must be short:{source_work_id}:{source_episode_id}:{source_film_id}");
+                    "idempotency_key must be long:{source_work_id}:{source_episode_id}:{source_film_id}:v{source_version}");
         }
         req.setIdempotencyKey(expectedKey);
-        // Allow blank video_url through to FAILED (missing asset) after storage check.
         if (req.getVideoUrl() != null && !req.getVideoUrl().isBlank()
                 && !req.getVideoUrl().startsWith("http://")
                 && !req.getVideoUrl().startsWith("https://")) {
@@ -417,7 +496,7 @@ public class ShortDramaContractService {
             throw new BizException(400, "duration_sec must be >= 0");
         }
         if (req.getDurationSec() == null) req.setDurationSec(0);
-        if (req.getAspectRatio() == null || req.getAspectRatio().isBlank()) req.setAspectRatio("9:16");
+        if (req.getAspectRatio() == null || req.getAspectRatio().isBlank()) req.setAspectRatio("16:9");
         if (req.getLanguage() == null || req.getLanguage().isBlank()) req.setLanguage("zh-CN");
         if (req.getTags() == null) req.setTags(List.of());
     }
@@ -426,11 +505,7 @@ public class ShortDramaContractService {
         if (v == null || v.isBlank()) throw new BizException(400, field + " required");
     }
 
-    /**
-     * Short publishes only READY approved packs (PR #54). Omitted status/approved
-     * stays compatible with the original contract body.
-     */
-    void assertApprovedReadyPack(ShortDramaIngestRequest req) {
+    void assertApprovedReadyPack(LongDramaIngestRequest req) {
         if (req.getApproved() != null && !req.getApproved()) {
             throw new BizException(422, "pack not approved");
         }

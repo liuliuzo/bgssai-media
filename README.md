@@ -4,7 +4,7 @@
 
 - 通用播放：桌面 libVLC 播主流格式；Web 播 MP4 / WebM / HLS
 - YouTube Shorts 流：短剧首页、详情、分集播放；契约目录 `/shorts`
-- YouTube 正片 / 剧集流：承接 `bgssai-long` 长剧成片（摄入契约推进中）
+- YouTube 正片 / 剧集流：承接 `bgssai-long` 长剧成片（MEDIA-02 摄入契约已落地；真实播放 E2E NOT_VERIFIED）
 - Admin 剧集/分集 CRUD、上下架、摄入日志（不接 Chat）
 - `bgssai-short` / `bgssai-long` 成片可直接发布到本平台
 - MCP 连接器（对照 blog）：用户端 PAT + `/api/mcp` 只读工具；Admin 连接器说明页
