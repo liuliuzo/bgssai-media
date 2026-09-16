@@ -1,0 +1,59 @@
+// bgssai-media 关停流水线（Jenkins）。
+//
+// 只 systemctl stop 两端服务，不构建、不推 jar；关停通道唯一，仅手动触发。
+// 凭据与主机清单口径与部署流水线完全一致（bgssai-<env>-ssh / bgssai-<env>-hosts）。
+//
+// **目标环境由 Job 名前缀决定**（内部名 dev-media-stop / prod-media-stop），不提供下拉框。
+
+@Library('bgssai') _
+
+pipeline {
+  agent any
+
+  options {
+    // 关停只需要共享库与凭据，不需要本仓任何文件；跳过检出省掉跨境克隆。
+    skipDefaultCheckout()
+    disableConcurrentBuilds()
+    timestamps()
+    buildDiscarder(logRotator(numToKeepStr: '30'))
+    timeout(time: 15, unit: 'MINUTES')
+  }
+
+  parameters {
+    choice(name: 'target', choices: ['both', 'user', 'admin'], description: '关停目标（both=两端 / user=仅用户端 / admin=仅管理端），不改就是 both')
+  }
+
+  stages {
+    stage('Resolve environment') {
+      steps {
+        script {
+          env.BGSSAI_ENV = bgssaiResolveEnvironment(action: '关停', requireConfirm: false)
+        }
+      }
+    }
+
+    stage('Stop user') {
+      when { expression { params.target in ['both', 'user'] } }
+      steps {
+        bgssaiStopService(product: 'media', end: 'user', environment: env.BGSSAI_ENV)
+      }
+    }
+
+    stage('Stop admin') {
+      when { expression { params.target in ['both', 'admin'] } }
+      steps {
+        bgssaiStopService(product: 'media', end: 'admin', environment: env.BGSSAI_ENV)
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "关停完成: bgssai-media environment=${env.BGSSAI_ENV} target=${params.target}"
+    }
+    failure {
+      echo "关停失败: bgssai-media environment=${env.BGSSAI_ENV} target=${params.target}"
+      echo '服务可能仍在运行。请登录目标主机确认 systemctl status 后人工处理。'
+    }
+  }
+}

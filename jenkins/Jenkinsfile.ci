@@ -1,0 +1,47 @@
+// 本仓的 CI 流水线（构建 + 测试）。OPS-02 之前它占着仓库根的 Jenkinsfile，
+// 但根 Jenkinsfile 在本产品线的约定里是**部署入口** —— 中央仓的 Job 生成器按
+// 「根 Jenkinsfile = deploy，jenkins/Jenkinsfile.stop = stop」建 Job。CI 占着那个位置，
+// 铺出来的 deploy Job 跑的其实是一次单元测试，点完还以为部署过了。
+// 因此 CI 挪到这里，根 Jenkinsfile 换成真实部署流水线。
+//
+// 本文件目前没有对应的 Jenkins Job（验证入口是本地 mvn / npm 与 PR 评审）。
+
+pipeline {
+  agent any
+
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+    timeout(time: 45, unit: 'MINUTES')
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build + Test') {
+      steps {
+        sh '''
+          set -eux
+          if command -v mvn >/dev/null 2>&1; then
+            MVN=mvn
+          elif [ -x "./mvnw" ]; then
+            MVN=./mvnw
+          else
+            echo "Maven not found on agent (install mvn or add mvnw)" >&2
+            exit 1
+          fi
+          $MVN -B -ntp -pl bgssai-media-common,bgssai-media-user,bgssai-media-admin -am clean test
+        '''
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+        }
+      }
+    }
+  }
+}
