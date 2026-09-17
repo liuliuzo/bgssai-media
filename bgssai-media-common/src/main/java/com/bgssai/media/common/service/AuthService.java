@@ -13,6 +13,7 @@ import com.bgssai.media.common.oauth.OAuthAuthorizeResult;
 import com.bgssai.media.common.oauth.OAuthSettings;
 import com.bgssai.media.common.oauth.OAuthStateStore;
 import com.bgssai.media.common.oauth.OAuthUserInfo;
+import com.bgssai.media.common.sms.SmsSendResult;
 import com.bgssai.media.common.web.BizException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -86,11 +87,15 @@ public class AuthService {
         return result;
     }
 
-    /** 发手机验证码。同样不回显验证码。 */
+    /**
+     * 发手机验证码。同样不回显验证码；回 product + seq（序号）方便用户对照短信正文。
+     */
     public Map<String, Object> sendPhoneOtp(String phone) {
-        verifyCodeService.sendPhoneCode(phone, SCENE_LOGIN);
+        SmsSendResult sent = verifyCodeService.sendPhoneCode(phone, SCENE_LOGIN);
         Map<String, Object> result = new HashMap<>();
         result.put("sent", true);
+        result.put("product", sent.getProduct());
+        result.put("seq", sent.getSeq());
         return result;
     }
 

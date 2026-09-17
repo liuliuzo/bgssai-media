@@ -5,6 +5,7 @@ import com.bgssai.media.common.mail.PlatformMailSender;
 import com.bgssai.media.common.mapper.MediaVerifyCodeMapper;
 import com.bgssai.media.common.sms.PlatformSmsSender;
 import com.bgssai.media.common.sms.SmsPurpose;
+import com.bgssai.media.common.sms.SmsSendResult;
 import com.bgssai.media.common.web.BizException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,8 +67,12 @@ public class VerifyCodeService {
         this.smsSender = smsSender;
     }
 
-    /** 发手机验证码。投递失败不落库，用户可以立即重试。 */
-    public void sendPhoneCode(String phone, String scene) {
+    /**
+     * 发手机验证码。投递失败不落库，用户可以立即重试。
+     *
+     * @return 写入短信模板的产品名与序号，供发码 API 回显给调用方（不含验证码明文）
+     */
+    public SmsSendResult sendPhoneCode(String phone, String scene) {
         String target = normalize(phone);
         if (!target.matches("1[3-9]\\d{9}")) {
             throw new BizException(400, "手机号格式不对");
@@ -77,8 +82,9 @@ public class VerifyCodeService {
         String code = generateCode();
         int expireSeconds = smsSender.codeExpireSeconds();
         // 先投递再落库：投递失败就不该留下一条「可用」的码。
-        smsSender.sendCode(target, SmsPurpose.of(scene), code);
+        SmsSendResult sent = smsSender.sendCode(target, SmsPurpose.of(scene), code);
         persist(target, CHANNEL_SMS, scene, code, expireSeconds);
+        return sent;
     }
 
     /** 发邮箱验证码。 */

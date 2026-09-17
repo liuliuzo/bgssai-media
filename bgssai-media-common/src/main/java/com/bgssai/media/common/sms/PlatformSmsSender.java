@@ -14,11 +14,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * 平台短信通道：按 {@code platform_sms_config} 单例行实时构造腾讯云客户端。
  *
  * <p>与 {@link com.bgssai.media.common.mail.PlatformMailSender} 同款口径：
  * 配置回库实时读、凭据绝不入日志、通道不可用直接抛异常而不是静默跳过。
+ *
+ * <p>每次发码生成递增序号（序号），按 {@link SmsOtpProperties#getTemplateParamCount()}
+ * 把产品名与序号写入模板参数；验证码明文只进模板、不进日志。
  */
 @Service
 public class PlatformSmsSender {
@@ -35,9 +40,13 @@ public class PlatformSmsSender {
     private static final String CN_PREFIX = "+86";
 
     private final PlatformSmsConfigMapper platformSmsConfigMapper;
+    private final SmsOtpProperties smsOtpProperties;
+    private final AtomicLong sendSeq = new AtomicLong(0L);
 
-    public PlatformSmsSender(PlatformSmsConfigMapper platformSmsConfigMapper) {
+    public PlatformSmsSender(PlatformSmsConfigMapper platformSmsConfigMapper,
+                             SmsOtpProperties smsOtpProperties) {
         this.platformSmsConfigMapper = platformSmsConfigMapper;
+        this.smsOtpProperties = smsOtpProperties;
     }
 
     public PlatformSmsConfig loadConfig() {
@@ -61,9 +70,9 @@ public class PlatformSmsSender {
      * @param phone   大陆手机号（11 位，不带区号）
      * @param purpose 发码场景，决定用哪个模板
      * @param code    验证码明文（进模板参数，不进日志）
-     * @return 服务商 RequestId，用于排障；失败一律抛 {@link BizException}
+     * @return 产品名、序号与服务商 RequestId；失败一律抛 {@link BizException}
      */
-    public String sendCode(String phone, SmsPurpose purpose, String code) {
+    public SmsSendResult sendCode(String phone, SmsPurpose purpose, String code) {
         PlatformSmsConfig cfg = loadConfig();
         if (!isUsable(cfg)) {
             log.warn("平台短信通道未启用或未配置齐备，发码中止 phone={}", maskPhone(phone));
@@ -75,7 +84,12 @@ public class PlatformSmsSender {
             throw new BizException(503, "短信服务尚未配置该场景模板，请联系管理员");
         }
 
+        String product = smsOtpProperties.getProductLabel();
+        long seq = sendSeq.incrementAndGet();
         int expireMinutes = Math.max(1, codeExpireSeconds() / 60);
+        String[] templateParams = SmsTemplateParams.build(
+                smsOtpProperties.getTemplateParamCount(), product, seq, code, expireMinutes);
+
         try {
             Credential cred = new Credential(cfg.getSecretId(), cfg.getSecretKey());
             HttpProfile httpProfile = new HttpProfile();
@@ -91,14 +105,14 @@ public class PlatformSmsSender {
             req.setSignName(cfg.getSignName());
             req.setTemplateId(templateId);
             req.setPhoneNumberSet(new String[] { CN_PREFIX + phone });
-            // 模板参数顺序由服务商侧模板决定，本仓约定统一为 {1}=验证码 {2}=有效分钟数。
-            req.setTemplateParamSet(new String[] { code, String.valueOf(expireMinutes) });
+            req.setTemplateParamSet(templateParams);
 
             SendSmsResponse resp = client.SendSms(req);
             assertAccepted(resp, phone);
-            log.info("短信验证码已发送 purpose={} phone={} requestId={}",
-                    purpose.name(), maskPhone(phone), resp.getRequestId());
-            return resp.getRequestId();
+            log.info("短信验证码已发送 purpose={} phone={} product={} seq={} paramCount={} requestId={}",
+                    purpose.name(), maskPhone(phone), product, seq,
+                    smsOtpProperties.getTemplateParamCount(), resp.getRequestId());
+            return new SmsSendResult(product, seq, resp.getRequestId());
         } catch (BizException ex) {
             throw ex;
         } catch (Exception ex) {
