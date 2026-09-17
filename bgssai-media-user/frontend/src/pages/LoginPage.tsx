@@ -16,7 +16,15 @@ import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
 import { useShellMode } from '@/shell/useShellMode';
 import LegalLinks from '@/legal/LegalLinks';
-import BotPromoCard from '@/components/BotPromoCard';
+import BotPromoCard, { BOT_PROMO_DISMISSED_KEY } from '@/components/BotPromoCard';
+
+function readBotPromoVisible(): boolean {
+  try {
+    return localStorage.getItem(BOT_PROMO_DISMISSED_KEY) !== '1';
+  } catch {
+    return true;
+  }
+}
 
 export default function LoginPage() {
   const { inShell } = useShellMode();
@@ -26,6 +34,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [emailCodeSent, setEmailCodeSent] = useState(false);
   const [phoneCodeSent, setPhoneCodeSent] = useState(false);
+  const [botPromoVisible, setBotPromoVisible] = useState(readBotPromoVisible);
   const [emailForm] = Form.useForm();
   const [phoneForm] = Form.useForm();
   const finishing = useRef(false);
@@ -177,7 +186,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="shell-login"
+      className={`shell-login${botPromoVisible ? ' shell-login--with-bot-promo' : ''}`}
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -185,9 +194,10 @@ export default function LoginPage() {
         justifyContent: 'center',
         background: '#f0f2f5',
         padding: inShell ? 12 : 16,
+        boxSizing: 'border-box',
       }}
     >
-      <BotPromoCard />
+      <BotPromoCard onVisibilityChange={setBotPromoVisible} />
       <Card title="用户登录" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
         <Alert
           type="info"
