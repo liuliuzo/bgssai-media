@@ -26,7 +26,7 @@ public class ListBotDownloadsService {
     private static final Logger log = LoggerFactory.getLogger(ListBotDownloadsService.class);
 
     private static final List<String> INSTALLER_SUFFIXES =
-            List.of(".exe", ".msi", ".dmg", ".pkg", ".appimage", ".deb", ".rpm", ".tar.gz", ".zip");
+            List.of(".exe", ".msi", ".dmg", ".pkg", ".appimage", ".deb", ".rpm", ".tar.gz", ".zip", ".apk", ".ipa");
 
     private final Path directory;
 
@@ -72,6 +72,12 @@ public class ListBotDownloadsService {
 
     static String platformOf(String name) {
         String lower = name.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".apk")) {
+            return "Android";
+        }
+        if (lower.endsWith(".ipa")) {
+            return "iOS";
+        }
         if (lower.endsWith(".exe") || lower.endsWith(".msi")) {
             return "Windows";
         }

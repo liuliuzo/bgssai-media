@@ -47,4 +47,19 @@ class ListBotDownloadsServiceTest {
         assertEquals("Windows", items.get(0).getPlatform());
         assertEquals("/downloads/bot/BGSSAI-Bot-Setup.exe", items.get(0).getUrl());
     }
+    @Test
+    void listsMobileInstallersAndExcludesStoreBundles() throws Exception {
+        Files.writeString(tempDir.resolve("BGSSAI-Bot.APK"), "test-only");
+        Files.writeString(tempDir.resolve("BGSSAI-Bot.ipa"), "test-only");
+        Files.writeString(tempDir.resolve("BGSSAI-Bot.aab"), "store bundle");
+        Files.writeString(tempDir.resolve("README.txt"), "not an installer");
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("bgssai.bot.download.directory", tempDir.toString());
+        List<BotDownloadItem> items = new ListBotDownloadsService(env).list();
+        assertEquals(2, items.size());
+        assertTrue(items.stream().anyMatch(item -> "Android".equals(item.getPlatform())
+                && "/downloads/bot/BGSSAI-Bot.APK".equals(item.getUrl())));
+        assertTrue(items.stream().anyMatch(item -> "iOS".equals(item.getPlatform())
+                && "/downloads/bot/BGSSAI-Bot.ipa".equals(item.getUrl())));
+    }
 }
