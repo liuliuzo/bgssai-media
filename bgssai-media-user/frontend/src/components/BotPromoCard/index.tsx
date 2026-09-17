@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './BotPromoCard.css';
 
-const STORAGE_KEY = 'bgssai-media-bot-promo-dismissed';
+export const BOT_PROMO_DISMISSED_KEY = 'bgssai-media-bot-promo-dismissed';
 
 function readDismissed(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) === '1';
+    return localStorage.getItem(BOT_PROMO_DISMISSED_KEY) === '1';
   } catch {
     return false;
   }
@@ -27,14 +27,22 @@ function BotMark() {
   );
 }
 
-export default function BotPromoCard() {
+type BotPromoCardProps = {
+  onVisibilityChange?: (visible: boolean) => void;
+};
+
+export default function BotPromoCard({ onVisibilityChange }: BotPromoCardProps) {
   const [visible, setVisible] = useState(() => !readDismissed());
+
+  useEffect(() => {
+    onVisibilityChange?.(visible);
+  }, [visible, onVisibilityChange]);
 
   if (!visible) return null;
 
   const onDismiss = () => {
     try {
-      localStorage.setItem(STORAGE_KEY, '1');
+      localStorage.setItem(BOT_PROMO_DISMISSED_KEY, '1');
     } catch {
       /* ignore quota / private mode */
     }
