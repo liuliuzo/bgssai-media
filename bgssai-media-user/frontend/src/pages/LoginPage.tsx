@@ -130,9 +130,13 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      await sendPhoneOtp(phone);
+      const sent = await sendPhoneOtp(phone);
       setPhoneCodeSent(true);
-      message.success('验证码已发送');
+      message.success(
+        sent?.product && sent?.seq != null
+          ? `验证码已发送（${sent.product}#${sent.seq}）`
+          : '验证码已发送',
+      );
     } catch (err) {
       message.error(err instanceof Error ? err.message : '发送失败');
     } finally {

@@ -5,6 +5,7 @@ import com.bgssai.media.common.mail.PlatformMailSender;
 import com.bgssai.media.common.mapper.MediaVerifyCodeMapper;
 import com.bgssai.media.common.sms.PlatformSmsSender;
 import com.bgssai.media.common.sms.SmsPurpose;
+import com.bgssai.media.common.sms.SmsSendResult;
 import com.bgssai.media.common.web.BizException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,14 +54,16 @@ class VerifyCodeServiceTest {
         });
         when(smsSender.sendCode(anyString(), any(SmsPurpose.class), anyString())).thenAnswer(inv -> {
             deliveredCode.set(inv.getArgument(2));
-            return "req-1";
+            return new SmsSendResult("Magic", 1L, "req-1");
         });
     }
 
     @Test
     void sendPhoneCodeDeliversRealCodeAndStoresOnlyItsDigest() {
-        service.sendPhoneCode("13800000000", "LOGIN");
+        SmsSendResult sent = service.sendPhoneCode("13800000000", "LOGIN");
 
+        assertEquals("Magic", sent.getProduct());
+        assertEquals(1L, sent.getSeq());
         verify(smsSender).sendCode(eq("13800000000"), eq(SmsPurpose.LOGIN), anyString());
         String code = deliveredCode.get();
         assertNotNull(code);

@@ -25,8 +25,14 @@ export async function loginByEmailOtp(email: string, code: string) {
   return data;
 }
 
+export type SendPhoneOtpResult = {
+  sent: boolean;
+  product: string;
+  seq: number;
+};
+
 export async function sendPhoneOtp(phone: string) {
-  const { data } = await client.post<Record<string, unknown>>(
+  const { data } = await client.post<SendPhoneOtpResult>(
     '/auth/otp/phone/send',
     { phone },
   );
