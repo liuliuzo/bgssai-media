@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Card, Form, Input, Tabs, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   loginByPassword,
   sendEmailOtp,
@@ -16,6 +16,7 @@ import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
 import { useShellMode } from '@/shell/useShellMode';
 import LegalLinks from '@/legal/LegalLinks';
+import BotPromoCard from '@/components/BotPromoCard';
 
 export default function LoginPage() {
   const { inShell } = useShellMode();
@@ -186,6 +187,7 @@ export default function LoginPage() {
         padding: inShell ? 12 : 16,
       }}
     >
+      <BotPromoCard />
       <Card title="用户登录" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
         <Alert
           type="info"
@@ -294,9 +296,6 @@ export default function LoginPage() {
         />
         <div style={{ marginTop: 16, textAlign: 'center', color: '#8c8c8c', fontSize: 12 }}>
           或使用第三方账号
-        </div>
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <Link to="/download/bot">下载 BGSSAI Bot</Link>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
           {[
