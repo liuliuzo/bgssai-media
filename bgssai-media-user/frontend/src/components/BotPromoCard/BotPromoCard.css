@@ -1,0 +1,157 @@
+.bot-promo-card {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  z-index: 1000;
+  width: min(300px, calc(100vw - 32px));
+  overflow: hidden;
+  border-radius: 16px;
+  background: #f4f4f5;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+.bot-promo-card__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 112px;
+  background: #e8e8ea;
+}
+
+.bot-promo-card__mark {
+  display: block;
+  width: 56px;
+  height: 56px;
+}
+
+.bot-promo-card__body {
+  padding: 16px 18px 8px;
+}
+
+.bot-promo-card__title {
+  margin: 0 0 8px;
+  color: #111;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.bot-promo-card__blurb {
+  margin: 0;
+  color: #5c5c5c;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.bot-promo-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px 14px;
+}
+
+.bot-promo-card__dismiss {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  color: #8c8c8c;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.bot-promo-card__dismiss:hover {
+  color: #595959;
+}
+
+.bot-promo-card__dismiss:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.bot-promo-card__download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.bot-promo-card__download:hover {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.bot-promo-card__download:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .bot-promo-card {
+    top: max(12px, env(safe-area-inset-top, 0px));
+    right: 50%;
+    left: auto;
+    width: min(300px, calc(100vw - 24px));
+    transform: translateX(50%);
+  }
+
+  .bot-promo-card__visual {
+    min-height: 96px;
+  }
+
+  .bot-promo-card__mark {
+    width: 48px;
+    height: 48px;
+  }
+
+  .bot-promo-card__body {
+    padding: 14px 16px 6px;
+  }
+
+  .bot-promo-card__title {
+    font-size: 15px;
+  }
+
+  .bot-promo-card__blurb {
+    font-size: 12px;
+  }
+
+  .bot-promo-card__actions {
+    padding: 10px 12px 12px;
+  }
+
+  .bot-promo-card__download {
+    min-height: 34px;
+    padding: 0 14px;
+    font-size: 12px;
+  }
+}
+
+/* Shell pane: keep clear of fixed topbar */
+.bgssai-shell-pane .bot-promo-card {
+  top: calc(48px + env(safe-area-inset-top, 0px) + 8px);
+}
+
+@media (max-width: 480px) {
+  .bgssai-shell-pane .bot-promo-card {
+    top: calc(48px + env(safe-area-inset-top, 0px) + 8px);
+  }
+}
