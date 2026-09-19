@@ -1,0 +1,48 @@
+.gate {
+  padding: 120rpx 48rpx 80rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: radial-gradient(800rpx 400rpx at 0% 0%, #1d3a66 0%, transparent 55%),
+    radial-gradient(700rpx 360rpx at 100% 0%, #3a2418 0%, transparent 50%),
+    linear-gradient(160deg, #0b1220, #152238);
+}
+
+.brand {
+  font-size: 56rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.tagline {
+  margin: 24rpx 0 64rpx;
+  color: #9aabbf;
+  font-size: 28rpx;
+}
+
+.btn {
+  margin: 0 0 28rpx;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #f4f7fb;
+  line-height: 2.6;
+}
+
+.btn.user {
+  background: #2f6fed;
+}
+
+.btn.admin {
+  background: #c45c26;
+}
+
+.btn::after {
+  border: none;
+}
+
+.hint {
+  margin-top: 40rpx;
+  color: #9aabbf;
+  font-size: 24rpx;
+  line-height: 1.6;
+}

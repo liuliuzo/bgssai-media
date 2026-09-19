@@ -1,0 +1,10 @@
+{
+  "appId": "com.bgssai.media",
+  "appName": "BGSSAI Media",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https"
+  },
+  "plugins": {}
+}

@@ -1,0 +1,6 @@
+<view class="page">
+  <view class="title">用户主页骨架</view>
+  <view class="sub">登录角色：USER。后续可接 Shorts / 播放等核心路径。</view>
+  <button class="btn" bindtap="backGate">返回双入口</button>
+  <button class="btn ghost" bindtap="logout">退出</button>
+</view>

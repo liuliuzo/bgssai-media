@@ -1,0 +1,9 @@
+{
+  "desc": "BGSSAI Media miniprogram",
+  "rules": [
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
+}
