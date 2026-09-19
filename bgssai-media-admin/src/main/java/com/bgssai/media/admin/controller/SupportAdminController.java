@@ -3,7 +3,6 @@ package com.bgssai.media.admin.controller;
 import com.bgssai.media.common.aop.NeedAop;
 import com.bgssai.media.common.auth.AuthContext;
 import com.bgssai.media.common.auth.RoleCodes;
-import com.bgssai.media.common.domain.MediaSupportSession;
 import com.bgssai.media.common.service.SupportService;
 import com.bgssai.media.common.web.ApiResponse;
 import com.bgssai.media.common.web.PageResult;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
- * 管理端客服处理台：列表、详情、回复、关闭、标记已读。
+ * 管理端客服处理台：列表、详情、回复、关闭、标记已读、工单状态。
  */
 @RestController
 @RequestMapping("/api/support")
@@ -26,7 +25,7 @@ public class SupportAdminController {
     }
 
     @GetMapping("/sessions/page")
-    public ApiResponse<PageResult<MediaSupportSession>> page(
+    public ApiResponse<PageResult<Map<String, Object>>> page(
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "page_num", defaultValue = "1") int pageNum,
@@ -56,5 +55,14 @@ public class SupportAdminController {
     public ApiResponse<Map<String, Object>> markRead(@RequestBody Map<String, Object> body) {
         Long sessionId = Long.valueOf(String.valueOf(body.get("session_id")));
         return ApiResponse.ok(supportService.adminMarkRead(sessionId));
+    }
+
+    @PostMapping("/sessions/ticket/status")
+    public ApiResponse<Map<String, Object>> updateTicketStatus(@RequestBody Map<String, Object> body) {
+        Long sessionId = Long.valueOf(String.valueOf(body.get("session_id")));
+        Long ticketId = body.get("ticket_id") == null ? null : Long.valueOf(String.valueOf(body.get("ticket_id")));
+        String status = body.get("status") == null ? null : String.valueOf(body.get("status"));
+        return ApiResponse.ok(supportService.adminUpdateTicketStatus(
+                sessionId, ticketId, status, AuthContext.get().getId()));
     }
 }

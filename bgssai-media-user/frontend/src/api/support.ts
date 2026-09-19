@@ -1,6 +1,8 @@
 import client from './client';
 
 export type SupportStatus = 'open' | 'pending' | 'closed';
+export type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'normal' | 'high';
 
 export interface SupportSession {
   id: number;
@@ -27,9 +29,23 @@ export interface SupportMessage {
   created_at?: string;
 }
 
+export interface SupportTicket {
+  id: number;
+  session_id: number;
+  subject?: string | null;
+  priority?: TicketPriority | string;
+  category?: string | null;
+  status: TicketStatus | string;
+  description?: string | null;
+  created_by_user_id?: number | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface SupportDetail {
   session: SupportSession;
   messages: SupportMessage[];
+  ticket?: SupportTicket | null;
 }
 
 const STORAGE_KEY = 'bgssai_media_support_session';
@@ -92,6 +108,18 @@ export async function markSupportRead(payload: {
   session_token?: string;
 }): Promise<SupportDetail> {
   const { data } = await client.post<SupportDetail>('/support/sessions/read', payload);
+  return data;
+}
+
+export async function raiseSupportTicket(payload: {
+  session_id?: number;
+  session_token?: string;
+  subject?: string;
+  priority?: TicketPriority | string;
+  category?: string;
+  description?: string;
+}): Promise<SupportDetail> {
+  const { data } = await client.post<SupportDetail>('/support/sessions/ticket', payload);
   return data;
 }
 

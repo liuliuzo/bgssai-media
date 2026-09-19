@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Input, Spin, Typography, message } from 'antd';
-import { CustomerServiceOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, Input, Modal, Select, Spin, Typography, message } from 'antd';
+import { CustomerServiceOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
 import {
   clearStoredSession,
   createSupportSession,
   getSupportDetail,
   loadStoredSession,
   markSupportRead,
+  raiseSupportTicket,
   sendSupportMessage,
   storeSession,
   type SupportDetail,
   type SupportMessage,
+  type TicketPriority,
 } from '@/api/support';
 import './SupportWidget.css';
 
@@ -31,23 +33,33 @@ function formatTime(value?: string) {
   }
 }
 
+function ticketStatusLabel(status?: string) {
+  if (status === 'open') return '工单进行中';
+  if (status === 'pending') return '工单待处理';
+  if (status === 'resolved') return '工单已解决';
+  if (status === 'closed') return '工单已关闭';
+  return status ? `工单：${status}` : '';
+}
+
+function isActiveTicket(status?: string) {
+  return status === 'open' || status === 'pending';
+}
+
 export default function SupportWidget() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [detail, setDetail] = useState<SupportDetail | null>(null);
   const [draft, setDraft] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticketSubject, setTicketSubject] = useState('');
+  const [ticketPriority, setTicketPriority] = useState<TicketPriority>('normal');
+  const [ticketSubmitting, setTicketSubmitting] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const applyDetail = useCallback((next: SupportDetail) => {
     setDetail(next);
     storeSession(next.session);
-    if (next.session.status === 'closed') {
-      // keep closed history visible; new message starts a new session
-    }
   }, []);
 
   const refresh = useCallback(async () => {
@@ -102,12 +114,7 @@ export default function SupportWidget() {
       const closed = detail?.session.status === 'closed';
       if (!detail || closed) {
         if (closed) clearStoredSession();
-        next = await createSupportSession({
-          content,
-          contact_name: contactName.trim() || undefined,
-          contact_email: contactEmail.trim() || undefined,
-          contact_phone: contactPhone.trim() || undefined,
-        });
+        next = await createSupportSession({ content });
       } else {
         next = await sendSupportMessage({
           session_id: detail.session.id,
@@ -124,9 +131,45 @@ export default function SupportWidget() {
     }
   };
 
+  const openTicketModal = () => {
+    if (!detail || detail.session.status === 'closed') {
+      message.info('请先发送一条留言开始会话');
+      return;
+    }
+    if (detail.ticket && isActiveTicket(detail.ticket.status)) {
+      message.info(`已有工单 #${detail.ticket.id}（${ticketStatusLabel(detail.ticket.status)}）`);
+      return;
+    }
+    setTicketSubject(detail.session.subject || '');
+    setTicketPriority('normal');
+    setTicketOpen(true);
+  };
+
+  const handleRaiseTicket = async () => {
+    if (!detail || detail.session.status === 'closed') return;
+    setTicketSubmitting(true);
+    try {
+      const next = await raiseSupportTicket({
+        session_id: detail.session.id,
+        session_token: detail.session.session_token,
+        subject: ticketSubject.trim() || undefined,
+        priority: ticketPriority,
+      });
+      applyDetail(next);
+      setTicketOpen(false);
+      message.success(next.ticket ? `已提工单 #${next.ticket.id}` : '已提工单');
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '提工单失败');
+    } finally {
+      setTicketSubmitting(false);
+    }
+  };
+
   const unread = detail?.session.user_unread || 0;
   const messages: SupportMessage[] = detail?.messages || [];
   const closed = detail?.session.status === 'closed';
+  const ticket = detail?.ticket;
+  const canRaiseTicket = Boolean(detail && !closed && (!ticket || !isActiveTicket(ticket.status)));
 
   return (
     <div className="support-widget">
@@ -138,9 +181,11 @@ export default function SupportWidget() {
               <Text type="secondary" className="support-panel__sub">
                 {closed
                   ? '会话已关闭，发送将开启新会话'
-                  : detail
-                    ? `状态：${detail.session.status}`
-                    : '留言后客服会尽快回复'}
+                  : ticket
+                    ? ticketStatusLabel(ticket.status)
+                    : detail
+                      ? `状态：${detail.session.status}`
+                      : '直接留言，客服会尽快回复'}
               </Text>
             </div>
             <Button
@@ -151,28 +196,25 @@ export default function SupportWidget() {
             />
           </div>
 
-          {!detail || closed ? (
-            <div className="support-panel__contacts">
-              <Input
-                placeholder="称呼（可选）"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                maxLength={64}
-              />
-              <Input
-                placeholder="邮箱（可选）"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                maxLength={128}
-              />
-              <Input
-                placeholder="手机（可选）"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                maxLength={32}
-              />
-            </div>
-          ) : null}
+          <div className="support-panel__toolbar">
+            <Button
+              size="small"
+              icon={<FormOutlined />}
+              disabled={!canRaiseTicket}
+              onClick={openTicketModal}
+            >
+              提工单
+            </Button>
+            {ticket ? (
+              <Text type="secondary" className="support-panel__ticket-hint">
+                #{ticket.id} · {ticket.status}
+              </Text>
+            ) : (
+              <Text type="secondary" className="support-panel__ticket-hint">
+                需要正式跟进时可提工单
+              </Text>
+            )}
+          </div>
 
           <div className="support-panel__body" ref={listRef}>
             {loading && !detail ? (
@@ -240,6 +282,36 @@ export default function SupportWidget() {
         <span>在线客服</span>
         {unread > 0 ? <i className="support-fab__badge">{unread > 9 ? '9+' : unread}</i> : null}
       </button>
+
+      <Modal
+        title="提工单"
+        open={ticketOpen}
+        onCancel={() => setTicketOpen(false)}
+        onOk={() => void handleRaiseTicket()}
+        confirmLoading={ticketSubmitting}
+        okText="提交工单"
+        cancelText="取消"
+        destroyOnClose
+      >
+        <div className="support-ticket-form">
+          <Text type="secondary">工单挂接当前会话，提交后仍可继续聊天。</Text>
+          <Input
+            placeholder="主题（可选，默认取最近留言）"
+            value={ticketSubject}
+            onChange={(e) => setTicketSubject(e.target.value)}
+            maxLength={256}
+          />
+          <Select
+            value={ticketPriority}
+            onChange={(v) => setTicketPriority(v)}
+            options={[
+              { value: 'low', label: '低' },
+              { value: 'normal', label: '普通' },
+              { value: 'high', label: '高' },
+            ]}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

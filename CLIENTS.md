@@ -4,7 +4,7 @@
 
 - `web=separate domains OK` — 浏览器用户站 / 管理站可用不同域名或路径；不要求装两套浏览器。
 - `installable=single-app dual-entry` — 可安装六端（Win / macOS / Linux / iOS / Android / 微信小程序）每端 **一个安装物**，应用内 **两个登录入口**（用户入口 / 管理入口）。对齐 Boss 直聘。
-- `support=in-app messaging` — 站内在线客服（留言 / 会话）：用户站悬浮入口 + 管理站处理台；六端用户/管理入口分别进入同一套能力。详见 `docs/feature/support-messaging.md`。
+- `support=in-app messaging` — 站内在线客服（聊优先 + 聊中提工单）：用户站悬浮聊天入口；管理站会话+工单处理台；六端用户/管理入口分别进入同一套能力。详见 `docs/feature/support-messaging.md`。
 
 **禁止** 拆成 desktop-admin + desktop-user、mobile-admin + mobile-user、或两个小程序并行交付。
 

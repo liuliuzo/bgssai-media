@@ -79,6 +79,24 @@ public class SupportController {
         return ApiResponse.ok(supportService.markUserRead(sessionId, sessionToken, userId));
     }
 
+    /** 聊中提工单：挂接当前会话；主题/优先级可选。 */
+    @PostMapping("/sessions/ticket")
+    public ApiResponse<Map<String, Object>> raiseTicket(@RequestBody Map<String, Object> body,
+                                                        HttpServletRequest request) {
+        Long userId = optionalUserId(request);
+        Long sessionId = body.get("session_id") == null ? null : Long.valueOf(String.valueOf(body.get("session_id")));
+        String sessionToken = str(body, "session_token");
+        return ApiResponse.ok(supportService.raiseTicket(
+                sessionId,
+                sessionToken,
+                userId,
+                str(body, "subject"),
+                str(body, "priority"),
+                str(body, "category"),
+                str(body, "description"),
+                clientKey(request, userId)));
+    }
+
     private Long optionalUserId(HttpServletRequest request) {
         AuthUser fromCtx = AuthContext.get();
         if (fromCtx != null && RoleCodes.USER.equals(fromCtx.getRole_code())) {

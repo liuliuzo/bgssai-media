@@ -2,6 +2,8 @@ import request from './request';
 import type { PageResult } from '../types';
 
 export type SupportStatus = 'open' | 'pending' | 'closed';
+export type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'normal' | 'high';
 
 export interface SupportSession {
   id: number;
@@ -28,9 +30,28 @@ export interface SupportMessage {
   created_at?: string;
 }
 
+export interface SupportTicket {
+  id: number;
+  session_id: number;
+  subject?: string | null;
+  priority?: TicketPriority | string;
+  category?: string | null;
+  status: TicketStatus | string;
+  description?: string | null;
+  created_by_user_id?: number | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface SupportDetail {
   session: SupportSession;
   messages: SupportMessage[];
+  ticket?: SupportTicket | null;
+}
+
+export interface SupportSessionRow {
+  session: SupportSession;
+  ticket?: SupportTicket | null;
 }
 
 export function fetchSupportPage(params: {
@@ -39,7 +60,7 @@ export function fetchSupportPage(params: {
   status?: string;
   keyword?: string;
 }) {
-  return request.get<never, PageResult<SupportSession>>('/support/sessions/page', { params });
+  return request.get<never, PageResult<SupportSessionRow>>('/support/sessions/page', { params });
 }
 
 export function fetchSupportDetail(sessionId: number) {
@@ -64,5 +85,13 @@ export function closeSupport(sessionId: number) {
 export function markSupportRead(sessionId: number) {
   return request.post<never, SupportDetail>('/support/sessions/read', {
     session_id: sessionId,
+  });
+}
+
+export function updateSupportTicketStatus(sessionId: number, ticketId: number, status: string) {
+  return request.post<never, SupportDetail>('/support/sessions/ticket/status', {
+    session_id: sessionId,
+    ticket_id: ticketId,
+    status,
   });
 }
