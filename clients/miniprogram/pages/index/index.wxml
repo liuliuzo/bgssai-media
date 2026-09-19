@@ -1,7 +1,7 @@
 <view class="gate">
   <view class="brand">{{productName}}</view>
   <view class="tagline">一个小程序，两个入口</view>
-  <button class="btn user" bindtap="enterUser">用户登录</button>
-  <button class="btn admin" bindtap="enterAdmin">管理登录</button>
+  <button class="btn user" bindtap="enterUser">用户入口</button>
+  <button class="btn admin" bindtap="enterAdmin">管理入口</button>
   <view class="hint">不提供独立 Admin / User 小程序。AppID 见 project.config.json。</view>
 </view>

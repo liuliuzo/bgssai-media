@@ -5,7 +5,7 @@ const path = require('path');
 
 /**
  * ONE Electron install for Win/macOS/Linux.
- * Startup shows a dual-entry gate (用户登录 / 管理登录) — Boss直聘 pattern.
+ * Startup shows a dual-entry gate (用户入口 / 管理入口) — Boss直聘 pattern.
  * No separate admin vs user desktop packages.
  */
 const USER_URL =
@@ -83,11 +83,11 @@ function buildMenu() {
           click: () => showGate(),
         },
         {
-          label: '用户登录',
+          label: '用户入口',
           click: () => enterRole('user'),
         },
         {
-          label: '管理登录',
+          label: '管理入口',
           click: () => enterRole('admin'),
         },
         { type: 'separator' },
