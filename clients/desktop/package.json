@@ -1,0 +1,43 @@
+{
+  "name": "bgssai-media-clients-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BGSSAI Media single desktop app (Win/macOS/Linux) with dual login entrances",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux AppImage"
+  },
+  "build": {
+    "appId": "com.bgssai.media.desktop",
+    "productName": "BGSSAI Media",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": ["nsis"]
+    },
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.entertainment"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "AudioVideo"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

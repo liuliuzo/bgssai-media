@@ -26,3 +26,8 @@ logs/
 # OS
 Thumbs.db
 bgssai-media-desktop/node_modules/
+clients/**/node_modules/
+clients/desktop/release/
+clients/mobile/www/
+clients/mobile/android/
+clients/mobile/ios/

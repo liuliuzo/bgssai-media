@@ -20,7 +20,10 @@
 | `bgssai-media-admin/frontend` | 管理端前端 | 3001 |
 | `bgssai-media-user` | 用户端后端 | 8081（本机并发用启动参数） |
 | `bgssai-media-user/frontend` | 用户端前端 | 3002 |
-| `bgssai-media-desktop` | Electron + libVLC 桌面播放器 | 本地 |
+| `bgssai-media-desktop` | Electron + libVLC 桌面播放器（非六端产品壳） | 本地 |
+| `clients/desktop` | 六端桌面壳（单 Electron，双登录入口） | 本地 |
+| `clients/mobile` | 六端移动壳（单 Capacitor App，双登录入口） | 本地 |
+| `clients/miniprogram` | 六端微信小程序（单 AppID，双登录入口） | 本地 |
 | `sql/` | DDL + DML 种子 | - |
 
 两端后端配置里默认 `server.port=8080`（与产品线一致，分环境分开部署）。本机同时跑两端时，用户端用 `--server.port=8081`。
@@ -112,11 +115,20 @@ mvn -q -DskipTests package
 | 桌面 libVLC | mp4/mkv/webm/mov/avi/flv/ts/m3u8/mpg/wmv/3gp + 全音频矩阵 |
 
 ```bash
-# 桌面播放器
+# 桌面播放器（libVLC，非六端产品壳）
 sudo apt install -y vlc
 cd bgssai-media-desktop && npm install && npm run smoke:vlc && npm start
 ```
 
+## 六端客户端（单 App 双入口）
+
+全平台均为 **一个应用 + 两个登录入口**（用户 / 管理），见 [CLIENTS.md](CLIENTS.md) 与 [docs/feature/six-platform-clients.md](docs/feature/six-platform-clients.md)。
+
+```bash
+cd clients/desktop && npm install && npm start
+cd clients/mobile && npm install && npm run sync
+# 微信开发者工具打开 clients/miniprogram/
+```
 
 ## 与骨架仓对齐
 

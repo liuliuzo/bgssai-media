@@ -1,0 +1,4 @@
+.empty {
+  padding: 80rpx 48rpx;
+  color: #9aabbf;
+}

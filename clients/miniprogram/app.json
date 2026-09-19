@@ -1,0 +1,20 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login-user/login-user",
+    "pages/login-admin/login-admin",
+    "pages/home-user/home-user",
+    "pages/home-admin/home-admin",
+    "pages/webview/webview"
+  ],
+  "window": {
+    "navigationBarTitleText": "BGSSAI Media",
+    "navigationBarBackgroundColor": "#0b1220",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0b1220",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
