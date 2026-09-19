@@ -4,6 +4,7 @@ import {
   FileTextOutlined,
   LogoutOutlined,
   ApiOutlined,
+  CustomerServiceOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -33,6 +34,11 @@ export default function AdminLayout() {
       key: '/mcp-connectors',
       icon: <ApiOutlined />,
       label: 'MCP 连接器',
+    },
+    {
+      key: '/support',
+      icon: <CustomerServiceOutlined />,
+      label: '在线客服',
     },
   ];
 

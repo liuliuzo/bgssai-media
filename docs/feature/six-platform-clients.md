@@ -67,3 +67,5 @@ CLIENTS.md           # web=separate domains OK；installable=single-app dual-ent
 ## 诚实状态
 
 见根目录 [CLIENTS.md](../../CLIENTS.md)。打包上架与小程序提审 **未做**。服务器与域名后置。
+
+站内在线客服：`support=in-app messaging`，见 [support-messaging.md](./support-messaging.md)。

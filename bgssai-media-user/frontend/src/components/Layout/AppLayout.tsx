@@ -11,6 +11,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useShellMode } from '@/shell/useShellMode';
 import LegalLinks from '@/legal/LegalLinks';
+import SupportWidget from '@/components/SupportWidget';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -80,6 +81,7 @@ export default function AppLayout() {
             </Link>
           ))}
         </nav>
+        <SupportWidget />
       </div>
     );
   }
@@ -125,6 +127,7 @@ export default function AppLayout() {
         <Outlet />
       </Content>
       <LegalLinks variant="footer" />
+      <SupportWidget />
     </Layout>
   );
 }
