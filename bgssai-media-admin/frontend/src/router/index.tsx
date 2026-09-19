@@ -7,6 +7,8 @@ import DramaForm from '../pages/DramaForm';
 import DramaDetail from '../pages/DramaDetail';
 import IngestLogs from '../pages/IngestLogs';
 import McpConnectorsPage from '../pages/McpConnectorsPage';
+import SupportSessions from '../pages/SupportSessions';
+import SupportSessionDetail from '../pages/SupportSessionDetail';
 
 export default function AppRouter() {
   return (
@@ -27,6 +29,8 @@ export default function AppRouter() {
         <Route path="dramas/:id/edit" element={<DramaForm />} />
         <Route path="ingest-logs" element={<IngestLogs />} />
         <Route path="mcp-connectors" element={<McpConnectorsPage />} />
+        <Route path="support" element={<SupportSessions />} />
+        <Route path="support/:id" element={<SupportSessionDetail />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.MediaSupportMessageMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.MediaSupportMessage">
+    <id column="id" property="id"/>
+    <result column="session_id" property="sessionId"/>
+    <result column="sender_type" property="senderType"/>
+    <result column="sender_user_id" property="senderUserId"/>
+    <result column="content" property="content"/>
+    <result column="created_at" property="createdAt"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, session_id, sender_type, sender_user_id, content, created_at
+  </sql>
+
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">and ${criterion.condition}</when>
+                <when test="criterion.singleValue">and ${criterion.condition} #{criterion.value}</when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+
+  <select id="selectByExample" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from media_support_message
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+    <if test="orderByClause != null">order by ${orderByClause}</if>
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long">
+    select <include refid="Base_Column_List"/>
+    from media_support_message where id = #{id}
+  </select>
+
+  <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.MediaSupportMessage"
+          useGeneratedKeys="true" keyProperty="id">
+    insert into media_support_message
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="sessionId != null">session_id,</if>
+      <if test="senderType != null">sender_type,</if>
+      <if test="senderUserId != null">sender_user_id,</if>
+      <if test="content != null">content,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="sessionId != null">#{sessionId},</if>
+      <if test="senderType != null">#{senderType},</if>
+      <if test="senderUserId != null">#{senderUserId},</if>
+      <if test="content != null">#{content},</if>
+    </trim>
+  </insert>
+</mapper>

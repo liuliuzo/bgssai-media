@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.MediaSupportSessionMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.MediaSupportSession">
+    <id column="id" property="id"/>
+    <result column="session_token" property="sessionToken"/>
+    <result column="user_id" property="userId"/>
+    <result column="contact_name" property="contactName"/>
+    <result column="contact_email" property="contactEmail"/>
+    <result column="contact_phone" property="contactPhone"/>
+    <result column="subject" property="subject"/>
+    <result column="status" property="status"/>
+    <result column="last_message_at" property="lastMessageAt"/>
+    <result column="user_unread" property="userUnread"/>
+    <result column="admin_unread" property="adminUnread"/>
+    <result column="created_at" property="createdAt"/>
+    <result column="updated_at" property="updatedAt"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, session_token, user_id, contact_name, contact_email, contact_phone,
+    subject, status, last_message_at, user_unread, admin_unread, created_at, updated_at
+  </sql>
+
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">and ${criterion.condition}</when>
+                <when test="criterion.singleValue">and ${criterion.condition} #{criterion.value}</when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+
+  <select id="selectByExample" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from media_support_session
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+    <if test="orderByClause != null">order by ${orderByClause}</if>
+  </select>
+
+  <select id="countByExample" resultType="long">
+    select count(*) from media_support_session
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long">
+    select <include refid="Base_Column_List"/>
+    from media_support_session where id = #{id}
+  </select>
+
+  <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.MediaSupportSession"
+          useGeneratedKeys="true" keyProperty="id">
+    insert into media_support_session
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="sessionToken != null">session_token,</if>
+      <if test="userId != null">user_id,</if>
+      <if test="contactName != null">contact_name,</if>
+      <if test="contactEmail != null">contact_email,</if>
+      <if test="contactPhone != null">contact_phone,</if>
+      <if test="subject != null">subject,</if>
+      <if test="status != null">status,</if>
+      <if test="lastMessageAt != null">last_message_at,</if>
+      <if test="userUnread != null">user_unread,</if>
+      <if test="adminUnread != null">admin_unread,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="sessionToken != null">#{sessionToken},</if>
+      <if test="userId != null">#{userId},</if>
+      <if test="contactName != null">#{contactName},</if>
+      <if test="contactEmail != null">#{contactEmail},</if>
+      <if test="contactPhone != null">#{contactPhone},</if>
+      <if test="subject != null">#{subject},</if>
+      <if test="status != null">#{status},</if>
+      <if test="lastMessageAt != null">#{lastMessageAt},</if>
+      <if test="userUnread != null">#{userUnread},</if>
+      <if test="adminUnread != null">#{adminUnread},</if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.bgssai.media.common.domain.MediaSupportSession">
+    update media_support_session
+    <set>
+      <if test="userId != null">user_id = #{userId},</if>
+      <if test="contactName != null">contact_name = #{contactName},</if>
+      <if test="contactEmail != null">contact_email = #{contactEmail},</if>
+      <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+      <if test="subject != null">subject = #{subject},</if>
+      <if test="status != null">status = #{status},</if>
+      <if test="lastMessageAt != null">last_message_at = #{lastMessageAt},</if>
+      <if test="userUnread != null">user_unread = #{userUnread},</if>
+      <if test="adminUnread != null">admin_unread = #{adminUnread},</if>
+    </set>
+    where id = #{id}
+  </update>
+</mapper>
