@@ -1,6 +1,6 @@
 # clients/desktop — BGSSAI Media 桌面壳（单 App）
 
-**一个** Electron 安装包覆盖 Windows / macOS / Linux。启动即双入口闸门（用户登录 / 管理登录），对齐 Boss 直聘。
+**一个** Electron 安装包覆盖 Windows / macOS / Linux。启动即双入口闸门（用户入口 / 管理入口），对齐 Boss 直聘。
 
 **禁止** 拆成 Admin / User 两套桌面程序。
 
