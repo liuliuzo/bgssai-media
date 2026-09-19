@@ -1,16 +1,72 @@
 {
   "name": "bgssai-media-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "BGSSAI media desktop player (Electron + system libVLC/VLC)",
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
+    "test": "node --test test/",
     "smoke:vlc": "node scripts/smoke-vlc.js",
-    "build": "node -e \"console.log('desktop MVP: no packager bundle; run npm start with system VLC')\""
+    "build": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win nsis portable",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:linux": "electron-builder --linux AppImage deb",
+    "checksums": "node scripts/checksums.js"
   },
   "devDependencies": {
-    "electron": "^33.2.0"
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.bgssai.media.desktop",
+    "productName": "BGSSAI Media Player",
+    "artifactName": "bgssai-media-player-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**",
+      "renderer/**",
+      "shared/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "vendor/vlc",
+        "to": "vlc",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "artifactName": "bgssai-media-player-${version}-win-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.video"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "AudioVideo"
+    },
+    "publish": null
   }
 }
