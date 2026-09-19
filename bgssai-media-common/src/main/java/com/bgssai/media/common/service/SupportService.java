@@ -4,8 +4,11 @@ import com.bgssai.media.common.domain.MediaSupportMessage;
 import com.bgssai.media.common.domain.MediaSupportMessageExample;
 import com.bgssai.media.common.domain.MediaSupportSession;
 import com.bgssai.media.common.domain.MediaSupportSessionExample;
+import com.bgssai.media.common.domain.MediaSupportTicket;
+import com.bgssai.media.common.domain.MediaSupportTicketExample;
 import com.bgssai.media.common.mapper.MediaSupportMessageMapper;
 import com.bgssai.media.common.mapper.MediaSupportSessionMapper;
+import com.bgssai.media.common.mapper.MediaSupportTicketMapper;
 import com.bgssai.media.common.web.BizException;
 import com.bgssai.media.common.web.PageResult;
 import com.github.pagehelper.PageHelper;
@@ -14,15 +17,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
- * 站内在线客服（留言 / 会话）。
- * 状态：open（进行中）/ pending（待客服处理）/ closed（已关闭）。
+ * 站内在线客服（聊优先 + 聊中提工单）。
+ * 会话状态：open（进行中）/ pending（待客服处理）/ closed（已关闭）。
+ * 工单状态：open / pending / resolved / closed。
  */
 @Service
 public class SupportService {
@@ -31,6 +41,15 @@ public class SupportService {
     public static final String STATUS_PENDING = "pending";
     public static final String STATUS_CLOSED = "closed";
 
+    public static final String TICKET_OPEN = "open";
+    public static final String TICKET_PENDING = "pending";
+    public static final String TICKET_RESOLVED = "resolved";
+    public static final String TICKET_CLOSED = "closed";
+
+    public static final String PRIORITY_LOW = "low";
+    public static final String PRIORITY_NORMAL = "normal";
+    public static final String PRIORITY_HIGH = "high";
+
     public static final String SENDER_USER = "user";
     public static final String SENDER_ADMIN = "admin";
     public static final String SENDER_SYSTEM = "system";
@@ -38,18 +57,26 @@ public class SupportService {
     private static final int MAX_CONTENT_LEN = 4000;
     private static final int CREATE_LIMIT_PER_MINUTE = 5;
     private static final int MESSAGE_LIMIT_PER_MINUTE = 30;
+    private static final int TICKET_LIMIT_PER_MINUTE = 5;
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final Set<String> TICKET_STATUSES = new HashSet<>(Arrays.asList(
+            TICKET_OPEN, TICKET_PENDING, TICKET_RESOLVED, TICKET_CLOSED));
+    private static final Set<String> TICKET_PRIORITIES = new HashSet<>(Arrays.asList(
+            PRIORITY_LOW, PRIORITY_NORMAL, PRIORITY_HIGH));
 
     private final MediaSupportSessionMapper sessionMapper;
     private final MediaSupportMessageMapper messageMapper;
+    private final MediaSupportTicketMapper ticketMapper;
 
     /** 简易进程内限流：key -> {windowStartMs, count} */
     private final ConcurrentHashMap<String, long[]> rateBuckets = new ConcurrentHashMap<>();
 
     public SupportService(MediaSupportSessionMapper sessionMapper,
-                          MediaSupportMessageMapper messageMapper) {
+                          MediaSupportMessageMapper messageMapper,
+                          MediaSupportTicketMapper ticketMapper) {
         this.sessionMapper = sessionMapper;
         this.messageMapper = messageMapper;
+        this.ticketMapper = ticketMapper;
     }
 
     @Transactional
@@ -142,6 +169,88 @@ public class SupportService {
     }
 
     @Transactional
+    public Map<String, Object> raiseTicket(Long sessionId,
+                                           String sessionToken,
+                                           Long userId,
+                                           String subject,
+                                           String priority,
+                                           String category,
+                                           String description,
+                                           String clientKey) {
+        guardRate("ticket:" + nullToEmpty(clientKey), TICKET_LIMIT_PER_MINUTE);
+        MediaSupportSession session = requireAccessible(sessionId, sessionToken, userId);
+        if (STATUS_CLOSED.equals(session.getStatus())) {
+            throw new BizException(400, "会话已关闭，请新开会话后再提工单");
+        }
+
+        MediaSupportTicket active = findActiveTicket(session.getId());
+        if (active != null) {
+            // 已有进行中工单：返回现有，不重复创建
+            return detailForUser(session, true);
+        }
+
+        String subj = trimToNull(subject);
+        if (subj == null) {
+            subj = trimToNull(session.getSubject());
+        }
+        if (subj == null) {
+            subj = defaultSubjectFromMessages(session.getId());
+        }
+        if (subj == null) {
+            subj = "用户工单";
+        }
+        if (subj.length() > 256) {
+            subj = subj.substring(0, 256);
+        }
+
+        String prio = trimToNull(priority);
+        if (prio == null) {
+            prio = PRIORITY_NORMAL;
+        }
+        if (!TICKET_PRIORITIES.contains(prio)) {
+            throw new BizException(400, "无效的工单优先级");
+        }
+
+        String desc = trimToNull(description);
+        if (desc == null) {
+            desc = defaultDescriptionFromMessages(session.getId());
+        }
+        if (desc != null && desc.length() > MAX_CONTENT_LEN) {
+            desc = desc.substring(0, MAX_CONTENT_LEN);
+        }
+
+        Date now = new Date();
+        MediaSupportTicket ticket = new MediaSupportTicket();
+        ticket.setSessionId(session.getId());
+        ticket.setSubject(subj);
+        ticket.setPriority(prio);
+        ticket.setCategory(trimToNull(category));
+        ticket.setStatus(TICKET_OPEN);
+        ticket.setDescription(desc);
+        ticket.setCreatedByUserId(userId);
+        ticketMapper.insertSelective(ticket);
+
+        MediaSupportMessage sys = new MediaSupportMessage();
+        sys.setSessionId(session.getId());
+        sys.setSenderType(SENDER_SYSTEM);
+        sys.setSenderUserId(userId);
+        sys.setContent("用户已提工单 #" + ticket.getId() + "：" + subj);
+        messageMapper.insertSelective(sys);
+
+        MediaSupportSession patch = new MediaSupportSession();
+        patch.setId(session.getId());
+        patch.setStatus(STATUS_PENDING);
+        patch.setLastMessageAt(now);
+        patch.setAdminUnread((session.getAdminUnread() == null ? 0 : session.getAdminUnread()) + 1);
+        if (userId != null && session.getUserId() == null) {
+            patch.setUserId(userId);
+        }
+        sessionMapper.updateByPrimaryKeySelective(patch);
+
+        return detailForUser(sessionMapper.selectByPrimaryKey(session.getId()), true);
+    }
+
+    @Transactional
     public Map<String, Object> markUserRead(Long sessionId, String sessionToken, Long userId) {
         MediaSupportSession session = requireAccessible(sessionId, sessionToken, userId);
         MediaSupportSession patch = new MediaSupportSession();
@@ -151,7 +260,7 @@ public class SupportService {
         return detailForUser(sessionMapper.selectByPrimaryKey(session.getId()), true);
     }
 
-    public PageResult<MediaSupportSession> adminPage(String status, String keyword, int pageNum, int pageSize) {
+    public PageResult<Map<String, Object>> adminPage(String status, String keyword, int pageNum, int pageSize) {
         MediaSupportSessionExample example = new MediaSupportSessionExample();
         MediaSupportSessionExample.Criteria c = example.createCriteria();
         if (status != null && !status.isBlank()) {
@@ -159,14 +268,24 @@ public class SupportService {
         }
         if (keyword != null && !keyword.isBlank()) {
             String like = "%" + keyword.trim() + "%";
-            // Example AND 语义：主题或联系方式模糊匹配走多 criteria OR 较繁琐，这里用 subject like
             c.andSubjectLike(like);
         }
         example.setOrderByClause("updated_at desc");
         PageHelper.startPage(pageNum, pageSize);
         List<MediaSupportSession> list = sessionMapper.selectByExample(example);
         PageInfo<MediaSupportSession> info = new PageInfo<>(list);
-        return new PageResult<>(info.getTotal(), pageNum, pageSize, list);
+
+        Map<Long, MediaSupportTicket> latestBySession = latestTicketsBySessionIds(
+                list.stream().map(MediaSupportSession::getId).collect(Collectors.toList()));
+
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (MediaSupportSession session : list) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("session", session);
+            row.put("ticket", latestBySession.get(session.getId()));
+            rows.add(row);
+        }
+        return new PageResult<>(info.getTotal(), pageNum, pageSize, rows);
     }
 
     public Map<String, Object> adminDetail(Long sessionId) {
@@ -235,12 +354,53 @@ public class SupportService {
         return detailForAdmin(sessionMapper.selectByPrimaryKey(session.getId()), true);
     }
 
+    @Transactional
+    public Map<String, Object> adminUpdateTicketStatus(Long sessionId, Long ticketId, String status, Long adminUserId) {
+        MediaSupportSession session = requireSession(sessionId);
+        if (ticketId == null) {
+            throw new BizException(400, "ticket_id required");
+        }
+        String next = trimToNull(status);
+        if (next == null || !TICKET_STATUSES.contains(next)) {
+            throw new BizException(400, "无效的工单状态");
+        }
+        MediaSupportTicket ticket = ticketMapper.selectByPrimaryKey(ticketId);
+        if (ticket == null || !session.getId().equals(ticket.getSessionId())) {
+            throw new BizException(404, "ticket not found");
+        }
+        if (next.equals(ticket.getStatus())) {
+            return detailForAdmin(session, true);
+        }
+
+        MediaSupportTicket patch = new MediaSupportTicket();
+        patch.setId(ticket.getId());
+        patch.setStatus(next);
+        ticketMapper.updateByPrimaryKeySelective(patch);
+
+        Date now = new Date();
+        MediaSupportMessage sys = new MediaSupportMessage();
+        sys.setSessionId(session.getId());
+        sys.setSenderType(SENDER_SYSTEM);
+        sys.setSenderUserId(adminUserId);
+        sys.setContent("工单 #" + ticket.getId() + " 状态更新为 " + next);
+        messageMapper.insertSelective(sys);
+
+        MediaSupportSession sessionPatch = new MediaSupportSession();
+        sessionPatch.setId(session.getId());
+        sessionPatch.setLastMessageAt(now);
+        sessionPatch.setUserUnread((session.getUserUnread() == null ? 0 : session.getUserUnread()) + 1);
+        sessionMapper.updateByPrimaryKeySelective(sessionPatch);
+
+        return detailForAdmin(sessionMapper.selectByPrimaryKey(session.getId()), true);
+    }
+
     private Map<String, Object> detailForUser(MediaSupportSession session, boolean withMessages) {
         Map<String, Object> result = new HashMap<>();
         result.put("session", session);
         if (withMessages) {
             result.put("messages", listMessages(session.getId()));
         }
+        result.put("ticket", findLatestTicket(session.getId()));
         return result;
     }
 
@@ -253,6 +413,76 @@ public class SupportService {
         example.createCriteria().andSessionIdEqualTo(sessionId);
         example.setOrderByClause("id asc");
         return messageMapper.selectByExample(example);
+    }
+
+    private MediaSupportTicket findActiveTicket(Long sessionId) {
+        MediaSupportTicketExample example = new MediaSupportTicketExample();
+        example.createCriteria().andSessionIdEqualTo(sessionId).andStatusNotIn(
+                Arrays.asList(TICKET_RESOLVED, TICKET_CLOSED));
+        example.setOrderByClause("id desc");
+        List<MediaSupportTicket> list = ticketMapper.selectByExample(example);
+        return list.stream()
+                .filter(t -> sessionId.equals(t.getSessionId()))
+                .filter(t -> !TICKET_RESOLVED.equals(t.getStatus()) && !TICKET_CLOSED.equals(t.getStatus()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private MediaSupportTicket findLatestTicket(Long sessionId) {
+        MediaSupportTicketExample example = new MediaSupportTicketExample();
+        example.createCriteria().andSessionIdEqualTo(sessionId);
+        example.setOrderByClause("id desc");
+        List<MediaSupportTicket> list = ticketMapper.selectByExample(example);
+        return list.stream()
+                .filter(t -> sessionId.equals(t.getSessionId()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Map<Long, MediaSupportTicket> latestTicketsBySessionIds(List<Long> sessionIds) {
+        Map<Long, MediaSupportTicket> map = new HashMap<>();
+        if (sessionIds == null || sessionIds.isEmpty()) {
+            return map;
+        }
+        MediaSupportTicketExample example = new MediaSupportTicketExample();
+        example.createCriteria().andSessionIdIn(sessionIds);
+        example.setOrderByClause("id desc");
+        List<MediaSupportTicket> list = ticketMapper.selectByExample(example);
+        for (MediaSupportTicket ticket : list) {
+            map.putIfAbsent(ticket.getSessionId(), ticket);
+        }
+        return map;
+    }
+
+    private String defaultSubjectFromMessages(Long sessionId) {
+        List<MediaSupportMessage> messages = listMessages(sessionId);
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            MediaSupportMessage m = messages.get(i);
+            if (SENDER_USER.equals(m.getSenderType()) && m.getContent() != null && !m.getContent().isBlank()) {
+                String c = m.getContent().trim();
+                return c.length() > 40 ? c.substring(0, 40) : c;
+            }
+        }
+        return null;
+    }
+
+    private String defaultDescriptionFromMessages(Long sessionId) {
+        List<MediaSupportMessage> messages = listMessages(sessionId);
+        StringBuilder sb = new StringBuilder();
+        int count = 0;
+        for (int i = messages.size() - 1; i >= 0 && count < 5; i--) {
+            MediaSupportMessage m = messages.get(i);
+            if (m.getContent() == null || m.getContent().isBlank()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.insert(0, "\n");
+            }
+            sb.insert(0, "[" + m.getSenderType() + "] " + m.getContent().trim());
+            count++;
+        }
+        String text = sb.toString().trim();
+        return text.isEmpty() ? null : text;
     }
 
     private MediaSupportSession requireSession(Long sessionId) {

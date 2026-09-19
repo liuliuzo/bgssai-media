@@ -4,6 +4,7 @@ import {
   Card,
   Descriptions,
   Input,
+  Select,
   Space,
   Tag,
   Typography,
@@ -15,6 +16,7 @@ import {
   fetchSupportDetail,
   markSupportRead,
   replySupport,
+  updateSupportTicketStatus,
   type SupportDetail,
   type SupportMessage,
 } from '../api/support';
@@ -26,6 +28,14 @@ function statusTag(status?: string) {
   if (status === 'pending') return <Tag color="gold">待处理</Tag>;
   if (status === 'open') return <Tag color="blue">进行中</Tag>;
   if (status === 'closed') return <Tag>已关闭</Tag>;
+  return <Tag>{status || '-'}</Tag>;
+}
+
+function ticketStatusTag(status?: string) {
+  if (status === 'pending') return <Tag color="gold">pending</Tag>;
+  if (status === 'open') return <Tag color="blue">open</Tag>;
+  if (status === 'resolved') return <Tag color="green">resolved</Tag>;
+  if (status === 'closed') return <Tag>closed</Tag>;
   return <Tag>{status || '-'}</Tag>;
 }
 
@@ -98,7 +108,22 @@ export default function SupportSessionDetail() {
     }
   };
 
+  const handleTicketStatus = async (status: string) => {
+    if (!detail?.ticket) return;
+    setSending(true);
+    try {
+      const next = await updateSupportTicketStatus(sessionId, detail.ticket.id, status);
+      setDetail(next);
+      message.success('工单状态已更新');
+    } catch {
+      // handled
+    } finally {
+      setSending(false);
+    }
+  };
+
   const session = detail?.session;
+  const ticket = detail?.ticket;
   const messages: SupportMessage[] = detail?.messages || [];
   const closed = session?.status === 'closed';
 
@@ -112,6 +137,7 @@ export default function SupportSessionDetail() {
           </Button>
           <span>会话 #{sessionId}</span>
           {statusTag(session?.status)}
+          {ticket ? ticketStatusTag(ticket.status) : null}
         </Space>
       }
       extra={
@@ -136,6 +162,53 @@ export default function SupportSessionDetail() {
           </Descriptions.Item>
         </Descriptions>
       ) : null}
+
+      {ticket ? (
+        <Card
+          size="small"
+          type="inner"
+          title={
+            <Space>
+              <span>挂接工单 #{ticket.id}</span>
+              {ticketStatusTag(ticket.status)}
+            </Space>
+          }
+          style={{ marginBottom: 16 }}
+          extra={
+            <Select
+              size="small"
+              style={{ width: 140 }}
+              value={ticket.status}
+              disabled={sending}
+              onChange={(v) => void handleTicketStatus(v)}
+              options={[
+                { value: 'open', label: 'open' },
+                { value: 'pending', label: 'pending' },
+                { value: 'resolved', label: 'resolved' },
+                { value: 'closed', label: 'closed' },
+              ]}
+            />
+          }
+        >
+          <Descriptions size="small" column={2}>
+            <Descriptions.Item label="主题">{ticket.subject || '-'}</Descriptions.Item>
+            <Descriptions.Item label="优先级">{ticket.priority || 'normal'}</Descriptions.Item>
+            <Descriptions.Item label="分类">{ticket.category || '-'}</Descriptions.Item>
+            <Descriptions.Item label="创建时间">
+              {ticket.created_at ? new Date(ticket.created_at).toLocaleString('zh-CN') : '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="说明" span={2}>
+              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+                {ticket.description || '-'}
+              </pre>
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+      ) : (
+        <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+          本会话尚未提工单。用户可在聊天面板内「提工单」。
+        </Text>
+      )}
 
       <div
         ref={listRef}

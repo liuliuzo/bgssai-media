@@ -2,8 +2,10 @@ package com.bgssai.media.common.service;
 
 import com.bgssai.media.common.domain.MediaSupportMessage;
 import com.bgssai.media.common.domain.MediaSupportSession;
+import com.bgssai.media.common.domain.MediaSupportTicket;
 import com.bgssai.media.common.mapper.MediaSupportMessageMapper;
 import com.bgssai.media.common.mapper.MediaSupportSessionMapper;
+import com.bgssai.media.common.mapper.MediaSupportTicketMapper;
 import com.bgssai.media.common.web.BizException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,18 +30,22 @@ class SupportServiceTest {
 
     @Mock MediaSupportSessionMapper sessionMapper;
     @Mock MediaSupportMessageMapper messageMapper;
+    @Mock MediaSupportTicketMapper ticketMapper;
 
     SupportService service;
     final AtomicLong sessionIds = new AtomicLong(1);
     final AtomicLong messageIds = new AtomicLong(1);
+    final AtomicLong ticketIds = new AtomicLong(1);
     final List<MediaSupportSession> sessions = new ArrayList<>();
     final List<MediaSupportMessage> messages = new ArrayList<>();
+    final List<MediaSupportTicket> tickets = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
         sessions.clear();
         messages.clear();
-        service = new SupportService(sessionMapper, messageMapper);
+        tickets.clear();
+        service = new SupportService(sessionMapper, messageMapper, ticketMapper);
         service.clearRateBucketsForTest();
 
         when(sessionMapper.insertSelective(any())).thenAnswer(inv -> {
@@ -66,10 +72,7 @@ class SupportServiceTest {
             if (patch.getUserId() != null) existing.setUserId(patch.getUserId());
             return 1;
         });
-        when(sessionMapper.selectByExample(any())).thenAnswer(inv -> {
-            // token lookup: return matching sessions
-            return new ArrayList<>(sessions);
-        });
+        when(sessionMapper.selectByExample(any())).thenAnswer(inv -> new ArrayList<>(sessions));
         when(messageMapper.insertSelective(any())).thenAnswer(inv -> {
             MediaSupportMessage row = inv.getArgument(0);
             row.setId(messageIds.getAndIncrement());
@@ -77,6 +80,32 @@ class SupportServiceTest {
             return 1;
         });
         when(messageMapper.selectByExample(any())).thenAnswer(inv -> new ArrayList<>(messages));
+        when(ticketMapper.insertSelective(any())).thenAnswer(inv -> {
+            MediaSupportTicket row = inv.getArgument(0);
+            row.setId(ticketIds.getAndIncrement());
+            tickets.add(row);
+            return 1;
+        });
+        when(ticketMapper.selectByPrimaryKey(anyLong())).thenAnswer(inv -> {
+            Long id = inv.getArgument(0);
+            return tickets.stream().filter(t -> id.equals(t.getId())).findFirst().orElse(null);
+        });
+        when(ticketMapper.selectByExample(any())).thenAnswer(inv -> {
+            List<MediaSupportTicket> copy = new ArrayList<>(tickets);
+            copy.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+            return copy;
+        });
+        when(ticketMapper.updateByPrimaryKeySelective(any())).thenAnswer(inv -> {
+            MediaSupportTicket patch = inv.getArgument(0);
+            MediaSupportTicket existing = tickets.stream()
+                    .filter(t -> patch.getId().equals(t.getId())).findFirst().orElse(null);
+            if (existing == null) {
+                return 0;
+            }
+            if (patch.getStatus() != null) existing.setStatus(patch.getStatus());
+            if (patch.getSubject() != null) existing.setSubject(patch.getSubject());
+            return 1;
+        });
     }
 
     @Test
@@ -93,6 +122,7 @@ class SupportServiceTest {
         assertEquals(1, messages.size());
         assertEquals(SupportService.SENDER_USER, messages.get(0).getSenderType());
         assertEquals("播放失败怎么办", messages.get(0).getContent());
+        assertNull(result.get("ticket"));
     }
 
     @Test
@@ -128,5 +158,61 @@ class SupportServiceTest {
         BizException ex = assertThrows(BizException.class, () ->
                 service.createSession(null, null, null, null, null, "msg-overflow", "ip:rate"));
         assertEquals(429, ex.getCode());
+    }
+
+    @Test
+    void raiseTicketFromChatDefaultsSubjectAndKeepsChatting() {
+        Map<String, Object> created = service.createSession(
+                9L, null, null, null, null, "播放卡顿", "ip:ticket");
+        MediaSupportSession session = (MediaSupportSession) created.get("session");
+
+        Map<String, Object> detail = service.raiseTicket(
+                session.getId(), session.getSessionToken(), 9L,
+                null, null, null, null, "ip:ticket");
+
+        MediaSupportTicket ticket = (MediaSupportTicket) detail.get("ticket");
+        assertNotNull(ticket);
+        assertEquals(SupportService.TICKET_OPEN, ticket.getStatus());
+        assertEquals("播放卡顿", ticket.getSubject());
+        assertEquals(SupportService.PRIORITY_NORMAL, ticket.getPriority());
+        assertEquals(session.getId(), ticket.getSessionId());
+        assertTrue(messages.stream().anyMatch(m ->
+                SupportService.SENDER_SYSTEM.equals(m.getSenderType())
+                        && m.getContent().contains("提工单")));
+
+        // 提工单后仍可继续聊天
+        Map<String, Object> after = service.sendUserMessage(
+                session.getId(), session.getSessionToken(), 9L, "补充：仅 Android", "ip:ticket");
+        assertEquals(SupportService.STATUS_PENDING, ((MediaSupportSession) after.get("session")).getStatus());
+        assertNotNull(after.get("ticket"));
+    }
+
+    @Test
+    void raiseTicketIdempotentWhileActive() {
+        service.createSession(9L, null, null, null, null, "hello", "ip:dup");
+        MediaSupportSession session = sessions.get(0);
+        service.raiseTicket(session.getId(), session.getSessionToken(), 9L,
+                "主题A", "high", null, null, "ip:dup");
+        assertEquals(1, tickets.size());
+
+        Map<String, Object> again = service.raiseTicket(
+                session.getId(), session.getSessionToken(), 9L,
+                "主题B", "low", null, null, "ip:dup");
+        assertEquals(1, tickets.size());
+        assertEquals("主题A", ((MediaSupportTicket) again.get("ticket")).getSubject());
+    }
+
+    @Test
+    void adminCanUpdateTicketStatus() {
+        service.createSession(9L, null, null, null, null, "hello", "ip:admin-ticket");
+        MediaSupportSession session = sessions.get(0);
+        service.raiseTicket(session.getId(), session.getSessionToken(), 9L,
+                "工单", null, null, null, "ip:admin-ticket");
+        MediaSupportTicket ticket = tickets.get(0);
+
+        Map<String, Object> detail = service.adminUpdateTicketStatus(
+                session.getId(), ticket.getId(), SupportService.TICKET_RESOLVED, 1L);
+        MediaSupportTicket updated = (MediaSupportTicket) detail.get("ticket");
+        assertEquals(SupportService.TICKET_RESOLVED, updated.getStatus());
     }
 }
