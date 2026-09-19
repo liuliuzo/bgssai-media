@@ -17,6 +17,31 @@ import type { LoginResult } from '@/types/api';
 import { useShellMode } from '@/shell/useShellMode';
 import LegalLinks from '@/legal/LegalLinks';
 import BotPromoCard, { BOT_PROMO_DISMISSED_KEY } from '@/components/BotPromoCard';
+import { PhoneDialField } from '@/components/PhoneDialField';
+import { DEFAULT_DIAL_CODE, composeApiPhone, validatePhoneParts } from '@/lib/phoneDial';
+
+function MediaPhoneInput({
+  value,
+  onChange,
+  dialCode,
+  onDialCodeChange,
+}: {
+  value?: string;
+  onChange?: (value: string) => void;
+  dialCode: string;
+  onDialCodeChange: (value: string) => void;
+}) {
+  return (
+    <PhoneDialField
+      id="login-phone"
+      dialCode={dialCode}
+      nationalNumber={value || ''}
+      onDialCodeChange={onDialCodeChange}
+      onNationalNumberChange={(next) => onChange?.(next)}
+      wrapperClassName="phone-dial-field"
+    />
+  );
+}
 
 function readBotPromoVisible(): boolean {
   try {
@@ -37,6 +62,7 @@ export default function LoginPage() {
   const [botPromoVisible, setBotPromoVisible] = useState(readBotPromoVisible);
   const [emailForm] = Form.useForm();
   const [phoneForm] = Form.useForm();
+  const [dialCode, setDialCode] = useState(DEFAULT_DIAL_CODE);
   const finishing = useRef(false);
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
@@ -124,13 +150,14 @@ export default function LoginPage() {
 
   const onSendPhoneOtp = async () => {
     const phone = phoneForm.getFieldValue('phone');
-    if (!phone) {
-      message.warning('请输入手机号');
+    const phoneError = validatePhoneParts(dialCode, phone);
+    if (phoneError) {
+      message.warning(phoneError);
       return;
     }
     setLoading(true);
     try {
-      const sent = await sendPhoneOtp(phone);
+      const sent = await sendPhoneOtp(composeApiPhone(dialCode, phone));
       setPhoneCodeSent(true);
       message.success(
         sent?.product && sent?.seq != null
@@ -147,7 +174,7 @@ export default function LoginPage() {
   const onPhoneLogin = async (values: { phone: string; code: string }) => {
     setLoading(true);
     try {
-      const result = await loginByPhoneOtp(values.phone, values.code);
+      const result = await loginByPhoneOtp(composeApiPhone(dialCode, values.phone), values.code);
       handleLoginSuccess(result);
     } catch (err) {
       message.error(err instanceof Error ? err.message : '登录失败');
@@ -281,9 +308,14 @@ export default function LoginPage() {
                   <Form.Item
                     name="phone"
                     label="手机号"
-                    rules={[{ required: true, message: '请输入手机号' }]}
+                    rules={[{
+                      validator: async (_, value) => {
+                        const err = validatePhoneParts(dialCode, value);
+                        if (err) throw new Error(err);
+                      },
+                    }]}
                   >
-                    <Input prefix={<PhoneOutlined />} placeholder="手机号" />
+                    <MediaPhoneInput dialCode={dialCode} onDialCodeChange={setDialCode} />
                   </Form.Item>
                   <Form.Item
                     name="code"

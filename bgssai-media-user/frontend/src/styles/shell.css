@@ -177,3 +177,28 @@ html.bgssai-shell-pane body {
   flex-wrap: wrap;
   gap: 2px 0;
 }
+
+.phone-dial-field {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.phone-dial-divider {
+  width: 1px;
+  flex: 0 0 1px;
+  align-self: stretch;
+  margin: 8px;
+  background: currentColor;
+  opacity: 0.16;
+}
+
+.phone-dial-number {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: inherit;
+  font: inherit;
+}

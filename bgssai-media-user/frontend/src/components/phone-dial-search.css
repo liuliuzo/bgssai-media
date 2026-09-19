@@ -1,0 +1,159 @@
+/* Searchable country-code dropdown — Liquid Glass */
+
+.phone-dial-combo {
+  position: relative;
+  flex: 0 0 148px;
+  max-width: 48%;
+  min-width: 0;
+}
+
+.phone-dial-combo-trigger {
+  width: 100%;
+  min-height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 0;
+  padding: 0 6px 0 2px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.phone-dial-combo-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.phone-dial-combo-code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.phone-dial-combo-caret {
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.45;
+}
+
+.phone-dial-combo-trigger[aria-expanded="true"] .phone-dial-combo-caret {
+  transform: rotate(180deg);
+}
+
+.phone-dial-combo-panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.86);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-top-color: rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(67, 56, 202, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.phone-dial-combo-search {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #0f172a;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.phone-dial-combo-search:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.phone-dial-combo-list {
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.phone-dial-combo-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.phone-dial-combo-option:hover,
+.phone-dial-combo-option.is-active {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.phone-dial-combo-option.is-selected {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.phone-dial-combo-option-dial {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-dial-combo-option-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #475569;
+}
+
+.phone-dial-combo-option.is-selected .phone-dial-combo-option-name {
+  color: #2563eb;
+}
+
+.phone-dial-combo-empty {
+  padding: 16px 8px;
+  color: #64748b;
+  font-size: 12px;
+  text-align: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
