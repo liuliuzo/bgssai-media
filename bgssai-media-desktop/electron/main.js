@@ -24,8 +24,31 @@ function createWindow() {
   });
 }
 
+/** Wrap an IPC handler so engine errors reach the renderer as data instead of a rejected promise. */
+function guarded(fn) {
+  return async (...args) => {
+    try {
+      return await fn(...args);
+    } catch (err) {
+      if (err && typeof err.toJSON === 'function') return err.toJSON();
+      return { ok: false, code: (err && err.code) || 'PLAYER_ERROR', message: err ? err.message : String(err) };
+    }
+  };
+}
+
 app.whenReady().then(() => {
-  player = new VlcPlayer();
+  player = new VlcPlayer({ resourcesPath: app.isPackaged ? process.resourcesPath : null });
+  const probe = player.probeEngine();
+  if (!probe.ok) {
+    // Explicit, visible flow when the decode engine is missing: no silent failure.
+    dialog.showMessageBox({
+      type: 'warning',
+      title: '未找到 VLC 解码引擎',
+      message: '本播放器依赖系统 VLC/libVLC 解码。',
+      detail: probe.steps.join(String.fromCharCode(10)),
+      buttons: ['知道了'],
+    });
+  }
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -37,7 +60,7 @@ app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-ipcMain.handle('player:openFiles', async () => {
+ipcMain.handle('player:openFiles', guarded(async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile', 'multiSelections'],
     filters: [
@@ -56,57 +79,61 @@ ipcMain.handle('player:openFiles', async () => {
   }
   await player.openPlaylist(result.filePaths);
   return { canceled: false, paths: result.filePaths };
-});
+}));
 
-ipcMain.handle('player:openPath', async (_evt, filePath) => {
+ipcMain.handle('player:openPath', guarded(async (_evt, filePath) => {
   await player.openPlaylist([filePath]);
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:play', async () => {
+ipcMain.handle('player:play', guarded(async () => {
   await player.play();
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:pause', async () => {
+ipcMain.handle('player:pause', guarded(async () => {
   await player.pause();
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:stop', async () => {
+ipcMain.handle('player:stop', guarded(async () => {
   await player.stop();
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:next', async () => {
+ipcMain.handle('player:next', guarded(async () => {
   await player.next();
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:prev', async () => {
+ipcMain.handle('player:prev', guarded(async () => {
   await player.prev();
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:seek', async (_evt, seconds) => {
+ipcMain.handle('player:seek', guarded(async (_evt, seconds) => {
   await player.seek(seconds);
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:setVolume', async (_evt, volume) => {
+ipcMain.handle('player:setVolume', guarded(async (_evt, volume) => {
   await player.setVolume(volume);
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:setRate', async (_evt, rate) => {
+ipcMain.handle('player:setRate', guarded(async (_evt, rate) => {
   await player.setRate(rate);
   return { ok: true };
-});
+}));
 
-ipcMain.handle('player:status', async () => {
+ipcMain.handle('player:status', guarded(async () => {
   return player.getStatus();
-});
+}));
 
-ipcMain.handle('player:matrix', async () => {
+ipcMain.handle('player:matrix', guarded(async () => {
   return require('../shared/format-matrix.json');
-});
+}));
+
+ipcMain.handle('player:engine', guarded(async () => {
+  return player.probeEngine();
+}));

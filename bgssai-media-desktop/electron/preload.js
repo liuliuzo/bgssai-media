@@ -15,4 +15,5 @@ contextBridge.exposeInMainWorld('mediaDesktop', {
   setRate: (r) => ipcRenderer.invoke('player:setRate', r),
   status: () => ipcRenderer.invoke('player:status'),
   matrix: () => ipcRenderer.invoke('player:matrix'),
+  engine: () => ipcRenderer.invoke('player:engine'),
 });

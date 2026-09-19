@@ -64,3 +64,15 @@ button:hover { border-color: var(--accent); }
 }
 .hint { color: var(--muted); font-size: 0.85rem; }
 h2 { font-size: 1.1rem; margin: 0 0 10px; }
+
+.engine-error {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #c0392b;
+  border-radius: 8px;
+  background: rgba(192, 57, 43, 0.08);
+  color: inherit;
+  font-size: 14px;
+}
+.engine-error ol { margin: 8px 0 8px 18px; padding: 0; }
+.engine-error a { word-break: break-all; }
