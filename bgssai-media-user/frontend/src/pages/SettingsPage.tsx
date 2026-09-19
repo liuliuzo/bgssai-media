@@ -52,7 +52,7 @@ const CONNECTORS = [
   {
     key: 'bgssai-bot',
     name: 'bgssai-bot',
-    hint: 'BGSSAI Bot 托管操作媒体仓，PAT 或 Chat 下发 MCP',
+    hint: 'BGSSAI BOT 托管操作媒体仓，PAT 或 Chat 下发 MCP',
   },
 ] as const;
 

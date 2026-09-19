@@ -50,12 +50,12 @@ export default function BotPromoCard({ onVisibilityChange }: BotPromoCardProps) 
   };
 
   return (
-    <aside className="bot-promo-card" aria-label="认识 BGSSAI Bot">
+    <aside className="bot-promo-card" aria-label="认识 BGSSAI BOT">
       <div className="bot-promo-card__visual">
         <BotMark />
       </div>
       <div className="bot-promo-card__body">
-        <h2 className="bot-promo-card__title">认识 BGSSAI Bot</h2>
+        <h2 className="bot-promo-card__title">认识 BGSSAI BOT</h2>
         <p className="bot-promo-card__blurb">
           可委派实际工作的 AI 队友。Bot 能登录你的工具，像你一样使用它们，并带回已完成的工作。
         </p>
@@ -65,7 +65,7 @@ export default function BotPromoCard({ onVisibilityChange }: BotPromoCardProps) 
           忽略
         </button>
         <Link to="/download/bot" className="bot-promo-card__download">
-          下载 BGSSAI Bot
+          下载 BGSSAI BOT
         </Link>
       </div>
     </aside>
