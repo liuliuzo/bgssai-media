@@ -38,7 +38,7 @@ public class OAuthSettings {
     @Value("${bgssai.oauth.alipay.redirect-uri:}")
     private String alipayRedirectUri;
 
-    @Value("${bgssai.chat.issuer:https://chat.bgssai.cn}")
+    @Value("${bgssai.chat.issuer:https://chat-cn.bgssai.com}")
     private String chatIssuer;
     @Value("${bgssai.chat.client-id:}")
     private String chatClientId;
@@ -66,7 +66,7 @@ public class OAuthSettings {
     }
 
     public String chatIssuer() {
-        return trimSlash(chatIssuer == null || chatIssuer.isBlank() ? "https://chat.bgssai.cn" : chatIssuer);
+        return trimSlash(chatIssuer == null || chatIssuer.isBlank() ? "https://chat-cn.bgssai.com" : chatIssuer);
     }
 
     public String getWechatAppId() { return trim(wechatAppId); }
