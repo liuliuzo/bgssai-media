@@ -1,19 +1,21 @@
 # BGSSAI Media 六端客户端状态
 
-标准：`docs/feature/six-platform-clients.md`（2026-09-19）。  
-Web 用户端（3002）与管理端（3001）是共享 UI；**不能**用仅响应式网页替代六端。
+标准：`docs/feature/six-platform-clients.md`（2026-09-19）。
 
-**全六端强制约定（Boss 直聘模式）**：**每一个端都是单个应用 + 两个登录入口**（用户 / 管理）。  
-禁止拆成 admin 与 user 两套安装包、两套 Electron、或两个小程序。
+- `web=separate domains OK` — 浏览器用户站 / 管理站可用不同域名或路径；不要求装两套浏览器。
+- `installable=single-app dual-entry` — 可安装六端（Win / macOS / Linux / iOS / Android / 微信小程序）每端 **一个安装物**，应用内 **两个登录入口**（用户入口 / 管理入口）。对齐 Boss 直聘。
 
-| 端 | 形态 | 目录 | 状态 | 说明 |
+**禁止** 拆成 desktop-admin + desktop-user、mobile-admin + mobile-user、或两个小程序并行交付。
+
+| 端 | 形态 | 目录 | 约定 | 状态 |
 | --- | --- | --- | --- | --- |
-| Windows | 单 Electron | `clients/desktop/` | 脚手架 | 闸门双入口 → user / admin |
-| macOS | 同上（同一包） | `clients/desktop/` | 脚手架 | 同上 |
-| Linux | 同上（AppImage） | `clients/desktop/` | 脚手架 | 同上 |
-| iOS | 单 Capacitor App | `clients/mobile/` | 脚手架 | 闸门双入口；与 Android 同工程 |
-| Android | 同上（同一包） | `clients/mobile/` | 脚手架 | 无独立 admin APK |
-| 微信小程序 | 单 AppID | `clients/miniprogram/` | 脚手架 | 首页双入口 |
+| 浏览器 Web | 分域名/路径 | `bgssai-media-user/frontend`、`bgssai-media-admin/frontend` | `web=separate domains OK` | 已有 |
+| Windows | 单 Electron | `clients/desktop/` | `installable=single-app dual-entry` | 脚手架 |
+| macOS | 同上（同一包） | `clients/desktop/` | 同上 | 脚手架 |
+| Linux | 同上（AppImage） | `clients/desktop/` | 同上 | 脚手架 |
+| iOS | 单 Capacitor App | `clients/mobile/` | 同上 | 脚手架 |
+| Android | 同上（同一包） | `clients/mobile/` | 同上 | 脚手架 |
+| 微信小程序 | 单 AppID | `clients/miniprogram/` | 同上 | 脚手架 |
 
 ## 与既有模块的关系
 

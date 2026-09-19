@@ -40,5 +40,5 @@ npm run open:android
 ## 验收口径（本阶段）
 
 - 模拟器/开发构建能打开启动页并看到两个入口
-- 点「用户登录」进入 user 登录页；点「管理登录」进入 admin 登录页
+- 点「用户入口」进入 user 登录页；点「管理入口」进入 admin 登录页
 - 仍是同一个 App ID：`com.bgssai.media`
