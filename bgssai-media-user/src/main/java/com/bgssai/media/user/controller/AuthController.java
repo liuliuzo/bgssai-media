@@ -66,6 +66,19 @@ public class AuthController {
         return ApiResponse.ok(toMap(authService.buildOauthAuthorize(body.get("provider"))));
     }
 
+    /**
+     * GET /auth/oauth/channels — 凭证已配齐的第三方登录渠道（WECHAT / DOUYIN / BAIDU / ALIPAY / CHAT）。
+     * 登录页据此决定画哪几个入口。没有这个接口时，五个入口无条件常驻，点下去才报「未配置」。
+     */
+    @GetMapping("/oauth/channels")
+    public ApiResponse<java.util.List<String>> oauthChannels() {
+        java.util.List<String> open = new java.util.ArrayList<>(authService.configuredCnProviders());
+        if (chatOauthService.liveReady()) {
+            open.add("CHAT");
+        }
+        return ApiResponse.ok(open);
+    }
+
     @PostMapping("/oauth/authorize")
     public ApiResponse<Map<String, Object>> oauthAuthorize(@RequestBody Map<String, String> body) {
         return ApiResponse.ok(toMap(authService.buildOauthAuthorize(body.get("provider"))));
