@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.MediaCreatorVideoMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.MediaCreatorVideo">
+    <id column="id" property="id"/>
+    <result column="user_id" property="userId"/>
+    <result column="channel_id" property="channelId"/>
+    <result column="title" property="title"/>
+    <result column="description" property="description"/>
+    <result column="status" property="status"/>
+    <result column="original_filename" property="originalFilename"/>
+    <result column="original_path" property="originalPath"/>
+    <result column="content_type" property="contentType"/>
+    <result column="size_bytes" property="sizeBytes"/>
+    <result column="cover_path" property="coverPath"/>
+    <result column="cover_url" property="coverUrl"/>
+    <result column="like_count" property="likeCount"/>
+    <result column="comment_count" property="commentCount"/>
+    <result column="created_at" property="createdAt"/>
+    <result column="updated_at" property="updatedAt"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">id, user_id, channel_id, title, description, status, original_filename, original_path, content_type, size_bytes, cover_path, cover_url, like_count, comment_count, created_at, updated_at</sql>
+
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">and ${criterion.condition}</when>
+                <when test="criterion.singleValue">and ${criterion.condition} #{criterion.value}</when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+
+  <select id="selectByExample" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from media_creator_video
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+    <if test="orderByClause != null">order by ${orderByClause}</if>
+  </select>
+
+  <select id="countByExample" resultType="long">
+    select count(*) from media_creator_video
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long">
+    select <include refid="Base_Column_List"/>
+    from media_creator_video where id = #{id}
+  </select>
+
+  <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.MediaCreatorVideo"
+          useGeneratedKeys="true" keyProperty="id">
+    insert into media_creator_video
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">user_id,</if>
+      <if test="channelId != null">channel_id,</if>
+      <if test="title != null">title,</if>
+      <if test="description != null">description,</if>
+      <if test="status != null">status,</if>
+      <if test="originalFilename != null">original_filename,</if>
+      <if test="originalPath != null">original_path,</if>
+      <if test="contentType != null">content_type,</if>
+      <if test="sizeBytes != null">size_bytes,</if>
+      <if test="coverPath != null">cover_path,</if>
+      <if test="coverUrl != null">cover_url,</if>
+      <if test="likeCount != null">like_count,</if>
+      <if test="commentCount != null">comment_count,</if>
+      <if test="createdAt != null">created_at,</if>
+      <if test="updatedAt != null">updated_at,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">#{userId},</if>
+      <if test="channelId != null">#{channelId},</if>
+      <if test="title != null">#{title},</if>
+      <if test="description != null">#{description},</if>
+      <if test="status != null">#{status},</if>
+      <if test="originalFilename != null">#{originalFilename},</if>
+      <if test="originalPath != null">#{originalPath},</if>
+      <if test="contentType != null">#{contentType},</if>
+      <if test="sizeBytes != null">#{sizeBytes},</if>
+      <if test="coverPath != null">#{coverPath},</if>
+      <if test="coverUrl != null">#{coverUrl},</if>
+      <if test="likeCount != null">#{likeCount},</if>
+      <if test="commentCount != null">#{commentCount},</if>
+      <if test="createdAt != null">#{createdAt},</if>
+      <if test="updatedAt != null">#{updatedAt},</if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.bgssai.media.common.domain.MediaCreatorVideo">
+    update media_creator_video
+    <set>
+      <if test="userId != null">user_id = #{userId},</if>
+      <if test="channelId != null">channel_id = #{channelId},</if>
+      <if test="title != null">title = #{title},</if>
+      <if test="description != null">description = #{description},</if>
+      <if test="status != null">status = #{status},</if>
+      <if test="originalFilename != null">original_filename = #{originalFilename},</if>
+      <if test="originalPath != null">original_path = #{originalPath},</if>
+      <if test="contentType != null">content_type = #{contentType},</if>
+      <if test="sizeBytes != null">size_bytes = #{sizeBytes},</if>
+      <if test="coverPath != null">cover_path = #{coverPath},</if>
+      <if test="coverUrl != null">cover_url = #{coverUrl},</if>
+      <if test="likeCount != null">like_count = #{likeCount},</if>
+      <if test="commentCount != null">comment_count = #{commentCount},</if>
+      <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+    </set>
+    where id = #{id}
+  </update>
+
+</mapper>

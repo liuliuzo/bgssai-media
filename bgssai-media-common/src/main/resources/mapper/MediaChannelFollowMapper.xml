@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.MediaChannelFollowMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.MediaChannelFollow">
+    <id column="id" property="id"/>
+    <result column="follower_user_id" property="followerUserId"/>
+    <result column="channel_id" property="channelId"/>
+    <result column="created_at" property="createdAt"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">id, follower_user_id, channel_id, created_at</sql>
+
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">and ${criterion.condition}</when>
+                <when test="criterion.singleValue">and ${criterion.condition} #{criterion.value}</when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+
+  <select id="selectByExample" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from media_channel_follow
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+    <if test="orderByClause != null">order by ${orderByClause}</if>
+  </select>
+
+  <select id="countByExample" resultType="long">
+    select count(*) from media_channel_follow
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+  </select>
+
+  <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.MediaChannelFollow"
+          useGeneratedKeys="true" keyProperty="id">
+    insert into media_channel_follow
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="followerUserId != null">follower_user_id,</if>
+      <if test="channelId != null">channel_id,</if>
+      <if test="createdAt != null">created_at,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="followerUserId != null">#{followerUserId},</if>
+      <if test="channelId != null">#{channelId},</if>
+      <if test="createdAt != null">#{createdAt},</if>
+    </trim>
+  </insert>
+
+  <delete id="deleteByExample">
+    delete from media_channel_follow
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+  </delete>
+
+</mapper>
