@@ -3,6 +3,7 @@
 const { spawn } = require('child_process');
 const net = require('net');
 const path = require('path');
+const { locateVlc, headlessArgs, VlcNotFoundError } = require('./vlc-locator');
 
 /**
  * Controls system VLC (libVLC) via the RC (remote control) interface.
@@ -10,32 +11,84 @@ const path = require('path');
  * Electron provides the shell UI; VLC owns the playback window.
  */
 class VlcPlayer {
-  constructor() {
+  /**
+   * @param {object} [opts]
+   * @param {string} [opts.resourcesPath] Electron process.resourcesPath (bundled engine lookup)
+   * @param {Function} [opts.spawn]       injection for tests
+   * @param {Function} [opts.locate]      injection for tests
+   */
+  constructor(opts = {}) {
     this.proc = null;
     this.port = 4212;
     this.host = '127.0.0.1';
     this.playlist = [];
     this.index = 0;
     this.ready = false;
+    this.engine = null;        // { binary, source } once located
+    this.lastError = null;     // last engine-level error (VLC_NOT_FOUND / VLC_EXITED / VLC_RC_TIMEOUT)
+    this.resourcesPath = opts.resourcesPath || null;
+    this.spawnImpl = opts.spawn || spawn;
+    this.locateImpl = opts.locate || locateVlc;
+  }
+
+  /**
+   * Resolve the decode engine without starting it. Never throws; returns a status object
+   * the UI can render (ok + binary, or ok:false + VLC_NOT_FOUND + install steps).
+   */
+  probeEngine() {
+    try {
+      const found = this.locateImpl({ resourcesPath: this.resourcesPath });
+      this.engine = { binary: found.binary, source: found.source };
+      this.lastError = null;
+      return { ok: true, code: 'VLC_FOUND', binary: found.binary, source: found.source, searched: found.searched };
+    } catch (err) {
+      if (err instanceof VlcNotFoundError) {
+        this.engine = null;
+        this.lastError = err.toJSON();
+        return this.lastError;
+      }
+      throw err;
+    }
   }
 
   async ensureStarted() {
     if (this.proc && this.ready) return;
     await this.shutdown();
+    const probe = this.probeEngine();
+    if (!probe.ok) {
+      const err = new VlcNotFoundError(probe.platform, probe.searched);
+      throw err;
+    }
     const args = [
-      '--intf', 'rc',
+      ...headlessArgs(process.platform),
       '--rc-host', `${this.host}:${this.port}`,
-      '--no-one-instance',
-      '--quiet',
     ];
-    this.proc = spawn('cvlc', args, {
+    this.proc = this.spawnImpl(this.engine.binary, args, {
       stdio: ['ignore', 'ignore', 'ignore'],
+      windowsHide: true,
     });
-    this.proc.on('exit', () => {
+    this.proc.on('error', (err) => {
+      // spawn failure (ENOENT / EACCES) must not crash the main process
       this.ready = false;
       this.proc = null;
+      this.lastError = { ok: false, code: 'VLC_SPAWN_FAILED', message: `无法启动 VLC：${err.message}` };
     });
-    await this.waitForPort(40, 100);
+    this.proc.on('exit', (code) => {
+      this.ready = false;
+      this.proc = null;
+      if (code !== 0 && code !== null) {
+        this.lastError = { ok: false, code: 'VLC_EXITED', message: `VLC 进程退出（exit=${code}）` };
+      }
+    });
+    try {
+      await this.waitForPort(40, 100);
+    } catch (err) {
+      const e = new Error(`VLC 已找到（${this.engine.binary}）但 RC 控制端口 ${this.host}:${this.port} 未就绪：${err.message}`);
+      e.code = 'VLC_RC_TIMEOUT';
+      this.lastError = { ok: false, code: e.code, message: e.message };
+      await this.shutdown();
+      throw e;
+    }
     this.ready = true;
     await this.send('volume 200');
   }
@@ -51,7 +104,7 @@ class VlcPlayer {
         socket.on('error', () => {
           socket.destroy();
           left -= 1;
-          if (left <= 0) reject(new Error('VLC RC port not ready; is vlc/cvlc installed?'));
+          if (left <= 0) reject(new Error('RC 端口连接超时'));
           else setTimeout(tryOnce, delayMs);
         });
       };
@@ -130,7 +183,9 @@ class VlcPlayer {
       index: this.index,
       current: this.playlist[this.index] || null,
       ready: this.ready,
-      engine: 'libVLC/cvlc-rc',
+      engine: this.engine ? `libVLC/rc (${this.engine.source}: ${this.engine.binary})` : 'libVLC/rc (未定位)',
+      engineBinary: this.engine ? this.engine.binary : null,
+      lastError: this.lastError,
     };
   }
 
@@ -142,7 +197,7 @@ class VlcPlayer {
       // ignore
     }
     try {
-      this.proc.kill('SIGTERM');
+      this.proc.kill();
     } catch (_) {
       // ignore
     }
