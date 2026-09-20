@@ -1,73 +1,15 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './BotPromoCard.css';
 
-export const BOT_PROMO_DISMISSED_KEY = 'bgssai-media-bot-promo-dismissed';
-
-function readDismissed(): boolean {
-  try {
-    return localStorage.getItem(BOT_PROMO_DISMISSED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function BotMark() {
+/**
+ * 登录卡下方的 BOT 下载入口，一行。
+ * 原先是一张带标题和整段介绍的浮动卡片——登录页要的是尽快登进去，
+ * 介绍性文字挪回 /download/bot，这里只留入口。不再写 localStorage。
+ */
+export default function BotPromoCard() {
   return (
-    <svg
-      className="bot-promo-card__mark"
-      viewBox="0 0 64 64"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <circle cx="32" cy="32" r="32" fill="#111" />
-      <rect x="18" y="24" width="10" height="18" rx="5" fill="#fff" transform="rotate(-18 23 33)" />
-      <rect x="36" y="24" width="10" height="18" rx="5" fill="#fff" transform="rotate(-18 41 33)" />
-    </svg>
-  );
-}
-
-type BotPromoCardProps = {
-  onVisibilityChange?: (visible: boolean) => void;
-};
-
-export default function BotPromoCard({ onVisibilityChange }: BotPromoCardProps) {
-  const [visible, setVisible] = useState(() => !readDismissed());
-
-  useEffect(() => {
-    onVisibilityChange?.(visible);
-  }, [visible, onVisibilityChange]);
-
-  if (!visible) return null;
-
-  const onDismiss = () => {
-    try {
-      localStorage.setItem(BOT_PROMO_DISMISSED_KEY, '1');
-    } catch {
-      /* ignore quota / private mode */
-    }
-    setVisible(false);
-  };
-
-  return (
-    <aside className="bot-promo-card" aria-label="认识 BGSSAI BOT">
-      <div className="bot-promo-card__visual">
-        <BotMark />
-      </div>
-      <div className="bot-promo-card__body">
-        <h2 className="bot-promo-card__title">认识 BGSSAI BOT</h2>
-        <p className="bot-promo-card__blurb">
-          可委派实际工作的 AI 队友。Bot 能登录你的工具，像你一样使用它们，并带回已完成的工作。
-        </p>
-      </div>
-      <div className="bot-promo-card__actions">
-        <button type="button" className="bot-promo-card__dismiss" onClick={onDismiss}>
-          忽略
-        </button>
-        <Link to="/download/bot" className="bot-promo-card__download">
-          下载 BGSSAI BOT
-        </Link>
-      </div>
-    </aside>
+    <p className="bot-promo-link">
+      <Link to="/download/bot">下载 BGSSAI BOT</Link>
+    </p>
   );
 }

@@ -127,6 +127,17 @@ public class AuthService {
         return tokenResult(user);
     }
 
+    /** 凭证已配齐的境内渠道。登录页据此决定画哪几个入口，而不是先画出来、点下去才报「未配置」。 */
+    public java.util.List<String> configuredCnProviders() {
+        java.util.List<String> open = new java.util.ArrayList<>();
+        for (String provider : java.util.List.of("WECHAT", "DOUYIN", "BAIDU", "ALIPAY")) {
+            if (oauthSettings.configured(provider)) {
+                open.add(provider);
+            }
+        }
+        return open;
+    }
+
     public OAuthAuthorizeResult buildOauthAuthorize(String rawProvider) {
         String provider = rawProvider == null ? "" : rawProvider.trim().toUpperCase(Locale.ROOT);
         if (CHAT_PROVIDERS.contains(provider)) {
