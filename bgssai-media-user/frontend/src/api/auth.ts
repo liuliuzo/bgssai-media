@@ -63,6 +63,12 @@ export async function completeOauth(provider: string, code: string, state: strin
   return data;
 }
 
+// GET /auth/oauth/channels -> string[]：凭证已配齐的第三方登录渠道（WECHAT / DOUYIN / BAIDU / ALIPAY / CHAT）
+export async function loginChannels() {
+  const { data } = await client.get<string[]>('/auth/oauth/channels');
+  return data;
+}
+
 export async function prepareChatLogin() {
   const { data } = await client.get<ChatOauthPrepare>('/auth/chat/prepare');
   return data;

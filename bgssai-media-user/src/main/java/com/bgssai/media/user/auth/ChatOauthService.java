@@ -96,7 +96,7 @@ public class ChatOauthService {
         throw new BizException(503, "Chat token exchange is not live; user session not issued");
     }
 
-    boolean liveReady() {
+    public boolean liveReady() {
         return enabled
                 && !authorizeUrl.isEmpty()
                 && !tokenUrl.isEmpty()

@@ -11,12 +11,13 @@ import {
   loginByOauth,
   completeOauth,
   prepareChatLogin,
+  loginChannels,
 } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
 import { useShellMode } from '@/shell/useShellMode';
 import LegalLinks from '@/legal/LegalLinks';
-import BotPromoCard, { BOT_PROMO_DISMISSED_KEY } from '@/components/BotPromoCard';
+import BotPromoCard from '@/components/BotPromoCard';
 import { PhoneDialField } from '@/components/PhoneDialField';
 import { DEFAULT_DIAL_CODE, composeApiPhone, validatePhoneParts } from '@/lib/phoneDial';
 
@@ -43,14 +44,6 @@ function MediaPhoneInput({
   );
 }
 
-function readBotPromoVisible(): boolean {
-  try {
-    return localStorage.getItem(BOT_PROMO_DISMISSED_KEY) !== '1';
-  } catch {
-    return true;
-  }
-}
-
 export default function LoginPage() {
   const { inShell } = useShellMode();
   const navigate = useNavigate();
@@ -59,7 +52,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [emailCodeSent, setEmailCodeSent] = useState(false);
   const [phoneCodeSent, setPhoneCodeSent] = useState(false);
-  const [botPromoVisible, setBotPromoVisible] = useState(readBotPromoVisible);
+  const [openChannels, setOpenChannels] = useState<string[]>([]);
+
+  // 只画后端说凭证已配齐的渠道：先前四个境内入口和 Chat 入口无条件常驻，点下去才报「未配置」。
+  useEffect(() => {
+    let alive = true;
+    loginChannels()
+      .then((list) => {
+        if (alive) setOpenChannels(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {
+        if (alive) setOpenChannels([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
   const [emailForm] = Form.useForm();
   const [phoneForm] = Form.useForm();
   const [dialCode, setDialCode] = useState(DEFAULT_DIAL_CODE);
@@ -160,9 +168,8 @@ export default function LoginPage() {
       const sent = await sendPhoneOtp(composeApiPhone(dialCode, phone));
       setPhoneCodeSent(true);
       message.success(
-        sent?.product && sent?.seq != null
-          ? `验证码已发送（${sent.product}#${sent.seq}）`
-          : '验证码已发送',
+        // 短信正文里的 product#seq 是排障编号，不往用户界面上贴
+        sent ? '验证码已发送' : '验证码已发送',
       );
     } catch (err) {
       message.error(err instanceof Error ? err.message : '发送失败');
@@ -182,6 +189,16 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // 全线统一的方形矢量品牌标，见 public/brand/oauth/
+  const OAUTH_PROVIDERS: Array<[string, string, string]> = [
+    ['WECHAT', '微信', '/brand/oauth/wechat.svg'],
+    ['DOUYIN', '抖音', '/brand/oauth/douyin.svg'],
+    ['BAIDU', '百度', '/brand/oauth/baidu.svg'],
+    ['ALIPAY', '支付宝', '/brand/oauth/alipay.svg'],
+  ];
+  const visibleProviders = OAUTH_PROVIDERS.filter(([key]) => openChannels.includes(key));
+  const chatReady = openChannels.includes('CHAT');
 
   const startOauth = async (provider: string) => {
     setLoading(true);
@@ -217,7 +234,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className={`shell-login${botPromoVisible ? ' shell-login--with-bot-promo' : ''}`}
+      className="shell-login"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -228,7 +245,7 @@ export default function LoginPage() {
         boxSizing: 'border-box',
       }}
     >
-      <BotPromoCard onVisibilityChange={setBotPromoVisible} />
+      <BotPromoCard />
       <Card title="用户登录" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
         <Alert
           type="info"
@@ -340,24 +357,25 @@ export default function LoginPage() {
             },
           ]}
         />
-        <div style={{ marginTop: 16, textAlign: 'center', color: '#8c8c8c', fontSize: 12 }}>
-          或使用第三方账号
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
-          {[
-            ['WECHAT', '微信'],
-            ['DOUYIN', '抖音'],
-            ['BAIDU', '百度'],
-            ['ALIPAY', '支付宝'],
-          ].map(([key, label]) => (
-            <Button key={key} onClick={() => startOauth(key)} disabled={loading}>
-              {label}
-            </Button>
-          ))}
-        </div>
-        <Button block style={{ marginTop: 8 }} onClick={onChat} disabled={loading}>
-          用 Chat 登录
-        </Button>
+        {visibleProviders.length > 0 || chatReady ? (
+          <div className="login-oauth-divider">第三方账号登录</div>
+        ) : null}
+        {visibleProviders.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {visibleProviders.map(([key, label, icon]) => (
+              <Button key={key} onClick={() => startOauth(key)} disabled={loading} title={label}
+                icon={<img className="login-oauth-icon" src={icon} alt="" width={18} height={18} />}>
+                {label}
+              </Button>
+            ))}
+          </div>
+        ) : null}
+        {chatReady ? (
+          <Button block style={{ marginTop: 8 }} onClick={onChat} disabled={loading}
+            icon={<img className="login-oauth-icon" src="/brand/oauth/bgssai.svg" alt="" width={18} height={18} />}>
+            用 Chat 登录
+          </Button>
+        ) : null}
         <LegalLinks variant="user-consent" />
       </Card>
     </div>
