@@ -19,6 +19,7 @@
 logs/
 .env
 .env.local
+uploads/
 
 # Frontend TS incremental
 *.tsbuildinfo

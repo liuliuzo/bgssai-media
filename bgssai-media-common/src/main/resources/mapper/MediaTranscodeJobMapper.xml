@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgssai.media.common.mapper.MediaTranscodeJobMapper">
+  <resultMap id="BaseResultMap" type="com.bgssai.media.common.domain.MediaTranscodeJob">
+    <id column="id" property="id"/>
+    <result column="video_id" property="videoId"/>
+    <result column="user_id" property="userId"/>
+    <result column="status" property="status"/>
+    <result column="failure_reason" property="failureReason"/>
+    <result column="retry_count" property="retryCount"/>
+    <result column="started_at" property="startedAt"/>
+    <result column="finished_at" property="finishedAt"/>
+    <result column="created_at" property="createdAt"/>
+    <result column="updated_at" property="updatedAt"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">id, video_id, user_id, status, failure_reason, retry_count, started_at, finished_at, created_at, updated_at</sql>
+
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">and ${criterion.condition}</when>
+                <when test="criterion.singleValue">and ${criterion.condition} #{criterion.value}</when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+
+  <select id="selectByExample" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from media_transcode_job
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+    <if test="orderByClause != null">order by ${orderByClause}</if>
+  </select>
+
+  <select id="countByExample" resultType="long">
+    select count(*) from media_transcode_job
+    <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long">
+    select <include refid="Base_Column_List"/>
+    from media_transcode_job where id = #{id}
+  </select>
+
+  <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.MediaTranscodeJob"
+          useGeneratedKeys="true" keyProperty="id">
+    insert into media_transcode_job
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="videoId != null">video_id,</if>
+      <if test="userId != null">user_id,</if>
+      <if test="status != null">status,</if>
+      <if test="failureReason != null">failure_reason,</if>
+      <if test="retryCount != null">retry_count,</if>
+      <if test="startedAt != null">started_at,</if>
+      <if test="finishedAt != null">finished_at,</if>
+      <if test="createdAt != null">created_at,</if>
+      <if test="updatedAt != null">updated_at,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="videoId != null">#{videoId},</if>
+      <if test="userId != null">#{userId},</if>
+      <if test="status != null">#{status},</if>
+      <if test="failureReason != null">#{failureReason},</if>
+      <if test="retryCount != null">#{retryCount},</if>
+      <if test="startedAt != null">#{startedAt},</if>
+      <if test="finishedAt != null">#{finishedAt},</if>
+      <if test="createdAt != null">#{createdAt},</if>
+      <if test="updatedAt != null">#{updatedAt},</if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.bgssai.media.common.domain.MediaTranscodeJob">
+    update media_transcode_job
+    <set>
+      <if test="videoId != null">video_id = #{videoId},</if>
+      <if test="userId != null">user_id = #{userId},</if>
+      <if test="status != null">status = #{status},</if>
+      <if test="failureReason != null">failure_reason = #{failureReason},</if>
+      <if test="retryCount != null">retry_count = #{retryCount},</if>
+      <if test="startedAt != null">started_at = #{startedAt},</if>
+      <if test="finishedAt != null">finished_at = #{finishedAt},</if>
+      <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+    </set>
+    where id = #{id}
+  </update>
+
+</mapper>
