@@ -11,7 +11,7 @@
 - 全产品支持 Bot 下载与授权托管；Wiki/Build 构成工程文档、HTML 设计、人工/Agent 编辑与编程任务的双向闭环。
 - Short / Long 分别制作短剧和长剧；Media 对照 VLC 做播放器，并作为对标 YouTube / YouTube Shorts 的视频播放平台：播主流格式，承接 short 短剧成片与 long 长剧成片直接发布播放。Wechat 参考既定 IM 项目，支持 Web/Android/iOS 及会话内 AI 图片和回复建议。Office 参考 OpenOffice，按实际格式与版本样本验收兼容性及 AI 办公。
 - Blog 支持 AI、Markdown、富文本、HTML 发文；Note 对照小红书，两者推荐参考 x-algorithm。Publish 对照传声港；SaaS 包含工作流、CRM、线索与 Hootsuite 式社媒管理；Web（建站，仓 `bgssai-web`）支持预览、管理、编辑和 *.bgssai-web.com 部署；不要把 Web 写成 Build。
-- 参考资料来自工作区 reference 目录；未完成实现、缺失参考和未执行的集成验收必须显式记录。数据库脚本版本与线上数据库执行状态分别报告。
+- 参考代码来自工作区 reference-github，参考原型来自 reference-prototypes；未完成实现、缺失参考和未执行的集成验收必须显式记录。数据库脚本版本与线上数据库执行状态分别报告。
 
 ## 本仓定位
 
