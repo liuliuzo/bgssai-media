@@ -29,7 +29,7 @@ Admin → **MCP 连接器**（`/mcp-connectors`）为管理说明面：连接器
 
 - MCP：`POST /api/mcp`（用户端后端）
 - 探测：`GET /api/mcp`（需 Bearer）
-- 令牌：`/api/mcp-tokens`（需登录 `Jwttoken`，角色 `USER`）
+- 令牌：`/api/mcp/tokens`（需登录 `Jwttoken`，角色 `USER`；旧路径 `/api/mcp-tokens` 为过渡别名）
 
 鉴权：`Authorization: Bearer <pat>`
 
@@ -42,4 +42,4 @@ Admin → **MCP 连接器**（`/mcp-connectors`）为管理说明面：连接器
 ## 参考
 
 - API 细节：`docs/api/mcp.md`
-- 线上 blog 范式：用户设置「MCP 接入」+ `/api/mcp` + `/api/mcp-tokens`
+- 线上 blog 范式：用户设置「MCP 接入」+ `/api/mcp` + `/api/mcp/tokens`

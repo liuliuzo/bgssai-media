@@ -14,7 +14,7 @@ import java.util.Map;
  * MCP PAT 管理（对照 blog：/api/mcp-tokens）。
  */
 @RestController
-@RequestMapping("/api/mcp-tokens")
+@RequestMapping({"/api/mcp/tokens", "/api/mcp-tokens"})
 @NeedAop(roles = {RoleCodes.USER})
 public class McpTokenController {
 

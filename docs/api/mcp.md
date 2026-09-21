@@ -9,7 +9,7 @@ MCP JSON-RPC 响应为标准 `jsonrpc/id/result|error`，不包进 `ApiResponse`
 
 请求头：`Jwttoken: <jwt>`，角色 `USER`。
 
-### GET /api/mcp-tokens
+### GET /api/mcp/tokens
 
 返回当前用户未吊销令牌列表：
 
@@ -31,13 +31,13 @@ MCP JSON-RPC 响应为标准 `jsonrpc/id/result|error`，不包进 `ApiResponse`
 }
 ```
 
-### POST /api/mcp-tokens
+### POST /api/mcp/tokens
 
 Body：`{ "name": "Claude Desktop" }`
 
-`result.token` 仅此响应出现一次。
+`result.token` 仅此响应出现一次。旧路径 `/api/mcp-tokens` 为过渡别名。
 
-### POST /api/mcp-tokens/{id}/revoke
+### POST /api/mcp/tokens/{id}/revoke
 
 吊销后立即失效。
 
