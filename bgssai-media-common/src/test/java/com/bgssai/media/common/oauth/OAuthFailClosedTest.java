@@ -35,9 +35,9 @@ class OAuthFailClosedTest {
     @Test
     void chatAuthorizeUsesPkceWhenConfigured() {
         OAuthSettings settings = new OAuthSettings();
-        settings.putChat("https://chat-cn.bgssai.com", "media-client", "", "http://localhost:3002/login");
+        settings.putChat("https://www.bgssai-chat.cn", "media-client", "", "http://localhost:3002/login");
         OAuthAuthorizeResult resp = new ChatOAuthService(settings, new OAuthHttp(), new OAuthStateStore()).buildAuthorize();
-        assertTrue(resp.getAuthorizeUrl().contains("https://chat-cn.bgssai.com/oauth/authorize"));
+        assertTrue(resp.getAuthorizeUrl().contains("https://www.bgssai-chat.cn/oauth/authorize"));
         assertTrue(resp.getAuthorizeUrl().contains("code_challenge"));
         assertTrue(resp.getAuthorizeUrl().contains("S256"));
     }

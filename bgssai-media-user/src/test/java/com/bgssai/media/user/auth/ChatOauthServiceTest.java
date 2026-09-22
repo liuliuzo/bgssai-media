@@ -13,9 +13,9 @@ class ChatOauthServiceTest {
     void defaultPrepDoesNotIssueAuthorizeUrlOrSecret() {
         ChatOauthService service = new ChatOauthService(
                 false,
-                "https://chat-cn.bgssai.com/oauth/authorize",
-                "https://chat-cn.bgssai.com/oauth/token",
-                "https://chat-cn.bgssai.com/oauth/userinfo",
+                "https://www.bgssai-chat.cn/oauth/authorize",
+                "https://www.bgssai-chat.cn/oauth/token",
+                "https://www.bgssai-chat.cn/oauth/userinfo",
                 "bgssai-media-user",
                 "",
                 "http://127.0.0.1:3002/login/chat/callback",
@@ -48,9 +48,9 @@ class ChatOauthServiceTest {
     void liveReadyStillDoesNotMintSession() {
         ChatOauthService service = new ChatOauthService(
                 true,
-                "https://chat-cn.bgssai.com/oauth/authorize",
-                "https://chat-cn.bgssai.com/oauth/token",
-                "https://chat-cn.bgssai.com/oauth/userinfo",
+                "https://www.bgssai-chat.cn/oauth/authorize",
+                "https://www.bgssai-chat.cn/oauth/token",
+                "https://www.bgssai-chat.cn/oauth/userinfo",
                 "bgssai-media-user",
                 "not-a-real-secret",
                 "http://127.0.0.1:3002/login/chat/callback",
