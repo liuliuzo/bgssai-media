@@ -8,7 +8,6 @@ import {
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import LegalLinks from '../legal/LegalLinks';
 
 const { Header, Sider, Content } = Layout;
 
@@ -52,7 +51,7 @@ export default function AdminLayout() {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout>
       <Sider
         width={220}
         style={{
@@ -102,7 +101,6 @@ export default function AdminLayout() {
         <Content style={{ margin: 24 }}>
           <Outlet />
         </Content>
-        <LegalLinks variant="footer" />
       </Layout>
     </Layout>
   );
