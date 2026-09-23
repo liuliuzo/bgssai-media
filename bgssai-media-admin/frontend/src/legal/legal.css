@@ -1,48 +1,47 @@
-.legal-strip {
-  margin-top: 16px;
+/* App 级页脚，口径见 bgssai-skeleton docs/BGSSAI-Standards.md 第 15 节；管理端没有同意行 */
+
+/* 页脚挂在 App 根节点上：根节点做纵向 flex，页面正文撑满、页脚贴底 */
+.app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-root__main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
+.app-root__main > * {
+  flex: 1 0 auto;
+}
+
+/* 全站一行页脚 */
+.legal-footer {
+  flex: 0 0 auto;
+  padding: 12px 16px 16px;
   color: #8c8c8c;
   font-size: 12px;
   line-height: 1.6;
   text-align: center;
 }
 
-.legal-strip--footer {
-  margin: 0;
-  padding: 8px 24px 20px;
-}
-
-.legal-strip__intro,
-.legal-strip__review,
-.legal-strip__nav {
-  margin: 0 0 6px;
-}
-
-.legal-strip__review {
-  margin-bottom: 0;
-  letter-spacing: 0.02em;
-}
-
-.legal-strip__nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2px 0;
-}
-
-.legal-strip__item {
+.legal-footer__owner,
+.legal-footer a {
   white-space: nowrap;
 }
 
-.legal-strip__nav a {
+.legal-footer__sep {
+  color: #bfbfbf;
+}
+
+.legal-footer a {
   color: #595959;
-  text-decoration: underline;
-  white-space: nowrap;
+  text-decoration: none;
 }
 
-.legal-strip__nav a:hover {
+.legal-footer a:hover {
   color: #1677ff;
-}
-
-.legal-strip__sep {
-  color: #d9d9d9;
+  text-decoration: underline;
 }

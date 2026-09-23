@@ -39,3 +39,14 @@
 - UI 与文档标明 **需法务审阅**。
 
 未执行：法务终稿、官网 5 页全部生产可用性（当前 `terms-of-service` / `privacy-policy` 已发布；`personal-information-inventory` / `third-party-sharing` / `app-permissions` 以官网权威 slug 落地，生产页待官网发布）、证照公示、用户真实同意留痕。
+
+## 2026-09-23 收敛
+
+按 bgssai-skeleton `docs/BGSSAI-Standards.md` 第 15 节「法务同意行与页脚统一口径」收敛，上文「五条中英外链 + 需法务审阅」的界面口径作废，只留作沿革：
+
+- 用户端登录卡内只留一行 `登录或注册即表示已阅读并同意《用户协议》与《隐私政策》`（`bgssai-media-user/frontend/src/legal/LegalConsent.tsx`），书名号在链接文字里；Chat 回调页不放。
+- 管理端登录页不放同意句、不放任何法务链接，只靠页脚。
+- 用户端与管理端页脚都改成 App 级一行、覆盖含 `/login` 在内的全部路由（`legal/LegalFooter.tsx` 挂在各自 `App.tsx` 根节点）：`© 年份 昆山兵贵神速智能科技有限公司 · 用户协议 · 隐私政策`。本仓没有备案号，不出现、不借别的产品的；备案通过后只补号。年份取当年。
+- `legal/catalog.ts` 仍是唯一数据来源，只留 `terms-of-service` / `privacy-policy` 两页（地址不变，`/en/` 保留在数据里，中文界面只渲染中文）；「个人信息收集清单」「第三方信息共享清单」「应用权限说明」从产品端拆掉，只在官网法律信息中心（`https://www.bgssai.com/legal/`）与隐私政策正文内互链。
+- 「需法务审阅」「法务正文以官网为准」等内部备注不再渲染到界面，也不再通过 `data-legal-review` 带到 DOM；`LEGAL_REVIEW_STATUS` 常量、`bilingualLabel`、两端的 `LegalLinks.tsx` 与 `.legal-strip*` 样式已删。
+- 校验：`bgssai-media-user/frontend` 下 `npm run test:legal`（`catalog.test.ts` 已按新口径改断言，顺带核对管理端登录页与两端 App 级挂载）。

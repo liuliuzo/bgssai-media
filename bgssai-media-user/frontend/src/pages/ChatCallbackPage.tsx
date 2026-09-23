@@ -27,7 +27,6 @@ export default function ChatCallbackPage() {
     <div
       className="shell-callback"
       style={{
-        minHeight: '100vh',
         display: 'flex',
         alignItems: inShell ? 'flex-start' : 'center',
         justifyContent: 'center',

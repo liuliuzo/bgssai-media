@@ -12,11 +12,15 @@ html.bgssai-shell-pane body {
   min-height: 100%;
 }
 
+/* App 根节点（见 legal/legal.css）在壳内按动态视口撑满，页脚贴底 */
+.bgssai-shell-pane .app-root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 .bgssai-shell-pane .shell-app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
   overflow-x: hidden;
   background: #f5f5f5;
 }
@@ -111,8 +115,6 @@ html.bgssai-shell-pane body {
 
 .bgssai-shell-pane .shell-login,
 .bgssai-shell-pane .shell-callback {
-  min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   align-items: flex-start;
   justify-content: stretch;
@@ -161,21 +163,27 @@ html.bgssai-shell-pane body {
   margin: 0 !important;
 }
 
-.bgssai-shell-pane .legal-strip {
+.bgssai-shell-pane .legal-consent {
   margin-top: 20px;
-  padding: 0 4px 8px;
-  text-align: left;
   font-size: 11px;
 }
 
-.bgssai-shell-pane .legal-strip--footer {
-  padding: 8px 4px 12px;
+.bgssai-shell-pane .legal-footer {
+  padding: 8px 12px 12px;
+  font-size: 11px;
 }
 
-.bgssai-shell-pane .legal-strip__nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 0;
+/* 壳内底栏 Tab 是 fixed 的：页脚在 App 级、排在 .shell-app 之后，
+   有底栏时给页脚补出底栏高度，让它在滚到底时露在 Tab 之上；
+   浏览器不支持 :has() 时退回原来的 80px 内容留白（页脚被底栏盖住，内容不受影响）。 */
+@supports selector(:has(a)) {
+  .bgssai-shell-pane .shell-content {
+    padding-bottom: 16px;
+  }
+
+  .bgssai-shell-pane .app-root:has(.shell-tabbar) .legal-footer {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0));
+  }
 }
 
 .phone-dial-field {

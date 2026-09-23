@@ -1,14 +1,17 @@
 /**
- * Website-authoritative legal pages. Keep in sync with
- * bgssai-media-admin/frontend/src/legal/catalog.ts and
- * docs/feature/legal-fan-out.md.
+ * 官网法务页外链的唯一数据来源。与
+ * bgssai-media-admin/frontend/src/legal/catalog.ts 保持逐字一致（catalog.test.ts 会比对），
+ * 口径见 bgssai-skeleton docs/BGSSAI-Standards.md 第 15 节与 docs/feature/legal-fan-out.md。
  *
- * Host and slugs must match https://www.bgssai.com published pages EXACTLY.
- * Do not invent /legal/* hosts or slugs.
+ * 产品端只链《用户协议》与《隐私政策》两页；「个人信息收集清单」「第三方信息共享清单」
+ * 「应用权限说明」只在官网法律信息中心与隐私政策正文内互链，不在产品界面罗列。
+ * host 与 slug 必须与 https://www.bgssai.com 已发布页面完全一致，不得自造路径。
+ * 本仓没有备案号，页脚不放；备案通过后只补号，别的不动。
+ * 「需法务审阅」之类内部备注只留在注释与 docs，不导出、不渲染。
  */
-export const LEGAL_REVIEW_STATUS = '需法务审阅';
-
 export const WEBSITE_ORIGIN = 'https://www.bgssai.com';
+
+export const COMPANY_NAME = '昆山兵贵神速智能科技有限公司';
 
 export type LegalPage = {
   id: string;
@@ -23,7 +26,7 @@ export const LEGAL_PAGES: readonly LegalPage[] = [
   {
     id: 'terms-of-service',
     slug: 'terms-of-service',
-    labelZh: '服务条款',
+    labelZh: '用户协议',
     labelEn: 'Terms of Service',
     hrefZh: 'https://www.bgssai.com/terms-of-service/',
     hrefEn: 'https://www.bgssai.com/en/terms-of-service/',
@@ -36,31 +39,11 @@ export const LEGAL_PAGES: readonly LegalPage[] = [
     hrefZh: 'https://www.bgssai.com/privacy-policy/',
     hrefEn: 'https://www.bgssai.com/en/privacy-policy/',
   },
-  {
-    id: 'personal-information-inventory',
-    slug: 'personal-information-inventory',
-    labelZh: '个人信息收集清单',
-    labelEn: 'Personal Information Inventory',
-    hrefZh: 'https://www.bgssai.com/personal-information-inventory/',
-    hrefEn: 'https://www.bgssai.com/en/personal-information-inventory/',
-  },
-  {
-    id: 'third-party-sharing',
-    slug: 'third-party-sharing',
-    labelZh: '第三方信息共享清单',
-    labelEn: 'Third-party Sharing List',
-    hrefZh: 'https://www.bgssai.com/third-party-sharing/',
-    hrefEn: 'https://www.bgssai.com/en/third-party-sharing/',
-  },
-  {
-    id: 'app-permissions',
-    slug: 'app-permissions',
-    labelZh: '应用权限说明',
-    labelEn: 'App Permissions',
-    hrefZh: 'https://www.bgssai.com/app-permissions/',
-    hrefEn: 'https://www.bgssai.com/en/app-permissions/',
-  },
 ];
+
+export const LEGAL_TERMS: LegalPage = LEGAL_PAGES[0];
+
+export const LEGAL_PRIVACY: LegalPage = LEGAL_PAGES[1];
 
 export function legalHrefZh(page: LegalPage): string {
   return page.hrefZh;
@@ -68,8 +51,4 @@ export function legalHrefZh(page: LegalPage): string {
 
 export function legalHrefEn(page: LegalPage): string {
   return page.hrefEn;
-}
-
-export function bilingualLabel(page: LegalPage): string {
-  return `${page.labelZh} / ${page.labelEn}`;
 }

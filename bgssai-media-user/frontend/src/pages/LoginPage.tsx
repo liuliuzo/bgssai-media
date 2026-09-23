@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Card, Form, Input, Tabs, message } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   loginByPassword,
@@ -16,7 +16,7 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
 import { useShellMode } from '@/shell/useShellMode';
-import LegalLinks from '@/legal/LegalLinks';
+import LegalConsent from '@/legal/LegalConsent';
 import BotPromoCard from '@/components/BotPromoCard';
 import { PhoneDialField } from '@/components/PhoneDialField';
 import { DEFAULT_DIAL_CODE, composeApiPhone, validatePhoneParts } from '@/lib/phoneDial';
@@ -70,7 +70,7 @@ export default function LoginPage() {
   }, []);
   const [emailForm] = Form.useForm();
   const [phoneForm] = Form.useForm();
-  const [dialCode, setDialCode] = useState(DEFAULT_DIAL_CODE);
+  const [dialCode, setDialCode] = useState<string>(DEFAULT_DIAL_CODE);
   const finishing = useRef(false);
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
@@ -236,7 +236,6 @@ export default function LoginPage() {
     <div
       className="shell-login"
       style={{
-        minHeight: '100vh',
         display: 'flex',
         alignItems: inShell ? 'flex-start' : 'center',
         justifyContent: 'center',
@@ -376,7 +375,7 @@ export default function LoginPage() {
             用 Chat 登录
           </Button>
         ) : null}
-        <LegalLinks variant="user-consent" />
+        <LegalConsent />
       </Card>
     </div>
   );
