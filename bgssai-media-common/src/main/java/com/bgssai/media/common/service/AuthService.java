@@ -15,7 +15,7 @@ import com.bgssai.media.common.oauth.OAuthStateStore;
 import com.bgssai.media.common.oauth.OAuthUserInfo;
 import com.bgssai.media.common.sms.SmsSendResult;
 import com.bgssai.media.common.web.BizException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.bgssai.media.common.security.AccountPassword;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -41,7 +41,7 @@ public class AuthService {
     private final OAuthStateStore oauthStateStore;
     private final CnOAuthClient cnOAuthClient;
     private final ChatOAuthService chatOAuthService;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final AccountPassword passwordEncoder = new AccountPassword();
 
     public AuthService(SysUserMapper sysUserMapper, UserIdentityMapper userIdentityMapper,
                        JwtService jwtService, VerifyCodeService verifyCodeService,
@@ -70,6 +70,12 @@ public class AuthService {
         }
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new BizException(401, "invalid username or password");
+        }
+        if (AccountPassword.isLegacy(user.getPasswordHash())) {
+            SysUser patch = new SysUser();
+            patch.setId(user.getId());
+            patch.setPasswordHash(password);
+            sysUserMapper.updateByPrimaryKeySelective(patch);
         }
         return tokenResult(user);
     }

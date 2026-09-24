@@ -47,6 +47,9 @@ function MediaPhoneInput({
 export default function LoginPage() {
   const { inShell } = useShellMode();
   const navigate = useNavigate();
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('reason') === 'session_kicked') message.error('账号已在其他设备登录，请重新登录');
+  }, []);
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [loading, setLoading] = useState(false);
@@ -254,6 +257,7 @@ export default function LoginPage() {
           style={{ marginBottom: 16 }}
         />
         <Tabs
+            defaultActiveKey="phone"
           items={[
             {
               key: 'password',

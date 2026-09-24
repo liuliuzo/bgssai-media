@@ -3,6 +3,10 @@ package com.bgssai.media.common.domain;
 import java.util.Date;
 
 public class SysUser {
+    private String currentSessionId;
+    public String getCurrentSessionId() { return currentSessionId; }
+    public void setCurrentSessionId(String value) { currentSessionId = value; }
+
     private Long id;
     private String username;
     private String passwordHash;
