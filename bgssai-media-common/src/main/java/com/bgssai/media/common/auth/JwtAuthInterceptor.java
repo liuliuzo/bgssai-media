@@ -57,6 +57,9 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             }
             AuthContext.set(user);
             return true;
+        } catch (BizException ex) {
+            writeFail(response, ex.getCode(), ex.getMessage());
+            return false;
         } catch (Exception ex) {
             writeFail(response, 401, "invalid token");
             return false;
@@ -69,7 +72,7 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
     }
 
     private void writeFail(HttpServletResponse response, int code, String message) throws Exception {
-        response.setStatus(200);
+        response.setStatus(code == 2003 || code == 401 ? 401 : code == 403 ? 403 : 200);
         response.setContentType("application/json;charset=UTF-8");
         objectMapper.writeValue(response.getWriter(), ApiResponse.fail(code, message));
     }

@@ -3,6 +3,7 @@ CREATE DATABASE IF NOT EXISTS bgssai_media DEFAULT CHARACTER SET utf8mb4 COLLATE
 USE bgssai_media;
 
 CREATE TABLE IF NOT EXISTS sys_user (
+  current_session_id VARCHAR(64) NULL,
   id            BIGINT PRIMARY KEY AUTO_INCREMENT,
   username      VARCHAR(64)  NOT NULL,
   password_hash VARCHAR(128) NOT NULL,

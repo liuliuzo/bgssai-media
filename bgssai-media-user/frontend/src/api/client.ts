@@ -18,6 +18,11 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => {
     const data = response.data as ApiResponse<unknown>;
+    if (String(data?.code) === '2003') {
+      useAuthStore.getState().logout();
+      window.location.href = '/login?reason=session_kicked';
+      return Promise.reject(new Error('账号已在其他设备登录'));
+    }
     if (data && typeof data.success === 'boolean') {
       if (!data.success) {
         return Promise.reject(new Error(data.message || '请求失败'));
@@ -27,6 +32,11 @@ client.interceptors.response.use(
     return response;
   },
   (error) => {
+    if (String(error.response?.data?.code) === '2003') {
+      useAuthStore.getState().logout();
+      window.location.href = '/login?reason=session_kicked';
+      return Promise.reject(new Error('账号已在其他设备登录'));
+    }
     const message =
       error.response?.data?.message ||
       error.message ||

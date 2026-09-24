@@ -2,14 +2,14 @@
 USE bgssai_media;
 
 INSERT INTO sys_user (id, username, password_hash, email, phone, role_code, status)
-VALUES (1, 'admin', '$2a$10$hplq9FoOL88xHqu6yb6R8OSgxSkvHSWkI3Jz7RskAWfpph7ZapA3m', 'admin@bgssai.local', NULL, 'PLATFORM_ADMIN', 'active')
+VALUES (1, 'admin', 'admin123', 'admin@bgssai.local', NULL, 'PLATFORM_ADMIN', 'active')
 ON DUPLICATE KEY UPDATE
   password_hash = IF(password_hash IS NULL OR password_hash = '', VALUES(password_hash), password_hash),
   email = IF(email IS NULL OR email = '', VALUES(email), email),
   role_code = IF(role_code IS NULL OR role_code = '', VALUES(role_code), role_code);
 
 INSERT INTO sys_user (id, username, password_hash, email, phone, role_code, status)
-VALUES (2, 'demo', '$2a$10$48i4qKHTPoBiCNUq6zUhkuLe93c72rN7fvjRFhjKY/VJXXGtCA7qi', 'demo@bgssai.local', '13800000000', 'USER', 'active')
+VALUES (2, 'demo', 'user123', 'demo@bgssai.local', '13800000000', 'USER', 'active')
 ON DUPLICATE KEY UPDATE
   password_hash = IF(password_hash IS NULL OR password_hash = '', VALUES(password_hash), password_hash),
   email = IF(email IS NULL OR email = '', VALUES(email), email),
