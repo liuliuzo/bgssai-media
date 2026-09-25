@@ -1,3 +1,4 @@
+import ProductMotion from '../components/ProductMotion'
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Card, Form, Input, Tabs, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
@@ -249,6 +250,7 @@ export default function LoginPage() {
     >
       <BotPromoCard />
       <Card title="用户登录" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
+        <ProductMotion />
         <Alert
           type="info"
           showIcon

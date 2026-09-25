@@ -1,0 +1,27 @@
+/* Decorative entry motion: finishes within five seconds; content never depends on it. */
+.product-motion {
+  width: min(100%, 300px);
+  height: 112px;
+  margin: 0 auto 12px;
+  color: var(--brand, var(--primary-color, #2563eb));
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout paint;
+}
+.product-motion svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.product-motion .pm-orbit { opacity: .22; transform-origin: 160px 60px; animation: pm-orbit 4.6s ease-out both; }
+.product-motion .pm-orbit-inner { animation-direction: reverse; }
+.product-motion .pm-link { opacity: .45; stroke-dasharray: 5 9; animation: pm-signal 4.2s ease-out both; }
+.product-motion .pm-tile { fill: currentColor; fill-opacity: .07; stroke: currentColor; stroke-opacity: .22; }
+.product-motion .pm-glyph { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.product-motion .pm-core { animation: pm-arrive .7s ease-out both; transform-origin: 160px 60px; }
+.product-motion .pm-node { animation: pm-float 4.8s ease-in-out both; }
+.product-motion .pm-node-last { animation-direction: reverse; }
+.product-motion .pm-dot { fill: currentColor; opacity: .55; }
+@keyframes pm-orbit { from { transform: rotate(-55deg); } to { transform: rotate(0); } }
+@keyframes pm-signal { from { stroke-dashoffset: 84; } to { stroke-dashoffset: 0; } }
+@keyframes pm-arrive { from { opacity: .3; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes pm-float { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } 65% { transform: translateY(4px); } }
+@media (max-width: 600px) { .product-motion { height: 76px; margin-bottom: 8px; } }
+@media (prefers-reduced-motion: reduce) { .product-motion *, .product-motion { animation: none !important; transition: none !important; } }
+@media print { .product-motion { display: none; } }
