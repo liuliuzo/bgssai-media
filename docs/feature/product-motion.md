@@ -1,7 +1,7 @@
 # 用户端动态视觉（2026-09-25）
 
 入口页采用与官网一致的细线轨道、流动连接线和浮动卡片；中心图形对应本产品主题。
-落点：`bgssai-media-user/frontend/src/pages/LoginPage.tsx`。Chat 的新会话欢迎区也使用同一组件。
+落点：`bgssai-media-user/frontend/src/pages/LoginPage.tsx`。
 
 这是非功能性的视觉增强，不改变账号、表单、接口、字段、页面跳转或数据库。
 原型与接口设计层不涉及契约变更；正式 React 页面即视觉验收对象。
