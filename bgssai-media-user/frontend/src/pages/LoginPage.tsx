@@ -1,3 +1,4 @@
+import BotDownloadLayout from './../components/BotDownloadLayout'
 import ProductMotion from '../components/ProductMotion'
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Card, Form, Input, Tabs, message } from 'antd';
@@ -18,7 +19,7 @@ import { useAuthStore } from '@/stores/authStore';
 import type { LoginResult } from '@/types/api';
 import { useShellMode } from '@/shell/useShellMode';
 import LegalConsent from '@/legal/LegalConsent';
-import BotPromoCard from '@/components/BotPromoCard';
+
 import { PhoneDialField } from '@/components/PhoneDialField';
 import { DEFAULT_DIAL_CODE, composeApiPhone, validatePhoneParts } from '@/lib/phoneDial';
 
@@ -237,6 +238,7 @@ export default function LoginPage() {
   };
 
   return (
+    <BotDownloadLayout>
     <div
       className="shell-login"
       style={{
@@ -248,7 +250,7 @@ export default function LoginPage() {
         boxSizing: 'border-box',
       }}
     >
-      <BotPromoCard />
+
       <Card title="用户登录" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
         <ProductMotion />
         <Alert
@@ -384,5 +386,6 @@ export default function LoginPage() {
         <LegalConsent />
       </Card>
     </div>
+    </BotDownloadLayout>
   );
 }

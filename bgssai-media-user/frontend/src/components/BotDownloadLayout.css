@@ -1,0 +1,31 @@
+.bot-download-layout { min-height: 100svh; }
+.bot-download-nav { position: relative; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-sizing: border-box; width: 100%; padding: 16px clamp(16px, 4vw, 48px); border-bottom: 1px solid var(--lg-glass-border, rgba(128, 128, 128, .18)); background: var(--lg-glass-bg-strong, var(--surface, #fff)); color: var(--lg-text, var(--text, #172033)); }
+.bot-download-nav strong { font-size: 14px; font-weight: 600; letter-spacing: .01em; }
+.bot-download-nav a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; box-sizing: border-box; padding: 10px 16px; border: 1px solid var(--lg-glass-border, rgba(128, 128, 128, .3)); border-radius: 8px; color: inherit; background: transparent; font-size: 13px; font-weight: 600; line-height: 1.5; text-decoration: none; }
+.bot-download-nav a:hover { color: var(--lg-accent, #2563eb); border-color: currentColor; }
+.bot-download-nav a:focus-visible { outline: 2px solid var(--lg-accent, #2563eb); outline-offset: 4px; }
+.bot-download-content > :is(.login-page, .login-shell, .auth-page, .auth-screen, .lg-page, .lg-auth, .th-auth, .shell-login) { min-height: calc(100svh - 77px); }
+@media (max-width: 480px) { .bot-download-nav { gap: 8px; padding: 12px 16px; } .bot-download-nav a { padding-inline: 12px; } .bot-download-content > :is(.login-page, .login-shell, .auth-page, .auth-screen, .lg-page, .lg-auth, .th-auth, .shell-login) { min-height: calc(100svh - 69px); } }
+
+/* 第三方登录：分隔线 + 品牌标固定方框 */
+.login-oauth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 12px;
+  font-size: 12px;
+  color: #8c8c8c;
+}
+.login-oauth-divider::before,
+.login-oauth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+}
+.login-oauth-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  vertical-align: -3px;
+}
