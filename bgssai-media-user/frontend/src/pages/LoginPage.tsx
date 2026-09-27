@@ -1,7 +1,7 @@
 import BotDownloadLayout from './../components/BotDownloadLayout'
 import ProductMotion from '../components/ProductMotion'
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, Card, Form, Input, Tabs, message } from 'antd';
+import { Button, Card, Form, Input, Tabs, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -46,6 +46,11 @@ function MediaPhoneInput({
   );
 }
 
+// 用户端登录页（Standards §14 / §15）：品牌行 → 装饰动效 → 标题 → 一排三个登录方式（密码 / 邮箱验证码 / 手机验证码，
+// 默认手机验证码）→ 表单 + 主按钮 → 第三方账号登录（只画已开通渠道）→ 一行法律同意。BGSSAI BOT 下载在页面顶部导航。
+// 字段名只给读屏（aria-label），可见文字只有方式名与占位符，避免同一个词在一屏上写三遍。
+const RESEND_SECONDS = 60;
+
 export default function LoginPage() {
   const { inShell } = useShellMode();
   const navigate = useNavigate();
@@ -55,8 +60,16 @@ export default function LoginPage() {
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [loading, setLoading] = useState(false);
-  const [emailCodeSent, setEmailCodeSent] = useState(false);
-  const [phoneCodeSent, setPhoneCodeSent] = useState(false);
+  // 邮箱与手机各自一个重发倒计时（后端按渠道 + 目标分别限频），切换方式不互相影响。
+  const [countdowns, setCountdowns] = useState<{ email: number; phone: number }>({ email: 0, phone: 0 });
+  const ticking = countdowns.email > 0 || countdowns.phone > 0;
+  useEffect(() => {
+    if (!ticking) return undefined;
+    const timer = window.setTimeout(() => {
+      setCountdowns((prev) => ({ email: Math.max(0, prev.email - 1), phone: Math.max(0, prev.phone - 1) }));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [countdowns, ticking]);
   const [openChannels, setOpenChannels] = useState<string[]>([]);
 
   // 只画后端说凭证已配齐的渠道：先前四个境内入口和 Chat 入口无条件常驻，点下去才报「未配置」。
@@ -134,13 +147,13 @@ export default function LoginPage() {
   const onSendEmailOtp = async () => {
     const email = emailForm.getFieldValue('email');
     if (!email) {
-      message.warning('请输入邮箱');
+      message.warning('请输入邮箱地址');
       return;
     }
     setLoading(true);
     try {
       await sendEmailOtp(email);
-      setEmailCodeSent(true);
+      setCountdowns((prev) => ({ ...prev, email: RESEND_SECONDS }));
       message.success('验证码已发送');
     } catch (err) {
       message.error(err instanceof Error ? err.message : '发送失败');
@@ -170,12 +183,10 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      const sent = await sendPhoneOtp(composeApiPhone(dialCode, phone));
-      setPhoneCodeSent(true);
-      message.success(
-        // 短信正文里的 product#seq 是排障编号，不往用户界面上贴
-        sent ? '验证码已发送' : '验证码已发送',
-      );
+      await sendPhoneOtp(composeApiPhone(dialCode, phone));
+      setCountdowns((prev) => ({ ...prev, phone: RESEND_SECONDS }));
+      // 短信正文里的 product#seq 是排障编号，不往用户界面上贴（Standards §14.2）
+      message.success('验证码已发送');
     } catch (err) {
       message.error(err instanceof Error ? err.message : '发送失败');
     } finally {
@@ -229,13 +240,17 @@ export default function LoginPage() {
         window.location.assign(prep.authorize_url);
         return;
       }
-      message.info(prep.message || 'Chat 第三方登录已预留，尚未开通真实授权');
+      // 后端给运维看的说明不上界面（Standards §14.1）
+      message.info('该登录方式暂不可用，请换一种方式登录');
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Chat 登录不可用');
     } finally {
       setLoading(false);
     }
   };
+
+  const codeButton = (channel: 'email' | 'phone') =>
+    countdowns[channel] > 0 ? `${countdowns[channel]} 秒后重发` : '获取验证码';
 
   return (
     <BotDownloadLayout>
@@ -250,37 +265,36 @@ export default function LoginPage() {
         boxSizing: 'border-box',
       }}
     >
-
-      <Card title="用户登录" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
+      <Card className="login-card" style={{ width: inShell ? '100%' : 420, maxWidth: '100%' }}>
+        <div className="login-brand">
+          <img className="login-brand-mark" src="/brand/bgss-mark.png" alt="" width={28} height={28} />
+          <span>BGSSAI MEDIA</span>
+        </div>
         <ProductMotion />
-        <Alert
-          type="info"
-          showIcon
-          message="演示账号"
-          description="用户名 demo，密码 user123"
-          style={{ marginBottom: 16 }}
-        />
+        <h1 className="login-title">欢迎回来</h1>
         <Tabs
-            defaultActiveKey="phone"
+          defaultActiveKey="phone"
           items={[
             {
               key: 'password',
-              label: '密码登录',
+              label: '密码',
               children: (
-                <Form layout="vertical" onFinish={onPasswordLogin}>
-                  <Form.Item
-                    name="username"
-                    label="用户名"
-                    rules={[{ required: true, message: '请输入用户名' }]}
-                  >
-                    <Input prefix={<UserOutlined />} placeholder="用户名" />
+                <Form onFinish={onPasswordLogin}>
+                  <Form.Item name="username" rules={[{ required: true, message: '请输入用户名' }]}>
+                    <Input
+                      prefix={<UserOutlined />}
+                      aria-label="用户名"
+                      placeholder="请输入用户名"
+                      autoComplete="username"
+                    />
                   </Form.Item>
-                  <Form.Item
-                    name="password"
-                    label="密码"
-                    rules={[{ required: true, message: '请输入密码' }]}
-                  >
-                    <Input.Password prefix={<LockOutlined />} placeholder="密码" />
+                  <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}>
+                    <Input.Password
+                      prefix={<LockOutlined />}
+                      aria-label="密码"
+                      placeholder="请输入密码"
+                      autoComplete="current-password"
+                    />
                   </Form.Item>
                   <Button type="primary" htmlType="submit" block loading={loading}>
                     登录
@@ -292,34 +306,36 @@ export default function LoginPage() {
               key: 'email',
               label: '邮箱验证码',
               children: (
-                <Form form={emailForm} layout="vertical" onFinish={onEmailLogin}>
+                <Form form={emailForm} onFinish={onEmailLogin}>
                   <Form.Item
                     name="email"
-                    label="邮箱"
                     rules={[
-                      { required: true, message: '请输入邮箱' },
+                      { required: true, message: '请输入邮箱地址' },
                       { type: 'email', message: '邮箱格式不正确' },
                     ]}
                   >
-                    <Input prefix={<MailOutlined />} placeholder="email@example.com" />
+                    <Input
+                      prefix={<MailOutlined />}
+                      aria-label="邮箱"
+                      placeholder="请输入邮箱地址"
+                      autoComplete="email"
+                    />
                   </Form.Item>
-                  <Form.Item
-                    name="code"
-                    label="验证码"
-                    rules={[{ required: true, message: '请输入验证码' }]}
-                  >
+                  <Form.Item name="code" rules={[{ required: true, message: '请输入验证码' }]}>
                     <Input.Search
-                      placeholder="验证码"
-                      enterButton="发送验证码"
-                      onSearch={onSendEmailOtp}
+                      aria-label="邮箱验证码"
+                      placeholder="6 位验证码"
+                      inputMode="numeric"
+                      maxLength={6}
+                      enterButton={codeButton('email')}
+                      onSearch={() => {
+                        if (countdowns.email === 0) void onSendEmailOtp();
+                      }}
                       loading={loading}
                     />
                   </Form.Item>
-                  {emailCodeSent && (
-                    <Alert type="success" message="验证码已发送至邮箱" style={{ marginBottom: 12 }} />
-                  )}
                   <Button type="primary" htmlType="submit" block loading={loading}>
-                    登录
+                    登录 / 注册
                   </Button>
                 </Form>
               ),
@@ -328,10 +344,9 @@ export default function LoginPage() {
               key: 'phone',
               label: '手机验证码',
               children: (
-                <Form form={phoneForm} layout="vertical" onFinish={onPhoneLogin}>
+                <Form form={phoneForm} onFinish={onPhoneLogin}>
                   <Form.Item
                     name="phone"
-                    label="手机号"
                     rules={[{
                       validator: async (_, value) => {
                         const err = validatePhoneParts(dialCode, value);
@@ -341,23 +356,21 @@ export default function LoginPage() {
                   >
                     <MediaPhoneInput dialCode={dialCode} onDialCodeChange={setDialCode} />
                   </Form.Item>
-                  <Form.Item
-                    name="code"
-                    label="验证码"
-                    rules={[{ required: true, message: '请输入验证码' }]}
-                  >
+                  <Form.Item name="code" rules={[{ required: true, message: '请输入验证码' }]}>
                     <Input.Search
-                      placeholder="验证码"
-                      enterButton="发送验证码"
-                      onSearch={onSendPhoneOtp}
+                      aria-label="短信验证码"
+                      placeholder="6 位验证码"
+                      inputMode="numeric"
+                      maxLength={6}
+                      enterButton={codeButton('phone')}
+                      onSearch={() => {
+                        if (countdowns.phone === 0) void onSendPhoneOtp();
+                      }}
                       loading={loading}
                     />
                   </Form.Item>
-                  {phoneCodeSent && (
-                    <Alert type="success" message="验证码已发送至手机" style={{ marginBottom: 12 }} />
-                  )}
                   <Button type="primary" htmlType="submit" block loading={loading}>
-                    登录
+                    登录 / 注册
                   </Button>
                 </Form>
               ),
@@ -368,18 +381,27 @@ export default function LoginPage() {
           <div className="login-oauth-divider">第三方账号登录</div>
         ) : null}
         {visibleProviders.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div className="login-oauth-grid">
             {visibleProviders.map(([key, label, icon]) => (
-              <Button key={key} onClick={() => startOauth(key)} disabled={loading} title={label}
-                icon={<img className="login-oauth-icon" src={icon} alt="" width={18} height={18} />}>
+              <Button
+                key={key}
+                onClick={() => startOauth(key)}
+                disabled={loading}
+                icon={<img className="login-oauth-icon" src={icon} alt="" width={18} height={18} />}
+              >
                 {label}
               </Button>
             ))}
           </div>
         ) : null}
         {chatReady ? (
-          <Button block style={{ marginTop: 8 }} onClick={onChat} disabled={loading}
-            icon={<img className="login-oauth-icon" src="/brand/oauth/bgssai.svg" alt="" width={18} height={18} />}>
+          <Button
+            block
+            style={{ marginTop: 8 }}
+            onClick={onChat}
+            disabled={loading}
+            icon={<img className="login-oauth-icon" src="/brand/oauth/bgssai.svg" alt="" width={18} height={18} />}
+          >
             用 Chat 登录
           </Button>
         ) : null}

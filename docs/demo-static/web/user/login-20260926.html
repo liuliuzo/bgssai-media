@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGSSAI MEDIA — 登录</title>
+<!-- 登录页真值原型（2026-09-26，Standards §14 / §15）。
+     正式实现 bgssai-media-user/frontend/src/pages/LoginPage.tsx；需求 docs/feature/login-page-cleanup-20260926.md；详设 docs/architecture/login-page-cleanup-20260926.md。
+     右下角「原型演示」开关只在原型里用来演示「只画已开通渠道」，正式页面没有。 -->
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; color: #17283f; background: #f5f7fb; }
+  .bot-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px clamp(16px, 4vw, 48px); border-bottom: 1px solid rgba(128,128,128,.18); background: #fff; }
+  .bot-nav strong { font-size: 14px; font-weight: 600; }
+  .bot-nav a { min-height: 44px; display: inline-flex; align-items: center; padding: 10px 16px; border: 1px solid rgba(128,128,128,.3); border-radius: 8px; color: inherit; font-size: 13px; font-weight: 600; text-decoration: none; }
+  .page { display: flex; justify-content: center; padding: 40px 16px; }
+  .card { width: 100%; max-width: 420px; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 28px 28px 24px; box-shadow: 0 12px 40px rgba(15,23,42,.06); }
+  .brand { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 700; }
+  .brand .lang { border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; padding: 4px 10px; font-weight: 500; }
+  .motion { height: 72px; margin: 10px 0 4px; border-radius: 12px; background: radial-gradient(circle at 50% 50%, rgba(37,99,235,.14), transparent 60%); }
+  h1 { font-size: 22px; margin: 6px 0 16px; }
+  .tabs { display: flex; gap: 4px; background: #f0f3f8; border-radius: 10px; padding: 4px; margin-bottom: 16px; }
+  .tabs button { flex: 1; border: 0; background: none; padding: 10px 4px; border-radius: 7px; white-space: nowrap; font: inherit; font-size: 14px; color: #475569; }
+  .tabs button[aria-selected="true"] { background: #fff; color: #2563eb; font-weight: 600; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+  .field { margin: 0 0 14px; }
+  .row { display: flex; gap: 8px; }
+  input { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+  .row button { flex: 0 0 auto; padding: 0 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; white-space: nowrap; }
+  .primary { width: 100%; padding: 12px; border: 0; border-radius: 8px; background: #2563eb; color: #fff; font-size: 15px; font-weight: 600; }
+  .links { text-align: center; font-size: 13px; margin: 14px 0 0; }
+  .links a { color: #2563eb; text-decoration: none; }
+  .divider { display: flex; align-items: center; gap: 10px; color: #64748b; font-size: 13px; margin: 22px 0 14px; }
+  .divider::before, .divider::after { content: ""; flex: 1; border-top: 1px solid #e2e8f0; }
+  .oauth { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .oauth button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 8px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; white-space: nowrap; }
+  .oauth img { width: 20px; height: 20px; object-fit: contain; }
+  .consent { margin: 18px 0 0; text-align: center; font-size: 12px; color: #64748b; line-height: 1.6; }
+  .consent a { color: #2563eb; text-decoration: none; }
+  footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 12px 16px 20px; }
+  .demo { position: fixed; right: 12px; bottom: 12px; font-size: 12px; background: #fffbe6; border: 1px solid #faad14; border-radius: 8px; padding: 8px 10px; }
+  .demo input { width: auto; }
+  @media (max-width: 480px) { .card { padding: 22px 18px; } }
+  html[data-bgssai-shell="1"] .bot-nav { display: none; }
+</style>
+</head>
+<body>
+  <nav class="bot-nav" aria-label="BGSSAI Bot"><strong>BGSSAI Bot</strong><a href="/download/bot">下载</a></nav>
+  <main class="page">
+    <div class="card">
+      <div class="brand"><span>BGSSAI MEDIA</span></div>
+      <div class="motion" aria-hidden="true"></div>
+      <h1>欢迎回来</h1>
+      <div class="tabs" role="tablist" aria-label="登录方式">
+        <button type="button" role="tab" aria-selected="false" data-mode="password">密码</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="email">邮箱验证码</button>
+        <button type="button" role="tab" aria-selected="true" data-mode="phone">手机验证码</button>
+      </div>
+      <form onsubmit="return false">
+        <div data-panel="password" hidden>
+          <div class="field"><label class="sr-only" for="a1">账号</label><input id="a1" placeholder="手机号 / 邮箱"></div>
+          <div class="field"><label class="sr-only" for="w1">密码</label><input id="w1" type="password" placeholder="请输入密码"></div>
+          <button class="primary" type="submit">登录</button>
+        </div>
+        <div data-panel="email" hidden>
+          <div class="field"><label class="sr-only" for="e1">邮箱</label><input id="e1" type="email" placeholder="请输入邮箱地址"></div>
+          <div class="field row"><label class="sr-only" for="c2">验证码</label><input id="c2" placeholder="6 位验证码" inputmode="numeric"><button type="button">获取验证码</button></div>
+          <button class="primary" type="submit">登录 / 注册</button>
+        </div>
+        <div data-panel="phone">
+          <div class="field"><label class="sr-only" for="p1">手机号</label><input id="p1" placeholder="+86  请输入手机号" inputmode="tel"></div>
+          <div class="field row"><label class="sr-only" for="c1">验证码</label><input id="c1" placeholder="6 位验证码" inputmode="numeric"><button type="button">获取验证码</button></div>
+          <button class="primary" type="submit">登录 / 注册</button>
+        </div>
+      </form>
+      <section id="oauth" aria-label="第三方账号登录">
+        <p class="divider">第三方账号登录</p>
+        <div class="oauth">
+          <button type="button"><img src="../../../../bgssai-media-user/frontend/public/brand/oauth/wechat.svg" alt="">微信</button>
+          <button type="button"><img src="../../../../bgssai-media-user/frontend/public/brand/oauth/douyin.svg" alt="">抖音</button>
+          <button type="button"><img src="../../../../bgssai-media-user/frontend/public/brand/oauth/baidu.svg" alt="">百度</button>
+          <button type="button"><img src="../../../../bgssai-media-user/frontend/public/brand/oauth/alipay.svg" alt="">支付宝</button>
+          <button type="button"><img src="../../../../bgssai-media-user/frontend/public/brand/oauth/bgssai.svg" alt="">用 Chat 登录</button>
+        </div>
+      </section>
+      <p class="consent">登录或注册即表示已阅读并同意<a href="https://www.bgssai.com/terms-of-service/" target="_blank" rel="noopener noreferrer">《用户协议》</a>与<a href="https://www.bgssai.com/privacy-policy/" target="_blank" rel="noopener noreferrer">《隐私政策》</a></p>
+    </div>
+  </main>
+  <footer>© 2026 昆山兵贵神速智能科技有限公司 · 用户协议 · 隐私政策</footer>
+  <label class="demo"><input type="checkbox" id="noChannels"> 原型演示：一个渠道都没开通</label>
+  <script>
+    var q = new URLSearchParams(location.search);
+    if (q.get('bgssai_shell') === '1' || q.get('chat_pane') === '1') document.documentElement.dataset.bgssaiShell = '1';
+    document.querySelectorAll('.tabs button').forEach(function (b) {
+      b.onclick = function () {
+        document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
+        document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== b.dataset.mode; });
+      };
+    });
+    document.getElementById('noChannels').onchange = function (e) { document.getElementById('oauth').hidden = e.target.checked; };
+  </script>
+</body>
+</html>

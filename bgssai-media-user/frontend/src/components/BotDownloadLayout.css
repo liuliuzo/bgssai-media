@@ -29,3 +29,54 @@
   object-fit: contain;
   vertical-align: -3px;
 }
+
+/* 登录卡：品牌行 + 标题 + 第三方按钮网格（Standards §14） */
+.login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.login-brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  object-fit: contain;
+}
+.login-title {
+  margin: 4px 0 8px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+.login-oauth-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+.login-oauth-grid .ant-btn > span:last-child {
+  white-space: nowrap;
+}
+/* 手机号框与 antd 输入框同一套边框（区号 + 号码合在一个框里） */
+.login-card .phone-dial-field {
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 0 11px 0 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.login-card .phone-dial-field:focus-within {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(5, 145, 255, 0.1);
+}
+.login-card .ant-form-item-has-error .phone-dial-field {
+  border-color: #ff4d4f;
+}
+.login-card .phone-dial-combo {
+  flex: 0 0 88px;
+}
