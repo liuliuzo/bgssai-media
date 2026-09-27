@@ -52,7 +52,7 @@ class LongDramaPublishJobTest {
     @Test
     void clientBuildsIngestRequest() {
         LongDramaPublishClient client = new LongDramaPublishClient("http://127.0.0.1:8081/");
-        assertEquals("http://127.0.0.1:8081/bgssai/user/media/ingest/long-drama", client.ingestUrl());
+        assertEquals("http://127.0.0.1:8081/bgssai/user/media/ingest/long", client.ingestUrl());
         LongDramaIngestRequest payload = LongDramaPublishJob.packageFinished(
                 "w1", "e1", "f1", "1", "T", null, "https://example.com/a.mp4", 1, null, null, null, null);
         HttpRequest request = client.buildRequest("local-ingest-token-change-me", payload);

@@ -16,7 +16,7 @@ the matching receiver.
 bgssai-short finished + approved READY pack
         │
         │  ShortDramaPublishJob.packageFinished(...)
-        │  POST {media}/bgssai/user/media/ingest/short-drama
+        │  POST {media}/bgssai/user/media/ingest/short
         │  header X-Bgssai-Ingest-Token
         │  header Idempotency-Key (optional; body key wins when both present)
         │  idempotency_key = short:{work}:{episode}:{film}
@@ -34,7 +34,8 @@ admin logs    GET /api/ingest/logs
 
 ## Ingest (server to server)
 
-`POST /bgssai/user/media/ingest/short-drama`
+`POST /bgssai/user/media/ingest/short`
+*(Deprecated alias: `POST /bgssai/user/media/ingest/short-drama`)*
 
 Headers (first match wins for the token):
 

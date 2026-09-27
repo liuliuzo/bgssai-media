@@ -12,7 +12,7 @@ Companion to [short-to-media-publish.md](short-to-media-publish.md). Source name
 bgssai-long finished + approved READY pack
         │
         │  LongDramaPublishJob.packageFinished(...)
-        │  POST {media}/bgssai/user/media/ingest/long-drama
+        │  POST {media}/bgssai/user/media/ingest/long (legacy alias: /long-drama)
         │  header X-Bgssai-Ingest-Token
         │  idempotency_key = long:{work}:{episode}:{film}:v{version}
         ▼

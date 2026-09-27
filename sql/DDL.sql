@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS media_ingest_log (
   KEY idx_ingest_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Additive catalog views used by shared short-drama contract (maps onto drama/episode).
+-- Additive catalog views used by shared short contract (maps onto drama/episode).
 -- media_id is a stable public id stored on media_ingest_log and derived from episode id.
 
 -- -----------------------------------------------------------------------------

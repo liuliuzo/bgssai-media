@@ -25,7 +25,20 @@
       "package.json"
     ],
     "win": {
-      "target": ["nsis"]
+      "target": ["nsis"],
+      "fileAssociations": [
+        { "ext": "mp4", "name": "MP4 Video", "description": "BGSSAI Media Video File", "role": "Viewer" },
+        { "ext": "mkv", "name": "MKV Video", "description": "BGSSAI Media Video File", "role": "Viewer" },
+        { "ext": "webm", "name": "WebM Video", "description": "BGSSAI Media Video File", "role": "Viewer" },
+        { "ext": "mov", "name": "QuickTime Video", "description": "BGSSAI Media Video File", "role": "Viewer" },
+        { "ext": "avi", "name": "AVI Video", "description": "BGSSAI Media Video File", "role": "Viewer" },
+        { "ext": "flv", "name": "Flash Video", "description": "BGSSAI Media Video File", "role": "Viewer" },
+        { "ext": "wmv", "name": "Windows Media Video", "description": "BGSSAI Media Video File", "role": "Viewer" },
+        { "ext": "ts", "name": "MPEG Transport Stream", "description": "BGSSAI Media Video File", "role": "Viewer" },
+        { "ext": "mp3", "name": "MP3 Audio", "description": "BGSSAI Media Audio File", "role": "Viewer" },
+        { "ext": "flac", "name": "FLAC Audio", "description": "BGSSAI Media Audio File", "role": "Viewer" },
+        { "ext": "wav", "name": "WAV Audio", "description": "BGSSAI Media Audio File", "role": "Viewer" }
+      ]
     },
     "mac": {
       "target": ["dmg"],

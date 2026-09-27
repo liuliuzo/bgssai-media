@@ -1,5 +1,5 @@
 
--- Patch existing DBs created before shared short-drama contract columns.
+-- Patch existing DBs created before shared short contract columns.
 USE bgssai_media;
 
 ALTER TABLE media_ingest_log

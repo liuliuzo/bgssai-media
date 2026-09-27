@@ -24,7 +24,10 @@ public class ShortDramaIngestController {
         this.shortDramaContractService = shortDramaContractService;
     }
 
-    @PostMapping("/bgssai/user/media/ingest/short-drama")
+    /**
+     * Ingest endpoint: primary is /short (short-drama is deprecated).
+     */
+    @PostMapping({"/bgssai/user/media/ingest/short", "/bgssai/user/media/ingest/short-drama"})
     public ApiResponse<Map<String, Object>> ingest(
             @RequestHeader(value = "X-Bgssai-Ingest-Token", required = false) String bgssaiToken,
             @RequestHeader(value = "X-Ingest-Token", required = false) String legacyToken,

@@ -14,7 +14,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>bgssai-media</name>
-  <description>BGSSAI media player and short-drama distribution platform</description>
+  <description>BGSSAI media player and playback platform (short/long dramas)</description>
   <modules>
     <module>bgssai-media-common</module>
     <module>bgssai-media-admin</module>

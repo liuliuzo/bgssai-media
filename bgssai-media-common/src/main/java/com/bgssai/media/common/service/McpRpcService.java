@@ -73,7 +73,7 @@ public class McpRpcService {
         ObjectNode instructions = objectMapper.createObjectNode();
         // Keep instructions as string per MCP initialize result.
         return result.put("instructions",
-                "bgssai-media MCP: read-only short-drama catalog and continue-watching. "
+                "bgssai-media MCP: read-only short catalog and continue-watching. "
                         + "Supported clients: Claude, Codex, Cursor, Grok Bot, bgssai-bot.");
     }
 

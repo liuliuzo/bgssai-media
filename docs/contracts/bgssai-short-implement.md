@@ -6,7 +6,7 @@ This Cloud Agent still cannot clone https://github.com/liuliuzo/bgssai-short
 
 Media ingest now matches that publish contract:
 
-- `POST /bgssai/user/media/ingest/short-drama`
+- `POST /bgssai/user/media/ingest/short` (legacy alias: `/short-drama`)
 - UNIQUE `idempotency_key` = `short:{source_work_id}:{source_episode_id}:{source_film_id}`
 - Accept READY approved packs (`status=READY|APPROVED` or omitted; `approved` not false)
 - Replay returns the existing catalog entry (`replayed=true`), no second catalog row
@@ -25,7 +25,7 @@ distribution channel. Retry with the same key is safe.
 - Body (snake_case): `{ "source_work_id", "source_episode_id", "source_film_id" }`
 - Load finished title / cover / video_url / duration from short's own tables
 - Package with the same rules as `ShortDramaPublishJob.packageFinished`
-- POST `{bgssai.short.media.base-url}/bgssai/user/media/ingest/short-drama`
+- POST `{bgssai.short.media.base-url}/bgssai/user/media/ingest/short`
 - Header `X-Bgssai-Ingest-Token: {bgssai.short.media.ingest-token}`
 - Header `Idempotency-Key` optional (body key is required and must match the formula)
 

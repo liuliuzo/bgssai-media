@@ -20,7 +20,7 @@ Header：
 
 ```json
 {
-  "external_ref": "short-drama-10001",
+  "external_ref": "short-10001",
   "title": "示例短剧",
   "cover_url": "https://example.com/cover.jpg",
   "description": "简介",
@@ -86,4 +86,4 @@ Admin 端「入库日志」可看到本次摄入记录。
 
 See `docs/feature/short-drama-ingest.md`.
 
-`POST /bgssai/user/media/ingest/short-drama` + header `X-Bgssai-Ingest-Token`.
+`POST /bgssai/user/media/ingest/short` + header `X-Bgssai-Ingest-Token` (legacy alias `/short-drama`).

@@ -17,7 +17,9 @@ import java.util.List;
 public final class ShortDramaPublishJob {
 
     public static final String SOURCE_SYSTEM = SourceRefs.SYSTEM_SHORT;
-    public static final String INGEST_PATH = "/bgssai/user/media/ingest/short-drama";
+    public static final String INGEST_PATH = "/bgssai/user/media/ingest/short";
+    @Deprecated
+    public static final String DEPRECATED_INGEST_PATH = "/bgssai/user/media/ingest/short-drama";
     public static final String TOKEN_HEADER = "X-Bgssai-Ingest-Token";
 
     private ShortDramaPublishJob() {

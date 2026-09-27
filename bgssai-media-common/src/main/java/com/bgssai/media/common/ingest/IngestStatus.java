@@ -1,7 +1,7 @@
 package com.bgssai.media.common.ingest;
 
 /**
- * Commercial ingest readiness for short-drama playback intake (MEDIA-01).
+ * Commercial ingest readiness for short playback intake (MEDIA-01).
  * Only {@link #READY} may be treated as playable. Never invent READY.
  */
 public final class IngestStatus {

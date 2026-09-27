@@ -8,7 +8,7 @@ Date: 2026-09-16. Scope: generalize Short source identifiers; define Long drama 
 | --- | --- |
 | `SourceRefs` shared namespace (`short` / `long`) | DONE |
 | Short wire formats unchanged (`short:work:`, `short:w:e:f`, `film:`) | DONE |
-| Long ingest `POST /bgssai/user/media/ingest/long-drama` | DONE |
+| Long ingest `POST /bgssai/user/media/ingest/long` (alias: `/long-drama`) | DONE |
 | Long fields: work / episode / film / version / approved+status review / idempotency | DONE |
 | Catalog + detail + episodes-by-work (`ep_no` asc) | DONE |
 | Short catalog filtered to `long:` / `short:` prefixes separately | DONE |

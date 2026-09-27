@@ -2,9 +2,9 @@
 
 当前校准版本：2026-09-16。完整产品规划见 [产品线验收基线](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/feature/product-line-acceptance.md)；实现和验证状态见本仓 `docs/review/acceptance-20260911.md`。规划目标不等于验收通过。
 
-## 一句话
+## 核心定位
 
-**bgssai-media** 是 BGSSAI 的**播放器 + 视频播放平台**：播放器对照 **VLC**，必须能打开主流媒体格式；平台对标 **YouTube**（正片 / 剧集）与 **YouTube Shorts**（短视频 / 短剧）。`bgssai-short` 做成的短剧、`bgssai-long` 做成的长剧都可以直接发布到本平台播放。short / long 只做制作，分发与播放归属本仓。
+> **bgssai-media 是一个播放器，参考的是 VLC 项目，定位是播放器 + 视频播放平台，对标 YouTube 和 YouTube Shorts，需要能支持主流格式文件的播放；然后它还是一款播放平台，bgssai-short、bgssai-long 做完的短剧可以直接发布到这个平台，支持 Windows PC 桌面软件、Web 在线播放、Android、iOS 多端播放。**
 
 ## 闭环（MVP）
 
@@ -28,11 +28,12 @@ long  长剧成片  ──┘     → media 入库（PENDING / FAILED / READY）
 | 用户登录 | 密码 + 邮箱 OTP + 手机 OTP；境内四家演示；**Chat 第三方登录为 PREP**（不签发会话） |
 | 管理端 | 仅 DML 种子密码登录，**不接入 Chat** |
 
-## 与兄弟产品边界
+## 与兄弟产品边界与闭环协同
 
-- **bgssai-short**：短剧**制作**；成品发布到本平台 Shorts 流，不在 short 内做分发渠道。
-- **bgssai-long**：长剧**制作**；成品发布到本平台正片 / 剧集流，不在 long 内做播放社区。
-- **bgssai-media**：播放器 + 播放平台；不承担 short / long 的制作流水线。
+- **bgssai-short**：**AI 短剧制作平台**（参考 `waoowaoo`、`Jellyfish`、`ArcReel`、`LocalMiniDrama`、`openframe`、`ZJT`）。成品短剧通过标准契约（`/bgssai/user/media/ingest/short`）直接发布到本平台 YouTube Shorts 竖屏流。
+- **bgssai-long**：**AI 长剧制作平台**（参考 `waoowaoo`、`Jellyfish`、`ArcReel`、`LocalMiniDrama`、`openframe`、`ZJT`）。成品长剧通过标准契约（`/bgssai/user/media/ingest/long`）直接发布到本平台 YouTube 正片 / 剧集流。
+- **bgssai-media**：**播放器 + 视频播放平台**（参考 VLC，对标 YouTube 和 YouTube Shorts）。全面支持主流媒体格式，承接 short 与 long 成片，支持 Windows PC 桌面软件、Web 在线、Android、iOS 多端播放。
+- **闭环协同**：`bgssai-short` + `bgssai-long` + `bgssai-media` 形成完整的音视频创作、制作、分发、播放闭环，三仓一体化协同迭代。
 - **bgssai-chat**：中心账号；本仓用户端预留第三方登录，管理端隔离。
 
 ## 非目标（MVP）
@@ -41,5 +42,5 @@ DRM、直播、社区、支付、推荐排序、完整 Chat OAuth、生产 OBS/S
 
 ## 里程碑
 
-见 `docs/milestones.md`。当前交付为 **MVP 可运行垂直切片 + 发布契约闭环（media 侧）**。
-short 仓 PR #54 已合并（用户确认）；本 Agent 仍无法 clone 私仓，见 `docs/contracts/bgssai-short-implement.md`。
+见 `docs/milestones.md`。当前交付为 **MVP 可运行垂直切片 + short / long 双端发布摄入闭环**。
+三仓（`bgssai-short`、`bgssai-long`、`bgssai-media`）均已本地就绪并统一在 `develop` 工作分支对齐迭代。

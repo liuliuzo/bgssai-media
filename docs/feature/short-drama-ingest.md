@@ -8,7 +8,8 @@ Legacy admin path remains: `POST /api/ingest/short/publish` + `X-Ingest-Token` (
 
 ## Shared contract (MUST)
 
-`POST /bgssai/user/media/ingest/short-drama`
+`POST /bgssai/user/media/ingest/short`
+*(Deprecated alias: `POST /bgssai/user/media/ingest/short-drama`)*
 
 Headers:
 
@@ -82,7 +83,7 @@ TOKEN=local-ingest-token-change-me
 BASE=http://127.0.0.1:8080
 
 # Round 1 happy path
-curl -sS -X POST "$BASE/bgssai/user/media/ingest/short-drama" \
+curl -sS -X POST "$BASE/bgssai/user/media/ingest/short" \
   -H "Content-Type: application/json" \
   -H "X-Bgssai-Ingest-Token: $TOKEN" \
   -d '{
@@ -95,11 +96,11 @@ curl -sS -X POST "$BASE/bgssai/user/media/ingest/short-drama" \
   }'
 
 # Round 2 bad token + re-ingest
-curl -sS -X POST "$BASE/bgssai/user/media/ingest/short-drama" \
+curl -sS -X POST "$BASE/bgssai/user/media/ingest/short" \
   -H "Content-Type: application/json" -H "X-Bgssai-Ingest-Token: wrong" \
   -d '{"source_system":"bgssai-short","source_work_id":"w1","source_episode_id":"e1","source_film_id":"f1","title":"x","video_url":"https://x","idempotency_key":"short:w1:e1:f1"}'
 
-curl -sS -X POST "$BASE/bgssai/user/media/ingest/short-drama" \
+curl -sS -X POST "$BASE/bgssai/user/media/ingest/short" \
   -H "Content-Type: application/json" -H "X-Bgssai-Ingest-Token: $TOKEN" \
   -d '{
     "source_system":"bgssai-short","source_work_id":"w1","source_episode_id":"e1","source_film_id":"f1",

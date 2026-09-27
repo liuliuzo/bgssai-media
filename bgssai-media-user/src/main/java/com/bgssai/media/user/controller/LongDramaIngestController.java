@@ -24,7 +24,7 @@ public class LongDramaIngestController {
         this.longDramaContractService = longDramaContractService;
     }
 
-    @PostMapping("/bgssai/user/media/ingest/long-drama")
+    @PostMapping({"/bgssai/user/media/ingest/long", "/bgssai/user/media/ingest/long-drama"})
     public ApiResponse<Map<String, Object>> ingest(
             @RequestHeader(value = "X-Bgssai-Ingest-Token", required = false) String bgssaiToken,
             @RequestHeader(value = "X-Ingest-Token", required = false) String legacyToken,

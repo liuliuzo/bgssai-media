@@ -54,7 +54,7 @@ class ShortDramaPublishJobTest {
     @Test
     void clientBuildsIngestRequestWithoutEmbeddingSecrets() {
         ShortDramaPublishClient client = new ShortDramaPublishClient("http://127.0.0.1:8081/");
-        assertEquals("http://127.0.0.1:8081/bgssai/user/media/ingest/short-drama", client.ingestUrl());
+        assertEquals("http://127.0.0.1:8081/bgssai/user/media/ingest/short", client.ingestUrl());
         ShortDramaIngestRequest payload = ShortDramaPublishJob.packageFinished(
                 "w1", "e1", "f1", "T", null, "https://example.com/a.mp4", 1, null, null, null);
         HttpRequest request = client.buildRequest("local-ingest-token-change-me", payload);
