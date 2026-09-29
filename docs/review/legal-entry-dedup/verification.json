@@ -1,0 +1,302 @@
+{
+  "repo": "bgssai-media",
+  "baseline": "ff2f0f65ea6001a0cff9a9f385734bb771703120",
+  "branch": "codex/legal-dedup-20260929",
+  "builds": [
+    {
+      "repo": "bgssai-media",
+      "path": "bgssai-media-admin/frontend",
+      "install": 0,
+      "build": 0
+    },
+    {
+      "repo": "bgssai-media",
+      "path": "bgssai-media-user/frontend",
+      "install": 0,
+      "build": 0
+    }
+  ],
+  "legal_tests": [
+    {
+      "repo": "bgssai-media",
+      "path": "bgssai-media-user/frontend",
+      "legal_tests": 0
+    }
+  ],
+  "regressions": [],
+  "browser": [
+    {
+      "repo": "bgssai-media",
+      "path": "bgssai-media-admin/frontend",
+      "rows": [
+        {
+          "width": 320,
+          "route": "/login",
+          "url": "http://127.0.0.1:62257/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 320,
+          "route": "/register",
+          "url": "http://127.0.0.1:62257/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 320,
+          "route": "/login",
+          "url": "http://127.0.0.1:62257/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 1440,
+          "route": "/login",
+          "url": "http://127.0.0.1:62257/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 1440,
+          "route": "/register",
+          "url": "http://127.0.0.1:62257/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 1440,
+          "route": "/login",
+          "url": "http://127.0.0.1:62257/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        }
+      ],
+      "failed": 0
+    },
+    {
+      "repo": "bgssai-media",
+      "path": "bgssai-media-user/frontend",
+      "rows": [
+        {
+          "width": 320,
+          "route": "/login",
+          "url": "http://127.0.0.1:61767/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 320,
+          "route": "/register",
+          "url": "http://127.0.0.1:61767/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 320,
+          "route": "/login",
+          "url": "http://127.0.0.1:61767/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 1440,
+          "route": "/login",
+          "url": "http://127.0.0.1:61767/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 1440,
+          "route": "/register",
+          "url": "http://127.0.0.1:61767/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        },
+        {
+          "width": 1440,
+          "route": "/login",
+          "url": "http://127.0.0.1:61767/login",
+          "terms": 1,
+          "privacy": 1,
+          "footers": 1,
+          "links": [
+            {
+              "text": "用户协议",
+              "href": "https://www.bgssai.com/terms-of-service/"
+            },
+            {
+              "text": "隐私政策",
+              "href": "https://www.bgssai.com/privacy-policy/"
+            }
+          ],
+          "filings": [],
+          "issues": [],
+          "errors": []
+        }
+      ],
+      "failed": 0
+    }
+  ],
+  "settings": [],
+  "extra": [],
+  "limitations": [
+    "Local browser verification with mocked API fixtures; no production data was modified.",
+    "Desktop/mobile web views were tested in Chromium, not native device packaging or OS integration.",
+    "No merge or deployment in this task; CI/production validation is separate."
+  ]
+}
