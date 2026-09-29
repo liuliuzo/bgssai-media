@@ -102,8 +102,8 @@ test('catalog exports no removed pages and no internal review notes', () => {
   assert.equal(INTERNAL_NOTE_PATTERN.test(blob), false);
 });
 
-test('consent line and footers link only terms and privacy via zh href helper', () => {
-  for (const file of [USER_CONSENT, USER_FOOTER, ADMIN_FOOTER]) {
+test('footers own the terms and privacy links', () => {
+  for (const file of [USER_FOOTER, ADMIN_FOOTER]) {
     const src = read(file);
     assert.match(src, /legalHrefZh/);
     assert.match(src, /LEGAL_TERMS/);
@@ -121,9 +121,8 @@ test('consent line and footers link only terms and privacy via zh href helper', 
 
 test('user consent line is the single Standards sentence', () => {
   const src = read(USER_CONSENT);
-  assert.match(src, /登录或注册即表示已阅读并同意/);
-  assert.match(src, /《\{LEGAL_TERMS\.labelZh\}》/);
-  assert.match(src, /《\{LEGAL_PRIVACY\.labelZh\}》/);
+  assert.match(src, /登录或注册即表示已阅读并同意页脚所列协议与隐私条款。/);
+  assert.doesNotMatch(src, /<a\b/);
   assert.equal(src.includes('登录即表示'), false);
 });
 
