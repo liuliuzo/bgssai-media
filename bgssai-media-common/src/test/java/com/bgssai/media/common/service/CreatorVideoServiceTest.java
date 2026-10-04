@@ -37,6 +37,10 @@ class CreatorVideoServiceTest {
         assertEquals(CreatorVideoService.STATUS_FAILED, h.videos.get(0).getStatus());
         assertTrue(h.renditions.isEmpty());
         assertEquals(0, ffmpeg.transcodeCalls);
+        Path original = Path.of(h.videos.get(0).getOriginalPath());
+        assertTrue(Files.isRegularFile(original));
+        assertTrue(original.getFileName().toString().endsWith(".mp4"));
+        assertEquals(fixture.length, Files.size(original));
         assertThrows(BizException.class, () -> h.creator.playback(2L, videoId));
         assertThrows(BizException.class, () -> h.creator.publicAsset(videoId, "720p.mp4"));
     }
@@ -57,11 +61,13 @@ class CreatorVideoServiceTest {
         Map<String, Object> playback = h.creator.playback(7L, videoId);
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> renditions = (List<Map<String, Object>>) playback.get("renditions");
-        assertEquals(3, renditions.size());
-        assertEquals("360p", renditions.get(0).get("bitrate_label"));
-        assertEquals("720p", renditions.get(1).get("bitrate_label"));
-        assertEquals("1080p", renditions.get(2).get("bitrate_label"));
-        assertEquals("/api/creator/media/" + videoId + "/720p.mp4", renditions.get(1).get("play_url"));
+        assertEquals(4, renditions.size());
+        assertEquals("source", renditions.get(0).get("bitrate_label"));
+        assertEquals("/api/creator/media/" + videoId + "/source.mp4", renditions.get(0).get("play_url"));
+        assertEquals("360p", renditions.get(1).get("bitrate_label"));
+        assertEquals("720p", renditions.get(2).get("bitrate_label"));
+        assertEquals("1080p", renditions.get(3).get("bitrate_label"));
+        assertEquals("/api/creator/media/" + videoId + "/720p.mp4", renditions.get(2).get("play_url"));
         assertEquals("/api/creator/media/" + videoId + "/cover.jpg", playback.get("cover_url"));
         assertEquals(CreatorVideoService.STATUS_READY, h.creator.detail(7L, videoId).get("status"));
         assertEquals(3, ffmpeg.transcodeCalls);
@@ -69,6 +75,10 @@ class CreatorVideoServiceTest {
         Path ready = h.creator.publicAsset(videoId, "720p.mp4");
         assertTrue(Files.isRegularFile(ready));
         assertTrue(Files.size(ready) > 0);
+        Path source = h.creator.publicAsset(videoId, "source.mp4");
+        assertArrayEquals(fixtureBytes(), Files.readAllBytes(source));
+        Path cover = h.creator.publicAsset(videoId, "cover.jpg");
+        assertTrue(Files.size(cover) > 0);
     }
 
     @Test
@@ -92,7 +102,7 @@ class CreatorVideoServiceTest {
         assertEquals(1, retried.get("retry_count"));
         h.creator.processJob(jobId);
         assertEquals(CreatorVideoService.STATUS_READY, h.creator.getJob(3L, jobId).get("status"));
-        assertEquals(3, h.renditions.size());
+        assertEquals(4, h.renditions.size());
         BizException ready = assertThrows(BizException.class, () -> h.creator.retry(3L, jobId));
         assertEquals(400, ready.getCode());
     }
@@ -114,6 +124,24 @@ class CreatorVideoServiceTest {
         assertEquals(403, jobHidden.getCode());
         assertEquals(1, h.creator.listMine(1L).size());
         assertEquals(0, h.creator.listMine(2L).size());
+    }
+
+    @Test
+    void acceptsWebmMkvMovFlvAndRejectsOtherTypes() throws Exception {
+        TrackingFfmpeg ffmpeg = new TrackingFfmpeg(false);
+        CreatorCommunityHarness h = new CreatorCommunityHarness(ffmpeg);
+        byte[] bytes = fixtureBytes();
+        for (String ext : List.of("webm", "mkv", "mov", "flv")) {
+            Map<String, Object> uploaded = h.creator.upload(
+                    4L, ext, null, "clip." + ext, "video/" + ext, bytes, null);
+            assertEquals(CreatorVideoService.STATUS_QUEUED, uploaded.get("status"));
+            String path = h.videos.get(h.videos.size() - 1).getOriginalPath();
+            assertTrue(path.endsWith("original." + ext));
+            assertTrue(Files.isRegularFile(Path.of(path)));
+        }
+        BizException rejected = assertThrows(BizException.class, () -> h.creator.upload(
+                4L, "nope", null, "notes.txt", "text/plain", bytes, null));
+        assertEquals(400, rejected.getCode());
     }
 
     private static byte[] fixtureBytes() throws Exception {

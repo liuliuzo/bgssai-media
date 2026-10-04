@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -46,6 +47,7 @@ public class CreatorVideoService {
     public static final String REASON_FFMPEG_MISSING = "ffmpeg not found";
 
     static final int[] RENDITION_HEIGHTS = {360, 720, 1080};
+    static final Set<String> ACCEPTED_EXTENSIONS = Set.of("mp4", "webm", "mkv", "mov", "flv");
     private static final Set<String> PUBLIC_ASSETS = Set.of(
             "360p.mp4", "720p.mp4", "1080p.mp4", "cover.jpg", "cover.png");
     private static final long MAX_BYTES = 512L * 1024 * 1024;
@@ -94,6 +96,7 @@ public class CreatorVideoService {
         if (fileBytes.length > MAX_BYTES) {
             throw new BizException(400, "file too large");
         }
+        String ext = requireVideoExtension(originalFilename);
         String filename = safeName(originalFilename);
         String resolvedTitle = title == null || title.isBlank() ? filename : title.trim();
         if (resolvedTitle.length() > 256) {
@@ -119,7 +122,7 @@ public class CreatorVideoService {
         try {
             Path dir = videoDir(video.getId());
             Files.createDirectories(dir);
-            Path original = dir.resolve("original.mp4");
+            Path original = dir.resolve("original." + ext);
             Files.write(original, fileBytes);
             video.setOriginalPath(original.toString());
             if (coverBytes != null && coverBytes.length > 0) {
@@ -240,7 +243,7 @@ public class CreatorVideoService {
     }
 
     public Path publicAsset(Long videoId, String asset) {
-        if (videoId == null || asset == null || !PUBLIC_ASSETS.contains(asset)) {
+        if (videoId == null || asset == null || !isPublicAsset(asset)) {
             throw new BizException(404, "asset not found");
         }
         MediaCreatorVideo video = videoMapper.selectByPrimaryKey(videoId);
@@ -307,20 +310,22 @@ public class CreatorVideoService {
             rex.createCriteria().andVideoIdEqualTo(video.getId());
             renditionMapper.deleteByExample(rex);
 
+            String ext = extensionOfName(original.getFileName().toString());
+            if (!ACCEPTED_EXTENSIONS.contains(ext)) {
+                failJob(job, video, "unsupported video type");
+                return;
+            }
+            String sourceAsset = "source." + ext;
+            Path source = dir.resolve(sourceAsset);
+            Files.copy(original, source, StandardCopyOption.REPLACE_EXISTING);
+            insertRendition(job, video, "source", 0, source, sourceAsset);
+
             for (int height : RENDITION_HEIGHTS) {
                 String label = height + "p";
                 String asset = label + ".mp4";
                 Path dest = dir.resolve(asset);
                 ffmpegGateway.transcode(original, dest, height);
-                MediaTranscodeRendition row = new MediaTranscodeRendition();
-                row.setJobId(job.getId());
-                row.setVideoId(video.getId());
-                row.setBitrateLabel(label);
-                row.setHeight(height);
-                row.setStoragePath(dest.toString());
-                row.setPlayUrl(playUrl(video.getId(), asset));
-                row.setCreatedAt(new Date());
-                renditionMapper.insertSelective(row);
+                insertRendition(job, video, label, height, dest, asset);
             }
 
             if (video.getCoverPath() == null || video.getCoverPath().isBlank()
@@ -372,6 +377,23 @@ public class CreatorVideoService {
     private void failVideo(MediaCreatorVideo video, String reason) {
         video.setStatus(STATUS_FAILED);
         videoMapper.updateByPrimaryKeySelective(video);
+    }
+
+    private void insertRendition(MediaTranscodeJob job,
+                                  MediaCreatorVideo video,
+                                  String label,
+                                  int height,
+                                  Path dest,
+                                  String asset) {
+        MediaTranscodeRendition row = new MediaTranscodeRendition();
+        row.setJobId(job.getId());
+        row.setVideoId(video.getId());
+        row.setBitrateLabel(label);
+        row.setHeight(height);
+        row.setStoragePath(dest.toString());
+        row.setPlayUrl(playUrl(video.getId(), asset));
+        row.setCreatedAt(new Date());
+        renditionMapper.insertSelective(row);
     }
 
     private MediaTranscodeJob newJob(MediaCreatorVideo video, Long userId) {
@@ -461,6 +483,39 @@ public class CreatorVideoService {
         return publicBase + "/" + videoId + "/" + asset;
     }
 
+    static String requireVideoExtension(String originalFilename) {
+        String ext = extensionOfName(originalFilename);
+        if (!ACCEPTED_EXTENSIONS.contains(ext)) {
+            throw new BizException(400, "unsupported video type");
+        }
+        return ext;
+    }
+
+    private static String extensionOfName(String name) {
+        if (name == null || name.isBlank()) {
+            return "";
+        }
+        String file = Path.of(name).getFileName().toString().toLowerCase(Locale.ROOT);
+        int dot = file.lastIndexOf('.');
+        if (dot < 0 || dot == file.length() - 1) {
+            return "";
+        }
+        return file.substring(dot + 1);
+    }
+
+    private static boolean isPublicAsset(String asset) {
+        if (PUBLIC_ASSETS.contains(asset)) {
+            return true;
+        }
+        if (asset.indexOf('/') >= 0 || asset.indexOf('\\') >= 0 || asset.contains("..")) {
+            return false;
+        }
+        if (!asset.startsWith("source.")) {
+            return false;
+        }
+        return ACCEPTED_EXTENSIONS.contains(extensionOfName(asset));
+    }
+
     private static String safeName(String originalFilename) {
         if (originalFilename == null || originalFilename.isBlank()) {
             return "upload.mp4";
@@ -502,6 +557,18 @@ public class CreatorVideoService {
         }
         if (lower.endsWith(".png")) {
             return "image/png";
+        }
+        if (lower.endsWith(".webm")) {
+            return "video/webm";
+        }
+        if (lower.endsWith(".mkv")) {
+            return "video/x-matroska";
+        }
+        if (lower.endsWith(".mov")) {
+            return "video/quicktime";
+        }
+        if (lower.endsWith(".flv")) {
+            return "video/x-flv";
         }
         return "video/mp4";
     }

@@ -27,6 +27,11 @@ uploads/
 # OS
 Thumbs.db
 bgssai-media-desktop/node_modules/
+# System VLC is probed at runtime. Do not commit libVLC binaries.
+bgssai-media-desktop/vendor/vlc/**
+!bgssai-media-desktop/vendor/vlc/README.md
+**/libvlc*
+**/libvlccore*
 clients/**/node_modules/
 clients/desktop/release/
 clients/mobile/www/
