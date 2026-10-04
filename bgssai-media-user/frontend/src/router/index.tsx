@@ -13,6 +13,7 @@ import UniversalPlayerPage from '@/pages/UniversalPlayerPage';
 import ContinueWatchingPage from '@/pages/ContinueWatchingPage';
 import FormatMatrixPage from '@/pages/FormatMatrixPage';
 import SettingsPage from '@/pages/SettingsPage';
+import CreatorPage from '@/pages/CreatorPage';
 import { useAuthStore } from '@/stores/authStore';
 
 function LoginRedirect({ children }: { children: React.ReactNode }) {
@@ -54,6 +55,7 @@ export default function AppRouter() {
           <Route path="continue" element={<ContinueWatchingPage />} />
           <Route path="formats" element={<FormatMatrixPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="creator" element={<CreatorPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

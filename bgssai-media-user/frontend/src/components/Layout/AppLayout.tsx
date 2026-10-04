@@ -6,6 +6,7 @@ import {
   LogoutOutlined,
   ProfileOutlined,
   SettingOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { key: '/continue', icon: <HistoryOutlined />, label: '继续观看', to: '/continue' },
   { key: '/player', icon: <PlayCircleOutlined />, label: '通用播放器', to: '/player' },
   { key: '/formats', icon: <ProfileOutlined />, label: '格式支持', to: '/formats' },
+  { key: '/creator', icon: <UploadOutlined />, label: '创作者', to: '/creator' },
   { key: '/settings', icon: <SettingOutlined />, label: '设置', to: '/settings' },
 ];
 
@@ -29,6 +31,7 @@ const SHELL_TABS = [
   { key: '/shorts', icon: <PlayCircleOutlined />, label: 'Short', to: '/shorts' },
   { key: '/continue', icon: <HistoryOutlined />, label: '继续', to: '/continue' },
   { key: '/player', icon: <PlayCircleOutlined />, label: '播放', to: '/player' },
+  { key: '/creator', icon: <UploadOutlined />, label: '创作', to: '/creator' },
   { key: '/settings', icon: <SettingOutlined />, label: '设置', to: '/settings' },
 ];
 
@@ -39,6 +42,7 @@ function useSelectedKey(pathname: string, inShell: boolean): string {
   if (inShell && pathname.startsWith('/play/')) return '/player';
   if (pathname.startsWith('/formats')) return '/formats';
   if (pathname.startsWith('/settings')) return '/settings';
+  if (pathname.startsWith('/creator')) return '/creator';
   return '/';
 }
 

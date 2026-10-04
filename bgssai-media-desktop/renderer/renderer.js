@@ -40,9 +40,14 @@ async function refreshStatus() {
   const status = await window.mediaDesktop.status();
   const el = document.getElementById('status');
   const list = document.getElementById('playlist');
-  el.textContent = status.current
-    ? `引擎 ${status.engine} · 当前: ${status.current}`
-    : `引擎 ${status.engine || 'libVLC'} · 未选择文件`;
+  if (status.canDecode === false) {
+    el.textContent = status.decodeStatus
+      || '引擎缺失，无法解码。不会改用浏览器硬解 mkv。';
+  } else {
+    el.textContent = status.current
+      ? `引擎 ${status.engine} · 当前: ${status.current}`
+      : `引擎 ${status.engine || '未定位'} · 未选择文件`;
+  }
   if (status.lastError) showError(status.lastError);
   list.innerHTML = '';
   (status.playlist || []).forEach((p, i) => {

@@ -178,13 +178,30 @@ class VlcPlayer {
   }
 
   getStatus() {
+    if (!this.engine && !this.lastError) {
+      try {
+        this.probeEngine();
+      } catch (err) {
+        this.lastError = {
+          ok: false,
+          code: 'VLC_PROBE_FAILED',
+          message: err && err.message ? err.message : String(err),
+        };
+      }
+    }
+    const found = Boolean(this.engine);
     return {
       playlist: this.playlist,
       index: this.index,
       current: this.playlist[this.index] || null,
       ready: this.ready,
-      engine: this.engine ? `libVLC/rc (${this.engine.source}: ${this.engine.binary})` : 'libVLC/rc (未定位)',
-      engineBinary: this.engine ? this.engine.binary : null,
+      canDecode: found,
+      browserHardDecode: false,
+      decodeStatus: found
+        ? 'libVLC 可用'
+        : '引擎缺失，无法解码。不会改用浏览器硬解 mkv。',
+      engine: found ? `libVLC/rc (${this.engine.source}: ${this.engine.binary})` : null,
+      engineBinary: found ? this.engine.binary : null,
       lastError: this.lastError,
     };
   }

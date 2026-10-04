@@ -1,6 +1,7 @@
 package com.bgssai.media.common.service;
 
 import com.bgssai.media.common.domain.MediaIngestLog;
+import com.bgssai.media.common.web.BizException;
 import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.ingest.MediaStorageGate;
 import com.bgssai.media.common.probe.MediaAssetProbe;
@@ -68,6 +69,16 @@ class IngestServiceTest {
         ArgumentCaptor<MediaIngestLog> captor = ArgumentCaptor.forClass(MediaIngestLog.class);
         verify(mediaIngestLogMapper).insertSelective(captor.capture());
         assertEquals(IngestStatus.FAILED, captor.getValue().getStatus());
+    }
+
+    @Test
+    void blankIngestTokenIsRejected() {
+        IngestService svc = service(new MediaStorageGate("REFERENCE", "", "", "", ""));
+        BizException blank = assertThrows(BizException.class, () -> svc.assertToken("  "));
+        assertEquals(401, blank.getCode());
+        BizException missing = assertThrows(BizException.class, () -> svc.assertToken(null));
+        assertEquals(401, missing.getCode());
+        assertDoesNotThrow(() -> svc.assertToken("test-token"));
     }
 
     @Test
