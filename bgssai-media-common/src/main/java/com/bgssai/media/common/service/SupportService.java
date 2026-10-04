@@ -13,6 +13,7 @@ import com.bgssai.media.common.web.BizException;
 import com.bgssai.media.common.web.PageResult;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +68,8 @@ public class SupportService {
     private final MediaSupportSessionMapper sessionMapper;
     private final MediaSupportMessageMapper messageMapper;
     private final MediaSupportTicketMapper ticketMapper;
+    @Autowired(required = false)
+    private SupportOutbound supportOutbound;
 
     /** 简易进程内限流：key -> {windowStartMs, count} */
     private final ConcurrentHashMap<String, long[]> rateBuckets = new ConcurrentHashMap<>();
@@ -115,6 +118,10 @@ public class SupportService {
         msg.setSenderUserId(userId);
         msg.setContent(content);
         messageMapper.insertSelective(msg);
+        if (supportOutbound != null) {
+            supportOutbound.enqueueSession(String.valueOf(session.getId()), session.getContactName(), subj, content,
+                    msg.getId() == null ? null : String.valueOf(msg.getId()));
+        }
 
         return detailForUser(session, true);
     }
@@ -154,6 +161,10 @@ public class SupportService {
         msg.setSenderUserId(userId);
         msg.setContent(text);
         messageMapper.insertSelective(msg);
+        if (supportOutbound != null) {
+            supportOutbound.enqueueMessage(String.valueOf(session.getId()),
+                    msg.getId() == null ? null : String.valueOf(msg.getId()), text);
+        }
 
         MediaSupportSession patch = new MediaSupportSession();
         patch.setId(session.getId());
@@ -229,6 +240,9 @@ public class SupportService {
         ticket.setDescription(desc);
         ticket.setCreatedByUserId(userId);
         ticketMapper.insertSelective(ticket);
+        if (supportOutbound != null) {
+            supportOutbound.enqueueTicket(String.valueOf(session.getId()), String.valueOf(ticket.getId()), subj);
+        }
 
         MediaSupportMessage sys = new MediaSupportMessage();
         sys.setSessionId(session.getId());

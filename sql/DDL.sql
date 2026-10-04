@@ -366,3 +366,38 @@ CREATE TABLE IF NOT EXISTS media_recommend_item (
   CONSTRAINT fk_media_recommend_item_run FOREIGN KEY (run_id) REFERENCES media_recommend_run(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='推荐候选与过滤结果';
 
+-- Unified customer-service outbox. Nothing is written until the bridge is configured.
+CREATE TABLE IF NOT EXISTS cs_support_outbox (
+  id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  event_kind VARCHAR(16) NOT NULL COMMENT 'SESSION / MESSAGE / TICKET',
+  external_ref VARCHAR(64) NOT NULL COMMENT '稳定外部引用',
+  request_path VARCHAR(160) NOT NULL COMMENT 'ingest 相对路径',
+  payload_json TEXT NOT NULL COMMENT '原样签名并投递的 JSON',
+  status VARCHAR(16) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING / SENT / FAILED',
+  attempt_count INT NOT NULL DEFAULT 0 COMMENT '已尝试次数',
+  last_error VARCHAR(500) DEFAULT NULL COMMENT '最近一次失败原因（不含正文）',
+  next_attempt_at DATETIME DEFAULT NULL COMMENT '下次尝试时间，空表示立即可发',
+  sent_at DATETIME DEFAULT NULL COMMENT '投递成功时间',
+  del_flag TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除字段',
+  creator VARCHAR(64) DEFAULT NULL COMMENT '创建者标识',
+  modifier VARCHAR(64) DEFAULT NULL COMMENT '最后修改者标识',
+  gmt_create DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  gmt_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_cs_support_outbox_ref (event_kind, external_ref),
+  KEY idx_cs_support_outbox_due (status, next_attempt_at, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一客服投递队列';
+
+CREATE TABLE IF NOT EXISTS cs_support_receipt (
+  id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  delivery_id VARCHAR(128) NOT NULL COMMENT '统一客服投递编号',
+  event_kind VARCHAR(32) NOT NULL COMMENT '回传事件',
+  applied_at DATETIME NOT NULL COMMENT '应用到站内会话的时间',
+  del_flag TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除字段',
+  creator VARCHAR(64) DEFAULT NULL COMMENT '创建者标识',
+  modifier VARCHAR(64) DEFAULT NULL COMMENT '最后修改者标识',
+  gmt_create DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  gmt_modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_cs_support_receipt_delivery (delivery_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一客服回传回执';

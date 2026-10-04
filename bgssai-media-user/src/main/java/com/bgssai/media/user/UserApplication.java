@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.bgssai.media")
-@MapperScan("com.bgssai.media.common.mapper")
+@MapperScan({ "com.bgssai.media.common.mapper", "com.bgssai.media.user.supportbridge" })
 @EnableScheduling
 public class UserApplication {
     public static void main(String[] args) {
