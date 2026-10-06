@@ -1,15 +1,17 @@
 # bgssai-media
 
-**bgssai-media 是一个播放器，参考的是 VLC 项目，定位是播放器 + 视频播放平台，对标 YouTube 和 YouTube Shorts，需要能支持主流格式文件的播放；然后它还是一款播放平台，bgssai-short、bgssai-long 做完的短剧可以直接发布到这个平台，支持 Windows PC 桌面软件、Web 在线播放、Android、iOS 多端播放。**
+**bgssai-media 的产品定位是播放器 + 视频播放平台：播放器参考 VLC，平台对标 YouTube 和 YouTube Shorts；承接 bgssai-short 的短剧成片与 bgssai-long 的长剧成片直接发布，目标交付 Windows PC 桌面软件、Web 在线、Android、iOS 多端播放和主流媒体格式支持。**
 
-- **播放器能力（对照 VLC）**：桌面端搭载全能解码内核，覆盖 `.mp4`, `.mkv`, `.webm`, `.mov`, `.avi`, `.flv`, `.wmv`, `.ts`, `.m3u8`, `.mp3`, `.flac`, `.wav` 等主流媒体格式。
-- **视频播放平台**：
+当前实现边界、源码证据与验收顺序见 [2026-10-06 产品定位与交付核查](docs/review/product-direction-20261006.md)。已有 Web 和摄入路径；桌面本地播放器通过 RC 控制外部 VLC，与产品壳尚未联通；Android/iOS 是脚手架，四端交付尚需真实样本与安装验收。
+
+- **播放器目标（对照 VLC）**：以现有格式矩阵验证 MP4、MKV、WebM、MOV、AVI、FLV、WMV、TS、MP3、FLAC、WAV 等文件及 HLS 流。按容器/编码/设备样本验收，Web 与移动 WebView 不继承 VLC 解码范围。
+- **视频播放平台体验目标**：
   - **YouTube 正片/长剧集流**：横屏正片、剧集连播、多清晰度切换、观看历史与继续观看。
   - **YouTube Shorts 短剧流**：沉浸式竖屏短剧瀑布流（`/shorts` 路由）、上下滑切换与快速追剧。
 - **短剧/长剧生态闭环与一体化迭代**：
   - 上游制作双翼 **`bgssai-short`**（AI 短剧制作平台）与 **`bgssai-long`**（AI 长剧制作平台）均参考业界领先实践（**`waoowaoo`**、**`Jellyfish`**、**`ArcReel`**、**`LocalMiniDrama`**、**`openframe`**、**`ZJT`**）。
-  - 制作生成的短剧成片发布到本平台 Shorts 竖屏流（`/short`），长剧成片发布到正片/剧集流（`/long`），形成创作、制作、分发与播放的**统一闭环，一起迭代**。
-- **全场景多端播放**：全方位支持 **Windows PC 桌面端**（含系统级文件关联）、**Web 浏览器在线端**、**Android 移动端** 与 **iOS 移动端**。
+  - 制作生成的短剧成片发布到 Shorts 竖屏流（`/shorts`、`/shorts/:mediaId`）；正片/剧集当前使用 `/drama/:id` 与 `/play/episode/:id`。当前没有 `/short`、`/long` 页面路由。真实成片发布后的可播放性仍需跨仓验收。
+- **多端交付目标**：**Windows PC 桌面端**（含系统文件关联与本地播放）、**Web 浏览器在线端**、**Android** 与 **iOS**。实际阶段见 [CLIENTS.md](CLIENTS.md) 与上述核查，不把壳、文件关联声明或打包配置当作已交付。
 
 ## 仓库结构
 
