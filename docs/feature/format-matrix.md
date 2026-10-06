@@ -1,11 +1,15 @@
 # 格式支持矩阵
 
+本矩阵是样本验收范围，不是四端已通过的证明。2026-10-06 源码核查见 [产品定位与交付核查](../review/product-direction-20261006.md)：当前桌面经 RC 控制外部 VLC；Web 与移动 WebView 受浏览器/系统解码能力限制，Android/iOS 原生本地播放待实现与真机验收。
+
 ## 两条播放路径
 
 | 路径 | 模块 | 引擎 | 用途 |
 | --- | --- | --- | --- |
 | Web 短剧端 | `bgssai-media-user` | video.js + hls.js | 在线短剧目录中的 MP4 / WebM / HLS |
-| 桌面播放器 | `bgssai-media-desktop` | 系统 libVLC（cvlc RC） | 本地全格式文件，VLC 启发体验 |
+| 桌面播放器 | `bgssai-media-desktop` | 外部系统 VLC（RC 控制） | 本地格式样本验证；VLC 承担播放窗口 |
+| Windows 产品壳 | `clients/desktop` | Electron Web 壳 | 在线入口与文件关联声明；尚未接入上述播放器 |
+| Android/iOS | `clients/mobile` | Capacitor Web 壳 | 在线入口脚手架；不能据此声明原生全格式播放 |
 
 权威 JSON：`bgssai-media-desktop/shared/format-matrix.json`。
 

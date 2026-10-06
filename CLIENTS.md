@@ -2,6 +2,8 @@
 
 标准：`docs/feature/six-platform-clients.md`（2026-09-19）。
 
+2026-10-06 的播放器/平台源码边界与验收顺序见 [产品定位与交付核查](docs/review/product-direction-20261006.md)。本次用户要求的播放端为 Windows PC、Web、Android、iOS；以下其它既有端规划保留。桌面本地播放器与产品壳尚未联通，移动壳未完成原生本地播放桥接及真机交付验收。
+
 - `web=separate domains OK` — 浏览器用户站 / 管理站可用不同域名或路径；不要求装两套浏览器。
 - `installable=single-app dual-entry` — 可安装六端（Win / macOS / Linux / iOS / Android / 微信小程序）每端 **一个安装物**，应用内 **两个登录入口**（用户入口 / 管理入口）。对齐 Boss 直聘。
 - `support=in-app messaging` — 站内在线客服（聊优先 + 聊中提工单）：用户站悬浮聊天入口；管理站会话+工单处理台；六端用户/管理入口分别进入同一套能力。详见 `docs/feature/support-messaging.md`。
