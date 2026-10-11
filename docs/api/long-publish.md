@@ -1,6 +1,6 @@
 # API：bgssai-long → bgssai-media 发布摄入（MEDIA-02）
 
-权威契约：[docs/contracts/long-to-media-publish.md](../contracts/long-to-media-publish.md)。
+权威契约：[docs/api/long-to-media-publish.md](./long-to-media-publish.md)。
 
 ## 摄入
 
@@ -8,7 +8,7 @@
 
 Headers：`X-Bgssai-Ingest-Token`（或 Bearer / legacy `X-Ingest-Token`）；可选 `Idempotency-Key`。
 
-Body：见 schema `docs/contracts/long-drama-publish.schema.json`。
+Body：见 schema `docs/api/long-drama-publish.schema.json`。
 
 ## 目录 / 播放
 

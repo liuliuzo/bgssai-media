@@ -1,7 +1,7 @@
 # API：bgssai-short → bgssai-media 发布摄入
 
-**Canonical contract:** [docs/contracts/short-to-media-publish.md](../contracts/short-to-media-publish.md)
-(schema: [short-drama-publish.schema.json](../contracts/short-drama-publish.schema.json)).
+**Canonical contract:** [docs/api/short-to-media-publish.md](./short-to-media-publish.md)
+(schema: [short-drama-publish.schema.json](./short-drama-publish.schema.json)).
 
 ## 概述
 
@@ -43,7 +43,7 @@ Header：
 以 `external_ref` 为唯一键 upsert 剧集；分集按 `(drama_id, ep_no)` upsert。重复调用覆盖元数据与分集列表中出现的集。
 该路径不写 `media_id`，不进入 `/api/shorts` 契约目录。
 
-short PR #54 使用的共享契约路径见 [short-to-media-publish.md](../contracts/short-to-media-publish.md)：
+short PR #54 使用的共享契约路径见 [short-to-media-publish.md](./short-to-media-publish.md)：
 `idempotency_key` UNIQUE；READY 重放返回已有目录项。
 
 ## 响应
@@ -54,7 +54,7 @@ short PR #54 使用的共享契约路径见 [short-to-media-publish.md](../contr
 
 配置 media 基址与 ingest token，在成品「发布到 media」时 POST 共享契约 payload。
 Packager: `ShortDramaPublishJob` / `ShortDramaPublishClient`。
-short 仓实现说明（本 Agent 无法推送 short）：[bgssai-short-implement.md](../contracts/bgssai-short-implement.md)。
+short 仓实现说明（本 Agent 无法推送 short）：[bgssai-short-implement.md](./bgssai-short-implement.md)。
 
 ## 本机冒烟
 

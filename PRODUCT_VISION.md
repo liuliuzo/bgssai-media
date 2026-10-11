@@ -16,7 +16,7 @@ long  长剧成片  ──┘     → media 入库（PENDING / FAILED / READY）
                        → UniversalPlayer / 桌面 VLC RC 播放
 ```
 
-契约：[Short 摄入](docs/contracts/short-to-media-publish.md)、[Long 摄入](docs/contracts/long-to-media-publish.md)。该图表示目标链路；真实成片跨仓和多端播放须分别验收。
+契约：[Short 摄入](docs/api/short-to-media-publish.md)、[Long 摄入](docs/api/long-to-media-publish.md)。该图表示目标链路；真实成片跨仓和多端播放须分别验收。
 
 ## 产品定位
 
@@ -42,5 +42,5 @@ DRM、直播、社区、支付、推荐排序、完整 Chat OAuth、生产 OBS/S
 
 ## 里程碑
 
-历史记录见 `docs/milestones.md`；当前交付证据与顺序见 [产品定位与交付核查](docs/review/product-direction-20261006.md)。已有 Short/Long 摄入和 Web 播放路径，真实成片跨仓与四端播放尚需联合验收。
+历史记录见 `docs/project/milestones.md`；当前交付证据与顺序见 [产品定位与交付核查](docs/review/product-direction-20261006.md)。已有 Short/Long 摄入和 Web 播放路径，真实成片跨仓与四端播放尚需联合验收。
 工作在独立任务分支进行，通过 PR 合入 develop；dev/prod 均部署 develop，分别使用 `application-dev.properties` / `application-prod.properties`。

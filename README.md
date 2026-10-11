@@ -96,8 +96,8 @@ chmod +x scripts/publish-short-smoke.sh
 MEDIA_BASE_URL=http://127.0.0.1:8081 ./scripts/publish-short-smoke.sh
 ```
 
-登录用户端后打开 `/shorts` 播放 READY 条目。同一 `idempotency_key` 重放返回已有目录、不双写。契约见 [docs/contracts/short-to-media-publish.md](docs/contracts/short-to-media-publish.md)。
-MCP API 见 [docs/api/mcp.md](docs/api/mcp.md)。short 仓实现说明见 [docs/contracts/bgssai-short-implement.md](docs/contracts/bgssai-short-implement.md)。
+登录用户端后打开 `/shorts` 播放 READY 条目。同一 `idempotency_key` 重放返回已有目录、不双写。契约见 [docs/api/short-to-media-publish.md](docs/api/short-to-media-publish.md)。
+MCP API 见 [docs/api/mcp.md](docs/api/mcp.md)。short 仓实现说明见 [docs/api/bgssai-short-implement.md](docs/api/bgssai-short-implement.md)。
 
 ## 构建检查
 

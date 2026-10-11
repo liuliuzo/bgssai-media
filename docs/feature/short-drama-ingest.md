@@ -1,6 +1,6 @@
 # Short drama ingest (shared contract)
 
-Canonical write-up: [docs/contracts/short-to-media-publish.md](../contracts/short-to-media-publish.md).
+Canonical write-up: [docs/api/short-to-media-publish.md](../api/short-to-media-publish.md).
 
 Extends the merged MVP scaffold (`media_drama` / `media_episode` / `media_ingest_log`) with the **bgssai-short shared publish contract**.
 

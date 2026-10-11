@@ -16,7 +16,7 @@
 
 | 目标 | 落点 | 状态 |
 | --- | --- | --- |
-| 关闭 short→media 发布/播放契约 | `docs/contracts/*`, `ShortDramaPublishJob` | 完成（media 侧） |
+| 关闭 short→media 发布/播放契约 | `docs/api/*`, `ShortDramaPublishJob` | 完成（media 侧） |
 | 用户 Short 目录/播放 | `/api/shorts`, `/shorts` UI | 完成 |
 | Chat 登录预留 / admin 隔离 | `ChatOauthService`, admin `/api/auth/policy` | PREP |
 | short 仓对等 PR | 无法 clone | **blocked** |

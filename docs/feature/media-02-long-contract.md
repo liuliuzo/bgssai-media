@@ -27,4 +27,4 @@ Date: 2026-09-16. Scope: generalize Short source identifiers; define Long drama 
 | 失败重试 | `failedThenReadyUpgradesSameKey` |
 | 真实播放 | NOT_VERIFIED |
 
-Contract: [docs/contracts/long-to-media-publish.md](../contracts/long-to-media-publish.md).
+Contract: [docs/api/long-to-media-publish.md](../api/long-to-media-publish.md).

@@ -27,7 +27,7 @@ READY 批准包可入目录，重放返回已有目录项、不写第二条。�
 | `/shorts` 中英说明 | DONE（本仓 UI） |
 | 真实 Short 发布 → 播放 E2E | PENDING |
 
-契约：[docs/contracts/short-to-media-publish.md](../contracts/short-to-media-publish.md)。
+契约：[docs/api/short-to-media-publish.md](../api/short-to-media-publish.md)。
 
 ## 上一轮（法务 URL 对齐官网权威页）
 
@@ -59,8 +59,8 @@ READY 批准包可入目录，重放返回已有目录项、不写第二条。�
 | Short 真实发布 → 播放 E2E | PENDING |
 | 全格式样本 live / 安装包 | PENDING |
 
-契约：[docs/contracts/short-to-media-publish.md](../contracts/short-to-media-publish.md)。
-short 落点说明：[docs/contracts/bgssai-short-implement.md](../contracts/bgssai-short-implement.md)。
+契约：[docs/api/short-to-media-publish.md](../api/short-to-media-publish.md)。
+short 落点说明：[docs/api/bgssai-short-implement.md](../api/bgssai-short-implement.md)。
 Chat PREP：[docs/feature/chat-oauth-prep.md](../feature/chat-oauth-prep.md)。
 
 ## 执行结果

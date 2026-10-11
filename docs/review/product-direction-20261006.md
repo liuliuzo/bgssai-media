@@ -37,7 +37,7 @@ Web 在线交付优先验收浏览器友好的 MP4（H.264/AAC）、WebM 和 HLS
 
 ## 跨仓交接核查
 
-契约分别见 [Short 摄入](../contracts/short-to-media-publish.md) 和 [Long 摄入](../contracts/long-to-media-publish.md)。
+契约分别见 [Short 摄入](../api/short-to-media-publish.md) 和 [Long 摄入](../api/long-to-media-publish.md)。
 
 ```mermaid
 flowchart LR
