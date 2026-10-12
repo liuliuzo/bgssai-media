@@ -12,6 +12,8 @@ import ShortPlayerPage from '@/pages/ShortPlayerPage';
 import UniversalPlayerPage from '@/pages/UniversalPlayerPage';
 import ContinueWatchingPage from '@/pages/ContinueWatchingPage';
 import FormatMatrixPage from '@/pages/FormatMatrixPage';
+import LibraryPage from '@/pages/LibraryPage';
+import LongPlayerPage from '@/pages/LongPlayerPage';
 import SettingsPage from '@/pages/SettingsPage';
 import CreatorPage from '@/pages/CreatorPage';
 import { useAuthStore } from '@/stores/authStore';
@@ -47,6 +49,8 @@ export default function AppRouter() {
           }
         >
           <Route index element={<HomePage />} />
+          <Route path="library" element={<LibraryPage />} />
+          <Route path="longs/:mediaId" element={<LongPlayerPage />} />
           <Route path="shorts" element={<ShortsPage />} />
           <Route path="shorts/:mediaId" element={<ShortPlayerPage />} />
           <Route path="drama/:id" element={<DramaDetailPage />} />

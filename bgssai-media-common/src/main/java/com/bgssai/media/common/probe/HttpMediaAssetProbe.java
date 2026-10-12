@@ -2,6 +2,7 @@ package com.bgssai.media.common.probe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,7 @@ public class HttpMediaAssetProbe implements MediaAssetProbe {
     private final Duration requestTimeout;
     private final HttpClient client;
 
+    @Autowired
     public HttpMediaAssetProbe(
             @Value("${bgssai.media.probe.enabled:true}") boolean enabled,
             @Value("${bgssai.media.probe.sniff-bytes:8192}") int sniffBytes,

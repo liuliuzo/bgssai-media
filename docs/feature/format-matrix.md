@@ -2,6 +2,28 @@
 
 本矩阵是样本验收范围，不是四端已通过的证明。2026-10-06 源码核查见 [产品定位与交付核查](../review/product-direction-20261006.md)：当前桌面经 RC 控制外部 VLC；Web 与移动 WebView 受浏览器/系统解码能力限制，Android/iOS 原生本地播放待实现与真机验收。
 
+## 验证表（2026-10-12）
+
+机器可读表是 `verified_rows`，三份字节相同：
+
+- `bgssai-media-common/src/main/resources/format/format-matrix.json`（`FormatMatrix`、`GET /bgssai/user/media/formats`）
+- `bgssai-media-desktop/shared/format-matrix.json`（`player:matrix` / `player:formatHook`）
+- `bgssai-media-user/frontend/src/data/format-matrix.json`（`/formats` 与 Web 播放器）
+
+每一行有 `declared` 与 `verification`。当前全部 `verification=NOT_VERIFIED`。没有样本通过记录时不得写成 `VERIFIED_LOCAL`。
+
+`deployment.status=UNDEPLOYED`，`media_user_host` 与 `media_admin_host` 为空。见 [docs/ops/media-hosts.md](../ops/media-hosts.md)。
+
+URL 钩子（Java / 桌面 `format-hook.js` / 前端 `src/format/matrix.ts` 同一组用例）：
+
+| 扩展名 | Web `web_decision` |
+| --- | --- |
+| `.mp4` `.webm` `.m3u8` | `PLAY` |
+| 桌面容器与音频扩展名（`.mkv` 等） | `REJECT` |
+| 无扩展名 | `UNKNOWN` |
+
+`REJECT` 只挡住浏览器播放，不把 short/long 摄入判失败。用户端 `/formats` 展示这张表。
+
 ## 两条播放路径
 
 | 路径 | 模块 | 引擎 | 用途 |

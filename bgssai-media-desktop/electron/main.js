@@ -134,6 +134,11 @@ ipcMain.handle('player:matrix', guarded(async () => {
   return require('../shared/format-matrix.json');
 }));
 
+ipcMain.handle('player:formatHook', guarded(async (_evt, name) => {
+  const { hook } = require('../shared/format-hook');
+  return hook(require('../shared/format-matrix.json'), name);
+}));
+
 ipcMain.handle('player:engine', guarded(async () => {
   return player.probeEngine();
 }));

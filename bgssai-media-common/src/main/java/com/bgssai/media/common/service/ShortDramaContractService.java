@@ -1,5 +1,6 @@
 package com.bgssai.media.common.service;
 
+import com.bgssai.media.common.format.FormatMatrix;
 import com.bgssai.media.common.domain.MediaDrama;
 import com.bgssai.media.common.domain.MediaDramaExample;
 import com.bgssai.media.common.domain.MediaEpisode;
@@ -163,7 +164,7 @@ public class ShortDramaContractService {
             log.setMessage(reason);
             log.setPayloadJson(toJson(req));
             mediaIngestLogMapper.insertSelective(log);
-            return failedResult(log.getId(), reason, req.getIdempotencyKey());
+            return failedResult(log.getId(), reason, req.getIdempotencyKey(), req.getVideoUrl());
         }
         existing.setExternalRef(workRef);
         existing.setDramaId(null);
@@ -173,7 +174,7 @@ public class ShortDramaContractService {
         existing.setMessage(reason);
         existing.setPayloadJson(toJson(req));
         mediaIngestLogMapper.updateByIdempotencyKey(existing);
-        return failedResult(existing.getId(), reason, req.getIdempotencyKey());
+        return failedResult(existing.getId(), reason, req.getIdempotencyKey(), req.getVideoUrl());
     }
 
     /**
@@ -195,7 +196,7 @@ public class ShortDramaContractService {
             log.setMessage(reason);
             log.setPayloadJson(toJson(req));
             mediaIngestLogMapper.insertSelective(log);
-            return pendingResult(log.getId(), reason, req.getIdempotencyKey());
+            return pendingResult(log.getId(), reason, req.getIdempotencyKey(), req.getVideoUrl());
         }
         existing.setExternalRef(workRef);
         existing.setDramaId(null);
@@ -205,7 +206,7 @@ public class ShortDramaContractService {
         existing.setMessage(reason);
         existing.setPayloadJson(toJson(req));
         mediaIngestLogMapper.updateByIdempotencyKey(existing);
-        return pendingResult(existing.getId(), reason, req.getIdempotencyKey());
+        return pendingResult(existing.getId(), reason, req.getIdempotencyKey(), req.getVideoUrl());
     }
 
     private MediaDrama upsertDrama(String workRef, ShortDramaIngestRequest req, boolean playableReady) {
@@ -315,6 +316,8 @@ public class ShortDramaContractService {
             detail.put("source_system", drama.getSource());
         }
         mergePayload(detail, log.getPayloadJson());
+        Object playUrl = detail.get("play_url");
+        FormatMatrix.attach(detail, playUrl == null ? null : String.valueOf(playUrl));
         return detail;
     }
 
@@ -399,10 +402,12 @@ public class ShortDramaContractService {
         result.put("ingest_log_id", ingestLogId);
         result.put("idempotency_key", idempotencyKey);
         result.put("replayed", replayed);
+        FormatMatrix.attach(result, playUrl);
         return result;
     }
 
-    private static Map<String, Object> failedResult(Long ingestLogId, String message, String idempotencyKey) {
+    private static Map<String, Object> failedResult(
+            Long ingestLogId, String message, String idempotencyKey, String mediaUrl) {
         Map<String, Object> result = new HashMap<>();
         result.put("status", IngestStatus.FAILED);
         result.put("playable", false);
@@ -412,11 +417,12 @@ public class ShortDramaContractService {
         result.put("media_id", null);
         result.put("replayed", false);
         result.put("idempotency_key", idempotencyKey);
+        FormatMatrix.attach(result, mediaUrl);
         return result;
     }
 
     private static Map<String, Object> pendingResult(
-            Long ingestLogId, String message, String idempotencyKey) {
+            Long ingestLogId, String message, String idempotencyKey, String mediaUrl) {
         Map<String, Object> result = new HashMap<>();
         result.put("status", IngestStatus.PENDING);
         result.put("playable", false);
@@ -427,6 +433,7 @@ public class ShortDramaContractService {
         result.put("media_id", null);
         result.put("replayed", false);
         result.put("idempotency_key", idempotencyKey);
+        FormatMatrix.attach(result, mediaUrl);
         return result;
     }
 

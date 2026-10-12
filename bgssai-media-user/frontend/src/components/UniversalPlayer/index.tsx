@@ -5,39 +5,31 @@ import type Player from 'video.js/dist/types/player';
 import Hls from 'hls.js';
 import 'video.js/dist/video-js.css';
 import type { PlaylistItem } from '@/types/api';
+import matrix from '@/data/format-matrix.json';
+import { extensionOf, webPlayback } from '@/format/matrix';
 import './UniversalPlayer.css';
 
 const { Text } = Typography;
 
-const UNSUPPORTED_EXTENSIONS = [
-  '.mkv', '.avi', '.wmv', '.flv', '.rmvb', '.mov', '.mpg', '.mpeg', '.3gp', '.ts',
-  '.mp3', '.m4a', '.aac', '.ogg', '.opus', '.flac', '.wav', '.ape', '.alac', '.wma',
-];
-
-const FORMAT_MATRIX = [
-  { format: 'Web: MP4 / WebM / HLS', support: '浏览器短剧端（本页）' },
-  { format: 'Desktop: mkv/avi/mov/… + 全音频', support: 'bgssai-media-desktop（libVLC）' },
-];
-
-function getExtension(url: string): string {
-  const clean = url.split('?')[0].split('#')[0];
-  const idx = clean.lastIndexOf('.');
-  if (idx < 0) return '';
-  return clean.slice(idx).toLowerCase();
-}
+const FORMAT_MATRIX = (matrix.verified_rows || [])
+  .filter((row) => row.kind === 'container' && (row.surface === 'web' || row.web_decision === 'REJECT'))
+  .slice(0, 8)
+  .map((row) => ({
+    format: `${row.surface}: ${row.label}`,
+    support: `${row.web_decision} · ${row.verification}`,
+  }));
 
 function isHls(url: string): boolean {
-  const ext = getExtension(url);
+  const ext = extensionOf(url);
   return ext === '.m3u8' || url.includes('.m3u8');
 }
 
 function isUnsupported(url: string): boolean {
-  const ext = getExtension(url);
-  return UNSUPPORTED_EXTENSIONS.includes(ext);
+  return webPlayback(url, matrix).web_decision === 'REJECT';
 }
 
 function guessMimeType(url: string): string {
-  const ext = getExtension(url);
+  const ext = extensionOf(url);
   switch (ext) {
     case '.mp4':
       return 'video/mp4';
@@ -202,7 +194,7 @@ export default function UniversalPlayer({
               </Text>
               <br />
               <Text type="secondary" style={{ color: '#aaa' }}>
-                {getExtension(unsupportedUrl)} 文件（如 MKV、AVI）不被 Web
+                {extensionOf(unsupportedUrl) || '该'} 文件（如 MKV、AVI）不被 Web
                 播放器支持，请使用 MP4 或 HLS 格式。
               </Text>
             </div>

@@ -9,7 +9,7 @@ Jenkins 走共享库 `bgssaiDeployEnd`。dev / prod 都是 **目标机自建**�
 就地构建，再 `remote-deploy.sh` 原子替换 → 重启 → 健康检查 → 失败回滚。
 
 **OPS-02 阻塞：** `MEDIA_USER_HOST` / `MEDIA_ADMIN_HOST` 仍为空。中央仓暂不铺
-`dev|prod-media-deploy|stop`。域名未定时不要在本仓发明域名。
+`dev|prod-media-deploy|stop`。域名未定时不要在本仓发明域名。格式矩阵与片库接口同样记为未部署，见 [docs/ops/media-hosts.md](../docs/ops/media-hosts.md)。
 
 ## 一、主机
 

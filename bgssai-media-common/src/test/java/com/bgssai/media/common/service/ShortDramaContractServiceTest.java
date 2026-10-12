@@ -137,6 +137,22 @@ class ShortDramaContractServiceTest {
         assertEquals(Boolean.FALSE, result.get("replayed"));
         assertEquals("short:w1:e1:f1", result.get("idempotency_key"));
         assertEquals(IngestStatus.READY, ingest.get().getStatus());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> hook = (Map<String, Object>) result.get("format_hook");
+        assertEquals("PLAY", hook.get("web_decision"));
+        assertEquals(".mp4", hook.get("extension"));
+        assertEquals("NOT_VERIFIED", hook.get("verification"));
+    }
+
+    @Test
+    void mkvStaysReadyAndWebHookRejects() {
+        Map<String, Object> result = service.ingest(sample("short:w1:e1:f1", "https://cdn.example/a.mkv", "Ep1"));
+        assertEquals(IngestStatus.READY, result.get("status"));
+        assertEquals(Boolean.TRUE, result.get("playable"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> hook = (Map<String, Object>) result.get("format_hook");
+        assertEquals("REJECT", hook.get("web_decision"));
+        assertEquals("desktop_vlc", hook.get("matched_surface"));
     }
 
     @Test
