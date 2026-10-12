@@ -1,5 +1,6 @@
 package com.bgssai.media.common.service;
 
+import com.bgssai.media.common.format.FormatMatrix;
 import com.bgssai.media.common.domain.MediaDrama;
 import com.bgssai.media.common.domain.MediaDramaExample;
 import com.bgssai.media.common.domain.MediaEpisode;
@@ -169,7 +170,7 @@ public class LongDramaContractService {
             log.setMessage(reason);
             log.setPayloadJson(toJson(req));
             mediaIngestLogMapper.insertSelective(log);
-            return pendingResult(log.getId(), reason, req.getIdempotencyKey());
+            return pendingResult(log.getId(), reason, req.getIdempotencyKey(), req.getVideoUrl());
         }
         existing.setExternalRef(workRef);
         existing.setDramaId(null);
@@ -179,7 +180,7 @@ public class LongDramaContractService {
         existing.setMessage(reason);
         existing.setPayloadJson(toJson(req));
         mediaIngestLogMapper.updateByIdempotencyKey(existing);
-        return pendingResult(existing.getId(), reason, req.getIdempotencyKey());
+        return pendingResult(existing.getId(), reason, req.getIdempotencyKey(), req.getVideoUrl());
     }
 
     private Map<String, Object> recordFailed(
@@ -196,7 +197,7 @@ public class LongDramaContractService {
             log.setMessage(reason);
             log.setPayloadJson(toJson(req));
             mediaIngestLogMapper.insertSelective(log);
-            return failedResult(log.getId(), reason, req.getIdempotencyKey());
+            return failedResult(log.getId(), reason, req.getIdempotencyKey(), req.getVideoUrl());
         }
         existing.setExternalRef(workRef);
         existing.setDramaId(null);
@@ -206,7 +207,7 @@ public class LongDramaContractService {
         existing.setMessage(reason);
         existing.setPayloadJson(toJson(req));
         mediaIngestLogMapper.updateByIdempotencyKey(existing);
-        return failedResult(existing.getId(), reason, req.getIdempotencyKey());
+        return failedResult(existing.getId(), reason, req.getIdempotencyKey(), req.getVideoUrl());
     }
 
     private MediaDrama upsertDrama(String workRef, LongDramaIngestRequest req, boolean playableReady) {
@@ -317,6 +318,8 @@ public class LongDramaContractService {
             detail.put("external_ref", drama.getExternalRef());
         }
         mergePayload(detail, log.getPayloadJson());
+        Object playUrl = detail.get("play_url");
+        FormatMatrix.attach(detail, playUrl == null ? null : String.valueOf(playUrl));
         return detail;
     }
 
@@ -473,11 +476,12 @@ public class LongDramaContractService {
             result.put("source_version", req.getSourceVersion());
             result.put("source_system", req.getSourceSystem());
         }
+        FormatMatrix.attach(result, playUrl);
         return result;
     }
 
     private static Map<String, Object> pendingResult(
-            Long ingestLogId, String message, String idempotencyKey) {
+            Long ingestLogId, String message, String idempotencyKey, String mediaUrl) {
         Map<String, Object> result = new HashMap<>();
         result.put("status", IngestStatus.PENDING);
         result.put("playable", false);
@@ -488,10 +492,12 @@ public class LongDramaContractService {
         result.put("media_id", null);
         result.put("replayed", false);
         result.put("idempotency_key", idempotencyKey);
+        FormatMatrix.attach(result, mediaUrl);
         return result;
     }
 
-    private static Map<String, Object> failedResult(Long ingestLogId, String message, String idempotencyKey) {
+    private static Map<String, Object> failedResult(
+            Long ingestLogId, String message, String idempotencyKey, String mediaUrl) {
         Map<String, Object> result = new HashMap<>();
         result.put("status", IngestStatus.FAILED);
         result.put("playable", false);
@@ -501,6 +507,7 @@ public class LongDramaContractService {
         result.put("media_id", null);
         result.put("replayed", false);
         result.put("idempotency_key", idempotencyKey);
+        FormatMatrix.attach(result, mediaUrl);
         return result;
     }
 

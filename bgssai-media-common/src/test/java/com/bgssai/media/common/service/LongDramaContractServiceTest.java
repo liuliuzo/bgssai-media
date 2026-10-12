@@ -197,6 +197,10 @@ class LongDramaContractServiceTest {
         assertEquals(Boolean.TRUE, result.get("playable"));
         assertEquals(Boolean.FALSE, result.get("replayed"));
         assertEquals("long:w1:e1:f1:v1", result.get("idempotency_key"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> hook = (Map<String, Object>) result.get("format_hook");
+        assertEquals("PLAY", hook.get("web_decision"));
+        assertEquals("NOT_VERIFIED", hook.get("verification"));
         assertEquals("1", result.get("source_version"));
         assertEquals(SourceRefs.SYSTEM_LONG, dramaByRef.get("long:work:w1").getSource());
         assertEquals("long:film:f1", episodeById.values().iterator().next().getStorageKey());

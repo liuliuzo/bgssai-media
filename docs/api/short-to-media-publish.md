@@ -79,7 +79,8 @@ Media **accepts READY approved packs**:
 Response `{ code, message, success, result }`:
 
 - First READY write: `result.media_id`, `result.play_url`, `result.status=READY`,
-  `result.playable=true`, `result.replayed=false`, `result.idempotency_key`
+  `result.playable=true`, `result.replayed=false`, `result.idempotency_key`,
+  `result.format_hook` (`web_decision`, `verification`, `extension`)
 - READY replay (same key): **same catalog entry** — same `media_id` / `ingest_log_id` /
   `play_url`, `replayed=true`. No second `media_ingest_log` / drama / episode row.
 - FAILED → READY (same key after a prior failure): upsert the existing log to READY
@@ -100,6 +101,11 @@ User app (JWT `Jwttoken`, role USER):
 
 Only READY items are listed as playable. Detail hides `play_url` unless READY.
 List is unique by `media_id` so a duplicate publish cannot appear twice.
+
+Browse of READY short and long rows together: `GET /bgssai/user/media/library`
+and `GET /api/library` (JWT). See [p0-5-ingest-library.md](../feature/p0-5-ingest-library.md).
+`format_hook.verification` is `NOT_VERIFIED` until a sample pass is recorded.
+A desktop-only container can still be READY while `web_decision` is `REJECT`.
 
 ## Source namespace (MEDIA-02)
 

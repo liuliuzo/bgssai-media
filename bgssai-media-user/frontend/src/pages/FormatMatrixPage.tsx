@@ -1,31 +1,62 @@
-import { Card, Descriptions, Typography, Alert } from 'antd';
+import { Alert, Table, Typography } from 'antd';
 import data from '@/data/format-matrix.json';
 
+const { Title, Paragraph } = Typography;
+
+type Row = {
+  surface: string;
+  kind: string;
+  id: string;
+  label: string;
+  extensions?: string[];
+  declared: string;
+  verification: string;
+  web_decision?: string;
+  evidence: string;
+};
+
+const rows = (data.verified_rows || []) as Row[];
+
 export default function FormatMatrixPage() {
+  const host = data.deployment?.media_user_host || '';
   return (
-    <div className="format-matrix-page" style={{ padding: 24, maxWidth: 960, margin: '0 auto' }}>
-      <Typography.Title level={3}>格式支持矩阵</Typography.Title>
+    <div className="format-matrix-page" style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
+      <Title level={3}>格式支持矩阵</Title>
       <Alert
-        type="info"
+        type="warning"
         showIcon
         style={{ marginBottom: 16 }}
-        message="Web 短剧端只覆盖在线 MP4/WebM/HLS；完整本地格式请使用桌面播放器 bgssai-media-desktop（libVLC）。"
+        message={`部署状态 ${data.deployment?.status || 'UNKNOWN'}`}
+        description={
+          data.deployment?.note ||
+          'MEDIA 主机未分配。本表记录声明与验证状态，不把声明写成已通过。'
+        }
       />
-      <Card title={data.web.label} style={{ marginBottom: 16 }}>
-        <Descriptions column={1} size="small">
-          <Descriptions.Item label="视频容器">{data.web.video_containers.join(' ')}</Descriptions.Item>
-          <Descriptions.Item label="说明">{data.web.notes}</Descriptions.Item>
-        </Descriptions>
-      </Card>
-      <Card title={data.desktop_libvlc.label}>
-        <Descriptions column={1} size="small">
-          <Descriptions.Item label="视频容器">{data.desktop_libvlc.video_containers.join(' ')}</Descriptions.Item>
-          <Descriptions.Item label="音频容器">{data.desktop_libvlc.audio_containers.join(' ')}</Descriptions.Item>
-          <Descriptions.Item label="视频编码">{data.desktop_libvlc.video_codecs.join(' / ')}</Descriptions.Item>
-          <Descriptions.Item label="音频编码">{data.desktop_libvlc.audio_codecs.join(' / ')}</Descriptions.Item>
-          <Descriptions.Item label="说明">{data.desktop_libvlc.notes}</Descriptions.Item>
-        </Descriptions>
-      </Card>
+      <Paragraph type="secondary">
+        MEDIA_USER_HOST={host || '(empty)'} · MEDIA_ADMIN_HOST=
+        {data.deployment?.media_admin_host || '(empty)'}。验证列保持 NOT_VERIFIED，直到对应表面打开过样本并留下记录。
+      </Paragraph>
+      <Table<Row>
+        rowKey="id"
+        size="small"
+        pagination={false}
+        scroll={{ x: 960 }}
+        dataSource={rows}
+        columns={[
+          { title: '表面', dataIndex: 'surface', width: 120 },
+          { title: '类型', dataIndex: 'kind', width: 100 },
+          { title: '名称', dataIndex: 'label', width: 180 },
+          {
+            title: '扩展名',
+            width: 140,
+            render: (_, row) => (row.extensions && row.extensions.length ? row.extensions.join(' ') : '—'),
+          },
+          { title: '声明', dataIndex: 'declared', width: 120 },
+          { title: '验证', dataIndex: 'verification', width: 140 },
+          { title: 'Web 钩子', dataIndex: 'web_decision', width: 110 },
+          { title: '依据', dataIndex: 'evidence' },
+        ]}
+      />
     </div>
   );
 }

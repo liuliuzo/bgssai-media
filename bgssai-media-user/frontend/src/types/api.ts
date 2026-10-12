@@ -85,6 +85,35 @@ export interface ShortCatalogResult {
   q?: string;
 }
 
+export interface FormatHook {
+  extension: string;
+  web_decision: 'PLAY' | 'REJECT' | 'UNKNOWN' | string;
+  verification: string;
+  declared: string;
+  matched_surface?: string | null;
+  row_id?: string | null;
+  label?: string | null;
+}
+
+export interface LibraryItem extends ShortPlayItem {
+  catalog?: 'short' | 'long' | string;
+  play_path?: string;
+  format_hook?: FormatHook;
+}
+
+export interface LibraryResult {
+  list: LibraryItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  q?: string | null;
+  kind?: string;
+  capped?: boolean;
+  recommend?: LibraryItem[];
+  recommend_basis?: string;
+  source_total?: number;
+}
+
 export interface ChatOauthPrepare {
   provider: string;
   admin_supported: boolean;

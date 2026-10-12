@@ -2,6 +2,7 @@ import { Layout, Menu, Button, Typography, Space } from 'antd';
 import {
   HomeOutlined,
   PlayCircleOutlined,
+  AppstoreOutlined,
   HistoryOutlined,
   LogoutOutlined,
   ProfileOutlined,
@@ -18,6 +19,7 @@ const { Text } = Typography;
 
 const NAV_ITEMS = [
   { key: '/', icon: <HomeOutlined />, label: '首页', to: '/' },
+  { key: '/library', icon: <AppstoreOutlined />, label: '片库', to: '/library' },
   { key: '/shorts', icon: <PlayCircleOutlined />, label: 'Short 发布', to: '/shorts' },
   { key: '/continue', icon: <HistoryOutlined />, label: '继续观看', to: '/continue' },
   { key: '/player', icon: <PlayCircleOutlined />, label: '通用播放器', to: '/player' },
@@ -28,6 +30,7 @@ const NAV_ITEMS = [
 
 const SHELL_TABS = [
   { key: '/', icon: <HomeOutlined />, label: '首页', to: '/' },
+  { key: '/library', icon: <AppstoreOutlined />, label: '片库', to: '/library' },
   { key: '/shorts', icon: <PlayCircleOutlined />, label: 'Short', to: '/shorts' },
   { key: '/continue', icon: <HistoryOutlined />, label: '继续', to: '/continue' },
   { key: '/player', icon: <PlayCircleOutlined />, label: '播放', to: '/player' },
@@ -36,6 +39,7 @@ const SHELL_TABS = [
 ];
 
 function useSelectedKey(pathname: string, inShell: boolean): string {
+  if (pathname.startsWith('/library') || pathname.startsWith('/longs')) return '/library';
   if (pathname.startsWith('/shorts')) return '/shorts';
   if (pathname.startsWith('/continue')) return '/continue';
   if (pathname.startsWith('/player')) return '/player';

@@ -9,8 +9,7 @@ function showError(result) {
   const steps = Array.isArray(result.steps) ? result.steps : [];
   box.innerHTML = '';
   const title = document.createElement('strong');
-  title.textContent = `[${result.code}] ${result.message.split('
-')[0]}`;
+  title.textContent = `[${result.code}] ${result.message.split('\n')[0]}`;
   box.appendChild(title);
   if (steps.length) {
     const ol = document.createElement('ol');
@@ -61,7 +60,22 @@ async function refreshStatus() {
 async function loadMatrix() {
   const matrix = await window.mediaDesktop.matrix();
   const el = document.getElementById('matrix');
-  el.innerHTML = `<pre>${JSON.stringify(matrix, null, 2)}</pre>`;
+  const rows = Array.isArray(matrix.verified_rows) ? matrix.verified_rows : [];
+  const deploy = matrix.deployment || {};
+  const lines = rows.map((row) => {
+    const ext = Array.isArray(row.extensions) && row.extensions.length
+      ? row.extensions.join(' ')
+      : row.kind;
+    return `${row.surface}\t${ext}\t${row.declared}\t${row.verification}\t${row.web_decision || ''}\t${row.id}`;
+  });
+  const host = deploy.media_user_host ? deploy.media_user_host : '(empty)';
+  el.innerHTML = `<pre>${[
+    `deployment=${deploy.status || 'UNKNOWN'} MEDIA_USER_HOST=${host}`,
+    'surface\textensions\tdeclared\tverification\tweb_decision\tid',
+    ...lines,
+    '',
+    JSON.stringify(matrix, null, 2),
+  ].join('\n')}</pre>`;
 }
 
 document.getElementById('btn-open').onclick = async () => {

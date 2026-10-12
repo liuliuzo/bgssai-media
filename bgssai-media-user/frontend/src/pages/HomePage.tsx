@@ -3,7 +3,8 @@ import { Card, Col, Empty, Input, Pagination, Row, Spin, Typography, Image } fro
 import { SearchOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { fetchFeed } from '@/api/drama';
-import type { MediaDrama } from '@/types/api';
+import { fetchLibrary } from '@/api/library';
+import type { LibraryItem, MediaDrama } from '@/types/api';
 
 const { Title, Paragraph } = Typography;
 
@@ -13,6 +14,7 @@ export default function HomePage() {
   const [keyword, setKeyword] = useState('');
   const [pageNum, setPageNum] = useState(1);
   const [total, setTotal] = useState(0);
+  const [ingested, setIngested] = useState<LibraryItem[]>([]);
   const pageSize = 12;
 
   const loadFeed = async (page: number, kw?: string) => {
@@ -37,6 +39,20 @@ export default function HomePage() {
     loadFeed(pageNum, keyword);
   }, [pageNum, keyword]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchLibrary({ kind: 'all', page: 1, page_size: 8 })
+      .then((result) => {
+        if (!cancelled) setIngested(result.recommend?.length ? result.recommend : result.list || []);
+      })
+      .catch(() => {
+        if (!cancelled) setIngested([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleSearch = (value: string) => {
     setKeyword(value);
     setPageNum(1);
@@ -46,9 +62,21 @@ export default function HomePage() {
     <div>
       <Title level={3}>短剧推荐</Title>
       <Paragraph type="secondary">
-        手工上架与 short 摄入剧集都在此目录。Short 契约目录见{' '}
-        <Link to="/shorts">Short 发布</Link>。
+        手工上架与 short 摄入剧集都在此目录。已入库 short / long 成片见{' '}
+        <Link to="/library">片库</Link>。
       </Paragraph>
+      <Title level={4}>最近入库</Title>
+      {ingested.length === 0 ? (
+        <Paragraph type="secondary">片库还没有 READY 成片。</Paragraph>
+      ) : (
+        <Paragraph>
+          {ingested.map((item) => (
+            <Link key={`${item.catalog}-${item.media_id}`} to={item.play_path || '/library'} style={{ marginRight: 12 }}>
+              {item.catalog === 'long' ? 'Long' : 'Short'} · {item.title || item.media_id}
+            </Link>
+          ))}
+        </Paragraph>
+      )}
       <Input.Search
         placeholder="搜索短剧"
         allowClear

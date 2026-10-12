@@ -88,6 +88,9 @@ Short uses `short:work:…` / `short:…:…:…` / `film:…` — identical ups
 }
 ```
 
+Publish responses include `format_hook` (same URL rules as short). Combined browse:
+`GET /bgssai/user/media/library?kind=long`.
+
 ## Honest status
 
 Unit / contract tests cover namespace isolation, cross-episode sort, version replace, duplicate replay, fail→retry.
