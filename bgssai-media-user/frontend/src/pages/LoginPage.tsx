@@ -52,6 +52,12 @@ function MediaPhoneInput({
 const RESEND_SECONDS = 60;
 
 export default function LoginPage() {
+  const [agreed, setAgreed] = useState(false)
+  const requireAgreement = () => {
+    if (!agreed) { message.warning('请先阅读并同意用户协议与隐私政策'); return false }
+    return true
+  }
+
   const { inShell } = useShellMode();
   const navigate = useNavigate();
   useEffect(() => {
@@ -133,6 +139,7 @@ export default function LoginPage() {
   };
 
   const onPasswordLogin = async (values: { username: string; password: string }) => {
+    if (!requireAgreement()) return
     setLoading(true);
     try {
       const result = await loginByPassword(values.username, values.password);
@@ -217,6 +224,7 @@ export default function LoginPage() {
   const chatReady = openChannels.includes('CHAT');
 
   const startOauth = async (provider: string) => {
+    if (!requireAgreement()) return
     setLoading(true);
     try {
       const data = await loginByOauth(provider);
@@ -405,7 +413,7 @@ export default function LoginPage() {
             用 Chat 登录
           </Button>
         ) : null}
-        <LegalConsent />
+        <LegalConsent checked={agreed} onChange={setAgreed} />
       </Card>
     </div>
     </BotDownloadLayout>

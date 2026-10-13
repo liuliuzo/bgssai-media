@@ -56,3 +56,20 @@
   color: #1677ff;
   text-decoration: underline;
 }
+
+.legal-consent, .login-consent, .auth-consent, .login-footnote, .th-legal-consent, .login-legal {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  text-align: left;
+}
+.legal-consent input[type='checkbox'],
+.login-consent input[type='checkbox'],
+.auth-consent input[type='checkbox'],
+.login-footnote input[type='checkbox'],
+.th-legal-consent input[type='checkbox'],
+.login-legal input[type='checkbox'] {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
