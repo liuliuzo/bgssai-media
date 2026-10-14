@@ -11,6 +11,7 @@
 7. **文档**：产品愿景/README/功能说明中文。
 8. **禁止**：emoji、装饰性符号。
 9. **业务第三方凭证**：Admin 维护 + 库表 + DML 种子（本 MVP 摄入令牌属服务间配置，写 properties 示例）。
+10. **用户端工程归属**：用户端 Web、iOS、Android、桌面和小程序全部放在 `bgssai-<产品>-user/`，不放仓库根 `clients/`。iOS / Android 为原生界面，不用 WebView 套网站。管理端放 `bgssai-<产品>-admin/`。权威见骨架仓 Standards §9。
 
 ## 15. 法务入口与同意提示统一口径（全产品线，强制）
 
