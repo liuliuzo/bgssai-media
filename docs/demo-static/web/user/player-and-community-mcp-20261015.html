@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>BGSSAI Media - 内置解码引擎、剧集社区互通与创作者 MCP</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #0284c7; font-size: 12px; }
+    code { background: #0f172a; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>BGSSAI Media 桌面端内置解码、剧集社区互通与 MCP 工作台</h1>
+  <div class="grid">
+    <section class="card">
+      <h2>桌面播放器引擎状态</h2>
+      <p><span class="badge">READY</span> 引擎模式：<code>builtin-html5-ffmpeg</code>（零外部 VLC 依赖自动回退）</p>
+      <p>当前会话：<code>builtin-1</code> | 音轨：#1 国语立体声 | 字幕：#1 简体中文</p>
+    </section>
+    <section class="card">
+      <h2>社区推荐与剧集互通</h2>
+      <p>统一内容标识：<code>m_ep_701</code>（来源：<code>SHORT_DRAMA</code>）</p>
+      <p>标题：星河短剧 第一集：启航 | 点赞：128 | 评论：19</p>
+    </section>
+    <section class="card">
+      <h2>创作者与社区 MCP 工具</h2>
+      <ul>
+        <li><code>list_my_videos</code> / <code>create_video_draft</code> / <code>update_video_draft</code></li>
+        <li><code>get_upload_task_status</code></li>
+        <li><code>create_community_comment</code> / <code>toggle_community_like</code></li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

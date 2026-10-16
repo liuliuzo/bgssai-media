@@ -4,7 +4,7 @@
 
 标语：**Connect your AI tools to bgssai**
 
-## 能力边界（MVP 只读）
+## 能力边界（目录只读 + 创作者草稿/任务状态 + 社区评论/点赞）
 
 | 工具 | 说明 |
 | --- | --- |
@@ -12,8 +12,14 @@
 | `list_published_dramas` | 已发布短剧分页检索 |
 | `get_drama` | 已发布剧集 + 分集 |
 | `list_continue_watching` | 当前 PAT 所属用户的继续观看 |
+| `list_my_videos` | 当前 PAT 所属创作者的视频与草稿列表 |
+| `create_video_draft` | 创建当前 PAT 所属创作者的视频草稿 |
+| `update_video_draft` | 更新当前 PAT 所属创作者的视频草稿元数据 |
+| `get_upload_task_status` | 查询当前 PAT 所属创作者视频的上传/转码/审核任务状态 |
+| `create_community_comment` | 以当前 PAT 用户身份对已发布社区视频或短剧/长剧分集发表评论 |
+| `toggle_community_like` | 以当前 PAT 用户身份对已发布社区视频或短剧/长剧分集切换点赞 |
 
-不做写入、不做摄入、不暴露中间件或第三方密钥。
+所有涉及用户与创作者写操作的工具均严格绑定当前 PAT `user_id` 实施归属隔离，不暴露中间件或第三方密钥。
 
 ## 用户操作
 

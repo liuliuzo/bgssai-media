@@ -99,6 +99,63 @@ class CommunityServiceTest {
         assertTrue(h.items.stream().map(MediaRecommendItem::getVideoId).noneMatch(aliceFailed::equals));
     }
 
+    @Test
+    void publishedDramaEpisodesJoinCommunityFeedRecommendCommentsAndLikes() throws Exception {
+        CreatorCommunityHarness h = new CreatorCommunityHarness(new CreatorVideoServiceTest.TrackingFfmpeg(true));
+        Long alice = 101L;
+        Long bob = 202L;
+
+        com.bgssai.media.common.domain.MediaDrama shortDrama = new com.bgssai.media.common.domain.MediaDrama();
+        shortDrama.setId(501L);
+        shortDrama.setTitle("星河短剧");
+        shortDrama.setDescription("短剧简介");
+        shortDrama.setSource("bgssai-short");
+        shortDrama.setStatus("published");
+        h.dramas.add(shortDrama);
+
+        com.bgssai.media.common.domain.MediaEpisode ep1 = new com.bgssai.media.common.domain.MediaEpisode();
+        ep1.setId(701L);
+        ep1.setDramaId(501L);
+        ep1.setEpNo(1);
+        ep1.setTitle("第一集：启航");
+        ep1.setMediaUrl("https://cdn.example.com/short/ep1.mp4");
+        ep1.setStatus("published");
+        h.episodes.add(ep1);
+
+        com.bgssai.media.common.domain.MediaEpisode epDraft = new com.bgssai.media.common.domain.MediaEpisode();
+        epDraft.setId(702L);
+        epDraft.setDramaId(501L);
+        epDraft.setEpNo(2);
+        epDraft.setTitle("第二集：未审核");
+        epDraft.setMediaUrl("https://cdn.example.com/short/ep2.mp4");
+        epDraft.setStatus("draft");
+        h.episodes.add(epDraft);
+
+        Long mappedEp1Id = CommunityService.toEpisodeVideoId(701L);
+        assertEquals("m_ep_701", CommunityService.toContentId(mappedEp1Id));
+        assertEquals(mappedEp1Id, h.community.resolveContentVideoId(null, "m_ep_701"));
+
+        var readyList = h.community.listReadyVideos();
+        assertTrue(readyList.stream().anyMatch(v -> mappedEp1Id.equals(v.getId())));
+        assertTrue(readyList.stream().noneMatch(v -> CommunityService.toEpisodeVideoId(702L).equals(v.getId())));
+
+        MediaVideoComment c = h.community.addComment(alice, mappedEp1Id, "短剧第一集太精彩了");
+        assertEquals(mappedEp1Id, c.getVideoId());
+        assertEquals(1, h.community.listComments(mappedEp1Id).size());
+
+        Map<String, Object> likeRes = h.community.toggleLike(bob, mappedEp1Id);
+        assertEquals(Boolean.TRUE, likeRes.get("liked"));
+        assertEquals("m_ep_701", likeRes.get("content_id"));
+        assertEquals(1, likeRes.get("like_count"));
+
+        Map<String, Object> rec = h.community.recommend(alice);
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> items = (List<Map<String, Object>>) rec.get("items");
+        assertTrue(items.stream().anyMatch(i ->
+                "m_ep_701".equals(i.get("content_id"))
+                        && CommunityService.SOURCE_TYPE_SHORT_DRAMA.equals(i.get("source_type"))));
+    }
+
     private static Long readyVideo(CreatorCommunityHarness h, Long userId, String title) throws Exception {
         Map<String, Object> uploaded = h.creator.upload(
                 userId, title, null, "tiny.mp4", "video/mp4", fixtureBytes(), null);

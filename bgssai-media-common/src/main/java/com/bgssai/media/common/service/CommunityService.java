@@ -4,6 +4,11 @@ import com.bgssai.media.common.domain.MediaChannelFollow;
 import com.bgssai.media.common.domain.MediaChannelFollowExample;
 import com.bgssai.media.common.domain.MediaCreatorVideo;
 import com.bgssai.media.common.domain.MediaCreatorVideoExample;
+import com.bgssai.media.common.domain.MediaDrama;
+import com.bgssai.media.common.domain.MediaDramaExample;
+import com.bgssai.media.common.domain.MediaEpisode;
+import com.bgssai.media.common.domain.MediaEpisodeExample;
+import com.bgssai.media.common.domain.MediaIngestLog;
 import com.bgssai.media.common.domain.MediaRecommendItem;
 import com.bgssai.media.common.domain.MediaRecommendRun;
 import com.bgssai.media.common.domain.MediaUserChannel;
@@ -12,14 +17,20 @@ import com.bgssai.media.common.domain.MediaVideoComment;
 import com.bgssai.media.common.domain.MediaVideoCommentExample;
 import com.bgssai.media.common.domain.MediaVideoLike;
 import com.bgssai.media.common.domain.MediaVideoLikeExample;
+import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.mapper.MediaChannelFollowMapper;
 import com.bgssai.media.common.mapper.MediaCreatorVideoMapper;
+import com.bgssai.media.common.mapper.MediaDramaMapper;
+import com.bgssai.media.common.mapper.MediaEpisodeMapper;
+import com.bgssai.media.common.mapper.MediaIngestLogMapper;
 import com.bgssai.media.common.mapper.MediaRecommendItemMapper;
 import com.bgssai.media.common.mapper.MediaRecommendRunMapper;
 import com.bgssai.media.common.mapper.MediaUserChannelMapper;
 import com.bgssai.media.common.mapper.MediaVideoCommentMapper;
 import com.bgssai.media.common.mapper.MediaVideoLikeMapper;
+import com.bgssai.media.common.source.SourceRefs;
 import com.bgssai.media.common.web.BizException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +45,11 @@ import java.util.Set;
 /**
  * Channel / follow / comment / like / rule-based recommend persistence (AUD20-021).
  * Recommend is two-stage recall + filter + sort. It is not machine learning.
- * Catalog is media_creator_video only; media_episode is not used.
+ *
+ * <p>Serves both ready creator uploads ({@code media_creator_video}) and published,
+ * approved Short/Long drama episodes ({@code media_drama} / {@code media_episode}) via
+ * deterministic unified content ID mapping ({@link #EPISODE_VIDEO_ID_OFFSET} + episodeId,
+ * or {@code m_ep_{episodeId}}) without duplicating library tables.
  */
 @Service
 public class CommunityService {
@@ -47,6 +62,11 @@ public class CommunityService {
     public static final String FILTER_DUPLICATE = "DUPLICATE";
     public static final String FILTER_NOT_READY = "NOT_READY";
 
+    public static final long EPISODE_VIDEO_ID_OFFSET = 1_000_000_000L;
+    public static final String SOURCE_TYPE_CREATOR = "CREATOR_VIDEO";
+    public static final String SOURCE_TYPE_SHORT_DRAMA = "SHORT_DRAMA";
+    public static final String SOURCE_TYPE_LONG_DRAMA = "LONG_DRAMA";
+
     private static final int RECENT_LIMIT = 50;
     private static final int MAX_COMMENT = 2000;
 
@@ -57,6 +77,9 @@ public class CommunityService {
     private final MediaVideoLikeMapper likeMapper;
     private final MediaRecommendRunMapper runMapper;
     private final MediaRecommendItemMapper itemMapper;
+    private final MediaDramaMapper dramaMapper;
+    private final MediaEpisodeMapper episodeMapper;
+    private final MediaIngestLogMapper ingestLogMapper;
 
     public CommunityService(MediaUserChannelMapper channelMapper,
                             MediaChannelFollowMapper followMapper,
@@ -65,6 +88,21 @@ public class CommunityService {
                             MediaVideoLikeMapper likeMapper,
                             MediaRecommendRunMapper runMapper,
                             MediaRecommendItemMapper itemMapper) {
+        this(channelMapper, followMapper, videoMapper, commentMapper, likeMapper,
+                runMapper, itemMapper, null, null, null);
+    }
+
+    @Autowired
+    public CommunityService(MediaUserChannelMapper channelMapper,
+                            MediaChannelFollowMapper followMapper,
+                            MediaCreatorVideoMapper videoMapper,
+                            MediaVideoCommentMapper commentMapper,
+                            MediaVideoLikeMapper likeMapper,
+                            MediaRecommendRunMapper runMapper,
+                            MediaRecommendItemMapper itemMapper,
+                            @Autowired(required = false) MediaDramaMapper dramaMapper,
+                            @Autowired(required = false) MediaEpisodeMapper episodeMapper,
+                            @Autowired(required = false) MediaIngestLogMapper ingestLogMapper) {
         this.channelMapper = channelMapper;
         this.followMapper = followMapper;
         this.videoMapper = videoMapper;
@@ -72,6 +110,62 @@ public class CommunityService {
         this.likeMapper = likeMapper;
         this.runMapper = runMapper;
         this.itemMapper = itemMapper;
+        this.dramaMapper = dramaMapper;
+        this.episodeMapper = episodeMapper;
+        this.ingestLogMapper = ingestLogMapper;
+    }
+
+    public static Long toEpisodeVideoId(Long episodeId) {
+        return episodeId == null ? null : EPISODE_VIDEO_ID_OFFSET + episodeId;
+    }
+
+    public static boolean isEpisodeVideoId(Long videoId) {
+        return videoId != null && videoId >= EPISODE_VIDEO_ID_OFFSET;
+    }
+
+    public static Long toEpisodeId(Long videoId) {
+        return isEpisodeVideoId(videoId) ? (videoId - EPISODE_VIDEO_ID_OFFSET) : null;
+    }
+
+    public static String toContentId(Long videoId) {
+        if (videoId == null) {
+            return null;
+        }
+        return isEpisodeVideoId(videoId) ? ("m_ep_" + toEpisodeId(videoId)) : String.valueOf(videoId);
+    }
+
+    public Long resolveContentVideoId(Long videoId, String contentId) {
+        if (videoId != null && videoId > 0) {
+            if (isEpisodeVideoId(videoId)) {
+                return videoId;
+            }
+            if (videoMapper.selectByPrimaryKey(videoId) != null) {
+                return videoId;
+            }
+            if (episodeMapper != null && episodeMapper.selectByPrimaryKey(videoId) != null) {
+                return toEpisodeVideoId(videoId);
+            }
+            return videoId;
+        }
+        if (contentId != null && !contentId.isBlank()) {
+            String raw = contentId.trim();
+            try {
+                if (raw.startsWith("m_ep_")) {
+                    return toEpisodeVideoId(Long.parseLong(raw.substring(5)));
+                }
+                if (raw.startsWith("ep_")) {
+                    return toEpisodeVideoId(Long.parseLong(raw.substring(3)));
+                }
+                if (raw.startsWith("video_")) {
+                    return Long.parseLong(raw.substring(6));
+                }
+                long parsed = Long.parseLong(raw);
+                return resolveContentVideoId(parsed, null);
+            } catch (NumberFormatException ex) {
+                throw new BizException(400, "invalid content id: " + raw);
+            }
+        }
+        throw new BizException(400, "video_id or media_id required");
     }
 
     @Transactional
@@ -188,15 +282,51 @@ public class CommunityService {
         MediaCreatorVideoExample ex = new MediaCreatorVideoExample();
         ex.createCriteria().andStatusEqualTo(CreatorVideoService.STATUS_READY);
         ex.setOrderByClause("created_at desc");
-        return videoMapper.selectByExample(ex);
+        List<MediaCreatorVideo> combined = new ArrayList<>(videoMapper.selectByExample(ex));
+        combined.addAll(listReadyEpisodeVideos());
+        combined.sort((a, b) -> {
+            long at = a.getCreatedAt() == null ? 0L : a.getCreatedAt().getTime();
+            long bt = b.getCreatedAt() == null ? 0L : b.getCreatedAt().getTime();
+            int cmp = Long.compare(bt, at);
+            if (cmp != 0) {
+                return cmp;
+            }
+            long aid = a.getId() == null ? 0L : a.getId();
+            long bid = b.getId() == null ? 0L : b.getId();
+            return Long.compare(bid, aid);
+        });
+        return combined;
     }
 
     public MediaCreatorVideo getReadyVideo(Long videoId) {
+        if (videoId == null) {
+            throw new BizException(404, "video not found");
+        }
+        if (isEpisodeVideoId(videoId)) {
+            if (episodeMapper == null || dramaMapper == null) {
+                throw new BizException(404, "video not found");
+            }
+            Long epId = toEpisodeId(videoId);
+            MediaEpisode ep = episodeMapper.selectByPrimaryKey(epId);
+            if (ep == null) {
+                throw new BizException(404, "video not found");
+            }
+            MediaDrama drama = dramaMapper.selectByPrimaryKey(ep.getDramaId());
+            if (!isEpisodeApprovedAndReady(drama, ep)) {
+                throw new BizException(404, "video not found");
+            }
+            return projectEpisodeToVideo(drama, ep);
+        }
         MediaCreatorVideo video = videoMapper.selectByPrimaryKey(videoId);
         if (video == null || !CreatorVideoService.STATUS_READY.equals(video.getStatus())) {
             throw new BizException(404, "video not found");
         }
         return video;
+    }
+
+    public MediaCreatorVideo getReadyVideoByContentId(String contentId) {
+        Long resolved = resolveContentVideoId(null, contentId);
+        return getReadyVideo(resolved);
     }
 
     @Transactional
@@ -276,9 +406,22 @@ public class CommunityService {
         return likeView(userId, videoId, false);
     }
 
+    @Transactional
+    public Map<String, Object> toggleLike(Long userId, Long videoId) {
+        requireUser(userId);
+        getReadyVideo(videoId);
+        MediaVideoLikeExample ex = new MediaVideoLikeExample();
+        ex.createCriteria().andVideoIdEqualTo(videoId).andUserIdEqualTo(userId);
+        if (likeMapper.countByExample(ex) > 0) {
+            return unlike(userId, videoId);
+        }
+        return like(userId, videoId);
+    }
+
     /**
-     * Two-stage rule recommend: recall (FOLLOWING + RECENT) then filter/sort.
-     * Persists the run. Does not use media_episode. Not ML.
+     * Two-stage rule recommend: recall (FOLLOWING + RECENT across ready creator videos and
+     * published/approved Short/Long drama episodes) then filter/sort.
+     * Persists the run. Not ML.
      */
     @Transactional
     public Map<String, Object> recommend(Long userId) {
@@ -301,10 +444,7 @@ public class CommunityService {
             }
         }
 
-        MediaCreatorVideoExample recentEx = new MediaCreatorVideoExample();
-        recentEx.createCriteria().andStatusEqualTo(CreatorVideoService.STATUS_READY);
-        recentEx.setOrderByClause("created_at desc");
-        List<MediaCreatorVideo> recent = videoMapper.selectByExample(recentEx);
+        List<MediaCreatorVideo> recent = listReadyVideos();
         int added = 0;
         for (MediaCreatorVideo v : recent) {
             if (added >= RECENT_LIMIT) {
@@ -372,10 +512,13 @@ public class CommunityService {
         for (Scored s : kept) {
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("video_id", s.video.getId());
+            row.put("content_id", toContentId(s.video.getId()));
+            row.put("source_type", sourceTypeOf(s.video));
             row.put("channel_id", s.video.getChannelId());
             row.put("title", s.video.getTitle());
             row.put("cover_url", s.video.getCoverUrl());
             row.put("like_count", nz(s.video.getLikeCount()));
+            row.put("comment_count", nz(s.video.getCommentCount()));
             row.put("sort_rank", s.rank);
             row.put("recall_reason", s.recall);
             items.add(row);
@@ -389,6 +532,110 @@ public class CommunityService {
         out.put("kept_count", kept.size());
         out.put("items", items);
         return out;
+    }
+
+    private List<MediaCreatorVideo> listReadyEpisodeVideos() {
+        if (dramaMapper == null || episodeMapper == null) {
+            return List.of();
+        }
+        MediaDramaExample dramaEx = new MediaDramaExample();
+        dramaEx.createCriteria().andStatusEqualTo("published");
+        dramaEx.setOrderByClause("id desc");
+        List<MediaDrama> dramas = dramaMapper.selectByExample(dramaEx);
+        if (dramas == null || dramas.isEmpty()) {
+            return List.of();
+        }
+        List<MediaCreatorVideo> out = new ArrayList<>();
+        Set<Long> seenEpisodeIds = new HashSet<>();
+        for (MediaDrama drama : dramas) {
+            if (drama == null || drama.getId() == null || !"published".equalsIgnoreCase(drama.getStatus())) {
+                continue;
+            }
+            MediaEpisodeExample epEx = new MediaEpisodeExample();
+            epEx.createCriteria().andDramaIdEqualTo(drama.getId()).andStatusEqualTo("published");
+            epEx.setOrderByClause("ep_no asc");
+            List<MediaEpisode> episodes = episodeMapper.selectByExample(epEx);
+            if (episodes == null) {
+                continue;
+            }
+            for (MediaEpisode ep : episodes) {
+                if (ep == null || ep.getId() == null || !seenEpisodeIds.add(ep.getId())) {
+                    continue;
+                }
+                if (!isEpisodeApprovedAndReady(drama, ep)) {
+                    continue;
+                }
+                out.add(projectEpisodeToVideo(drama, ep));
+            }
+        }
+        return out;
+    }
+
+    private boolean isEpisodeApprovedAndReady(MediaDrama drama, MediaEpisode ep) {
+        if (drama == null || !"published".equalsIgnoreCase(drama.getStatus())) {
+            return false;
+        }
+        if (ep == null || ep.getId() == null || !"published".equalsIgnoreCase(ep.getStatus())) {
+            return false;
+        }
+        if (ep.getMediaUrl() == null || ep.getMediaUrl().isBlank()) {
+            return false;
+        }
+        if (ingestLogMapper != null) {
+            String mediaId = "m_ep_" + ep.getId();
+            MediaIngestLog log = ingestLogMapper.selectByMediaId(mediaId);
+            if (log != null && !IngestStatus.isPlayable(log.getStatus())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private MediaCreatorVideo projectEpisodeToVideo(MediaDrama drama, MediaEpisode ep) {
+        Long mappedId = toEpisodeVideoId(ep.getId());
+        MediaCreatorVideo v = new MediaCreatorVideo();
+        v.setId(mappedId);
+        v.setUserId(0L);
+        v.setChannelId(0L);
+        String epTitle = ep.getTitle() != null && !ep.getTitle().isBlank()
+                ? ep.getTitle()
+                : (drama.getTitle() + " Ep." + ep.getEpNo());
+        v.setTitle(epTitle);
+        v.setDescription(drama.getDescription());
+        v.setStatus(CreatorVideoService.STATUS_READY);
+        v.setOriginalFilename("m_ep_" + ep.getId());
+        v.setContentType(drama.getSource());
+        v.setCoverUrl(drama.getCoverUrl());
+        v.setLikeCount(countLikes(mappedId));
+        v.setCommentCount(countComments(mappedId));
+        Date created = ep.getCreatedAt() != null ? ep.getCreatedAt()
+                : (drama.getCreatedAt() != null ? drama.getCreatedAt() : new Date(0));
+        v.setCreatedAt(created);
+        v.setUpdatedAt(ep.getUpdatedAt() != null ? ep.getUpdatedAt() : drama.getUpdatedAt());
+        return v;
+    }
+
+    private static String sourceTypeOf(MediaCreatorVideo video) {
+        if (video == null || !isEpisodeVideoId(video.getId())) {
+            return SOURCE_TYPE_CREATOR;
+        }
+        if (SourceRefs.SYSTEM_LONG.equalsIgnoreCase(video.getContentType())) {
+            return SOURCE_TYPE_LONG_DRAMA;
+        }
+        return SOURCE_TYPE_SHORT_DRAMA;
+    }
+
+    private int countLikes(Long videoId) {
+        MediaVideoLikeExample ex = new MediaVideoLikeExample();
+        ex.createCriteria().andVideoIdEqualTo(videoId);
+        return (int) likeMapper.countByExample(ex);
+    }
+
+    private int countComments(Long videoId) {
+        MediaVideoCommentExample ex = new MediaVideoCommentExample();
+        ex.createCriteria().andVideoIdEqualTo(videoId);
+        List<MediaVideoComment> list = commentMapper.selectByExample(ex);
+        return list == null ? 0 : list.size();
     }
 
     private List<MediaChannelFollow> followsOf(Long userId) {
@@ -418,9 +665,10 @@ public class CommunityService {
     private Map<String, Object> likeView(Long userId, Long videoId, boolean liked) {
         MediaVideoLikeExample ex = new MediaVideoLikeExample();
         ex.createCriteria().andVideoIdEqualTo(videoId);
-        MediaCreatorVideo video = videoMapper.selectByPrimaryKey(videoId);
+        MediaCreatorVideo video = isEpisodeVideoId(videoId) ? null : videoMapper.selectByPrimaryKey(videoId);
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("video_id", videoId);
+        out.put("content_id", toContentId(videoId));
         out.put("liked", liked);
         out.put("like_count", video == null ? (int) likeMapper.countByExample(ex) : nz(video.getLikeCount()));
         out.put("user_id", userId);
@@ -428,6 +676,9 @@ public class CommunityService {
     }
 
     private void bumpLikeCount(Long videoId, int delta) {
+        if (isEpisodeVideoId(videoId)) {
+            return;
+        }
         MediaCreatorVideo video = videoMapper.selectByPrimaryKey(videoId);
         if (video == null) {
             return;
@@ -438,6 +689,9 @@ public class CommunityService {
     }
 
     private void bumpCommentCount(Long videoId, int delta) {
+        if (isEpisodeVideoId(videoId)) {
+            return;
+        }
         MediaCreatorVideo video = videoMapper.selectByPrimaryKey(videoId);
         if (video == null) {
             return;

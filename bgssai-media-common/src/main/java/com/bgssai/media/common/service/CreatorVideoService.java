@@ -40,6 +40,7 @@ import java.util.Set;
 @Service
 public class CreatorVideoService {
 
+    public static final String STATUS_DRAFT = "DRAFT";
     public static final String STATUS_QUEUED = "QUEUED";
     public static final String STATUS_RUNNING = "RUNNING";
     public static final String STATUS_READY = "READY";
@@ -170,6 +171,129 @@ public class CreatorVideoService {
         for (MediaCreatorVideo video : videoMapper.selectByExample(ex)) {
             out.add(toView(video, true));
         }
+        return out;
+    }
+
+    @Transactional
+    public Map<String, Object> createDraft(Long userId,
+                                           String title,
+                                           String description,
+                                           String category,
+                                           String coverUrl) {
+        requireUser(userId);
+        String resolvedTitle = title == null ? "" : title.trim();
+        if (resolvedTitle.isEmpty()) {
+            throw new BizException(400, "title required");
+        }
+        if (resolvedTitle.length() > 256) {
+            throw new BizException(400, "title too long");
+        }
+        MediaUserChannel channel = communityService.ensureMine(userId);
+        Date now = new Date();
+        MediaCreatorVideo video = new MediaCreatorVideo();
+        video.setUserId(userId);
+        video.setChannelId(channel.getId());
+        video.setTitle(resolvedTitle);
+        video.setDescription(trimToNull(description));
+        video.setContentType(trimToNull(category));
+        video.setCoverUrl(trimToNull(coverUrl));
+        video.setStatus(STATUS_DRAFT);
+        video.setLikeCount(0);
+        video.setCommentCount(0);
+        video.setCreatedAt(now);
+        video.setUpdatedAt(now);
+        videoMapper.insertSelective(video);
+        return toView(video, true);
+    }
+
+    @Transactional
+    public Map<String, Object> updateDraft(Long userId,
+                                           Long videoId,
+                                           String title,
+                                           String description,
+                                           String category,
+                                           String coverUrl) {
+        requireUser(userId);
+        if (videoId == null) {
+            throw new BizException(400, "video_id required");
+        }
+        MediaCreatorVideo video = videoMapper.selectByPrimaryKey(videoId);
+        if (video == null) {
+            throw new BizException(404, "video not found");
+        }
+        if (!userId.equals(video.getUserId())) {
+            throw new BizException(403, "forbidden");
+        }
+        if (title != null) {
+            String trimmed = title.trim();
+            if (trimmed.isEmpty()) {
+                throw new BizException(400, "title required");
+            }
+            if (trimmed.length() > 256) {
+                throw new BizException(400, "title too long");
+            }
+            video.setTitle(trimmed);
+        }
+        if (description != null) {
+            video.setDescription(trimToNull(description));
+        }
+        if (category != null) {
+            video.setContentType(trimToNull(category));
+        }
+        if (coverUrl != null) {
+            video.setCoverUrl(trimToNull(coverUrl));
+        }
+        video.setUpdatedAt(new Date());
+        videoMapper.updateByPrimaryKeySelective(video);
+        return toView(video, true);
+    }
+
+    public Map<String, Object> getUploadTaskStatus(Long userId, Long videoId, Long jobId) {
+        requireUser(userId);
+        MediaCreatorVideo video = null;
+        MediaTranscodeJob job = null;
+        if (jobId != null) {
+            job = jobMapper.selectByPrimaryKey(jobId);
+            if (job == null) {
+                throw new BizException(404, "job not found");
+            }
+            if (!userId.equals(job.getUserId())) {
+                throw new BizException(403, "forbidden");
+            }
+            video = videoMapper.selectByPrimaryKey(job.getVideoId());
+        } else if (videoId != null) {
+            video = videoMapper.selectByPrimaryKey(videoId);
+            if (video == null) {
+                throw new BizException(404, "video not found");
+            }
+            if (!userId.equals(video.getUserId())) {
+                throw new BizException(403, "forbidden");
+            }
+            job = latestJob(video.getId());
+        } else {
+            throw new BizException(400, "video_id or job_id required");
+        }
+        String vStatus = video == null ? null : video.getStatus();
+        String reviewStatus;
+        if (STATUS_READY.equals(vStatus)) {
+            reviewStatus = "APPROVED";
+        } else if (STATUS_FAILED.equals(vStatus)) {
+            reviewStatus = "REJECTED";
+        } else {
+            reviewStatus = "PENDING";
+        }
+        String transcodeStatus = job != null ? job.getStatus()
+                : (STATUS_DRAFT.equals(vStatus) ? "NOT_STARTED" : vStatus);
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("video_id", video != null ? video.getId() : job.getVideoId());
+        out.put("user_id", userId);
+        out.put("title", video == null ? null : video.getTitle());
+        out.put("video_status", vStatus);
+        out.put("transcode_status", transcodeStatus);
+        out.put("review_status", reviewStatus);
+        out.put("job", job == null ? null : jobView(job, renditionsOf(job.getVideoId())));
+        out.put("renditions", video != null && STATUS_READY.equals(vStatus)
+                ? renditionMaps(renditionsOf(video.getId())) : List.of());
         return out;
     }
 
@@ -413,6 +537,7 @@ public class CreatorVideoService {
         out.put("channel_id", video.getChannelId());
         out.put("title", video.getTitle());
         out.put("description", video.getDescription());
+        out.put("category", video.getContentType());
         out.put("status", video.getStatus());
         out.put("cover_url", video.getCoverUrl());
         out.put("like_count", video.getLikeCount() == null ? 0 : video.getLikeCount());

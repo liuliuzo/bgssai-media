@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "test": "node --test test/",
+    "test": "node --test",
     "smoke:vlc": "node scripts/smoke-vlc.js",
     "build": "electron-builder --dir",
     "dist": "electron-builder",

@@ -10,7 +10,7 @@
   <div class="app">
     <header class="hero">
       <div class="brand">bgssai-media</div>
-      <p class="tagline">桌面播放器 · libVLC 全格式解码</p>
+      <p class="tagline">桌面播放器 - 内置自包含解码管线 (builtin-html5-ffmpeg) / 可选外部 libVLC</p>
     </header>
 
     <section class="panel">
@@ -33,11 +33,21 @@
             <option value="2">2x</option>
           </select>
         </label>
+        <label>音轨
+          <select id="audio-track">
+            <option value="0">默认音轨 (0)</option>
+          </select>
+        </label>
+        <label>字幕轨
+          <select id="subtitle-track">
+            <option value="-1">关闭字幕</option>
+          </select>
+        </label>
         <label>跳转(秒) <input id="seek" type="number" min="0" value="0" step="1" />
           <button id="btn-seek">Seek</button>
         </label>
       </div>
-      <p id="status" class="status">正在检查本机 VLC。未找到引擎时无法解码，不会改用浏览器硬解 mkv。</p>
+      <p id="status" class="status">正在初始化自包含播放引擎 (builtin-html5-ffmpeg / libVLC)。</p>
       <div id="engine-error" class="engine-error" hidden></div>
       <ul id="playlist" class="playlist"></ul>
     </section>
@@ -45,7 +55,7 @@
     <section class="panel">
       <h2>格式支持矩阵</h2>
       <div id="matrix" class="matrix"></div>
-      <p class="hint">Web 短剧端仅覆盖 MP4 / WebM / HLS；本桌面端覆盖完整矩阵。</p>
+      <p class="hint">Web 短剧端仅覆盖 MP4 / WebM / HLS；本桌面端通过内置自包含管线或系统 VLC 覆盖完整矩阵。</p>
     </section>
   </div>
   <script src="./renderer.js"></script>
