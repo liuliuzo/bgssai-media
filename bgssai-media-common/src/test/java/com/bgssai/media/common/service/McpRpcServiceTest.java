@@ -22,13 +22,16 @@ class McpRpcServiceTest {
 
     @Mock DramaService dramaService;
     @Mock WatchProgressService watchProgressService;
+    @Mock CreatorVideoService creatorVideoService;
+    @Mock CommunityService communityService;
 
     ObjectMapper objectMapper = new ObjectMapper();
     McpRpcService rpc;
 
     @BeforeEach
     void setUp() {
-        McpToolService tools = new McpToolService(dramaService, watchProgressService, objectMapper);
+        McpToolService tools = new McpToolService(
+                dramaService, watchProgressService, creatorVideoService, communityService, objectMapper);
         rpc = new McpRpcService(tools, objectMapper);
     }
 
@@ -46,7 +49,7 @@ class McpRpcServiceTest {
     }
 
     @Test
-    void toolsListIncludesSafeReadToolsOnly() {
+    void toolsListIncludesCatalogCreatorAndCommunityTools() {
         ObjectNode req = objectMapper.createObjectNode();
         req.put("jsonrpc", "2.0");
         req.put("id", 2);
@@ -56,6 +59,12 @@ class McpRpcServiceTest {
         assertTrue(names.contains("list_published_dramas"));
         assertTrue(names.contains("get_drama"));
         assertTrue(names.contains("list_continue_watching"));
+        assertTrue(names.contains("list_my_videos"));
+        assertTrue(names.contains("create_video_draft"));
+        assertTrue(names.contains("update_video_draft"));
+        assertTrue(names.contains("get_upload_task_status"));
+        assertTrue(names.contains("create_community_comment"));
+        assertTrue(names.contains("toggle_community_like"));
         assertTrue(names.contains("ping"));
         assertFalse(names.contains("delete"));
         assertFalse(names.contains("ingest"));
@@ -84,5 +93,52 @@ class McpRpcServiceTest {
         @SuppressWarnings("unchecked")
         Map<String, Object> payload = objectMapper.readValue(text, Map.class);
         assertEquals(1, ((Number) payload.get("total")).intValue());
+    }
+
+    @Test
+    void toolsCallCreatorDraftAndCommunityActionsWithUserIsolation() throws Exception {
+        when(creatorVideoService.createDraft(eq(88L), eq("新创作者稿件"), eq("描述"), eq("sci-fi"), isNull()))
+                .thenReturn(Map.of("id", 500L, "user_id", 88L, "title", "新创作者稿件", "status", "DRAFT"));
+
+        ObjectNode createReq = objectMapper.createObjectNode();
+        createReq.put("jsonrpc", "2.0");
+        createReq.put("id", 4);
+        createReq.put("method", "tools/call");
+        ObjectNode createParams = createReq.putObject("params");
+        createParams.put("name", "create_video_draft");
+        createParams.putObject("arguments")
+                .put("title", "新创作者稿件")
+                .put("description", "描述")
+                .put("category", "sci-fi");
+
+        ObjectNode createRes = rpc.handle(createReq, 88L);
+        assertFalse(createRes.get("result").get("isError").asBoolean());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> draftPayload = objectMapper.readValue(
+                createRes.get("result").get("content").get(0).get("text").asText(), Map.class);
+        assertEquals(500, ((Number) draftPayload.get("id")).intValue());
+        assertEquals("DRAFT", draftPayload.get("status"));
+
+        when(communityService.resolveContentVideoId(isNull(), eq("m_ep_701")))
+                .thenReturn(CommunityService.toEpisodeVideoId(701L));
+        when(communityService.toggleLike(eq(88L), eq(CommunityService.toEpisodeVideoId(701L))))
+                .thenReturn(Map.of("video_id", CommunityService.toEpisodeVideoId(701L),
+                        "content_id", "m_ep_701", "liked", true, "like_count", 1));
+
+        ObjectNode likeReq = objectMapper.createObjectNode();
+        likeReq.put("jsonrpc", "2.0");
+        likeReq.put("id", 5);
+        likeReq.put("method", "tools/call");
+        ObjectNode likeParams = likeReq.putObject("params");
+        likeParams.put("name", "toggle_community_like");
+        likeParams.putObject("arguments").put("media_id", "m_ep_701");
+
+        ObjectNode likeRes = rpc.handle(likeReq, 88L);
+        assertFalse(likeRes.get("result").get("isError").asBoolean());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> likePayload = objectMapper.readValue(
+                likeRes.get("result").get("content").get(0).get("text").asText(), Map.class);
+        assertEquals("m_ep_701", likePayload.get("content_id"));
+        assertEquals(Boolean.TRUE, likePayload.get("liked"));
     }
 }

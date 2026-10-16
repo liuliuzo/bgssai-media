@@ -2,6 +2,9 @@ package com.bgssai.media.common.service;
 
 import com.bgssai.media.common.domain.MediaChannelFollow;
 import com.bgssai.media.common.domain.MediaCreatorVideo;
+import com.bgssai.media.common.domain.MediaDrama;
+import com.bgssai.media.common.domain.MediaEpisode;
+import com.bgssai.media.common.domain.MediaIngestLog;
 import com.bgssai.media.common.domain.MediaRecommendItem;
 import com.bgssai.media.common.domain.MediaRecommendRun;
 import com.bgssai.media.common.domain.MediaTranscodeJob;
@@ -11,6 +14,9 @@ import com.bgssai.media.common.domain.MediaVideoComment;
 import com.bgssai.media.common.domain.MediaVideoLike;
 import com.bgssai.media.common.mapper.MediaChannelFollowMapper;
 import com.bgssai.media.common.mapper.MediaCreatorVideoMapper;
+import com.bgssai.media.common.mapper.MediaDramaMapper;
+import com.bgssai.media.common.mapper.MediaEpisodeMapper;
+import com.bgssai.media.common.mapper.MediaIngestLogMapper;
 import com.bgssai.media.common.mapper.MediaRecommendItemMapper;
 import com.bgssai.media.common.mapper.MediaRecommendRunMapper;
 import com.bgssai.media.common.mapper.MediaTranscodeJobMapper;
@@ -28,6 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +48,9 @@ final class CreatorCommunityHarness {
     final List<MediaVideoLike> likes = new ArrayList<>();
     final List<MediaRecommendRun> runs = new ArrayList<>();
     final List<MediaRecommendItem> items = new ArrayList<>();
+    final List<MediaDrama> dramas = new ArrayList<>();
+    final List<MediaEpisode> episodes = new ArrayList<>();
+    final List<MediaIngestLog> ingestLogs = new ArrayList<>();
 
     final AtomicLong ids = new AtomicLong(1);
     final Path storage;
@@ -58,6 +68,9 @@ final class CreatorCommunityHarness {
         MediaRecommendItemMapper itemMapper = mock(MediaRecommendItemMapper.class);
         MediaTranscodeJobMapper jobMapper = mock(MediaTranscodeJobMapper.class);
         MediaTranscodeRenditionMapper renditionMapper = mock(MediaTranscodeRenditionMapper.class);
+        MediaDramaMapper dramaMapper = mock(MediaDramaMapper.class);
+        MediaEpisodeMapper episodeMapper = mock(MediaEpisodeMapper.class);
+        MediaIngestLogMapper ingestLogMapper = mock(MediaIngestLogMapper.class);
 
         when(channelMapper.insertSelective(any())).thenAnswer(inv -> {
             MediaUserChannel row = inv.getArgument(0);
@@ -191,8 +204,22 @@ final class CreatorCommunityHarness {
         when(renditionMapper.deleteByExample(any())).thenAnswer(inv ->
                 ExampleQuery.delete(renditions, inv.getArgument(0)));
 
+        when(dramaMapper.selectByPrimaryKey(anyLong())).thenAnswer(inv ->
+                dramas.stream().filter(r -> inv.getArgument(0).equals(r.getId())).findFirst().orElse(null));
+        when(dramaMapper.selectByExample(any())).thenAnswer(inv ->
+                ExampleQuery.select(dramas, inv.getArgument(0)));
+
+        when(episodeMapper.selectByPrimaryKey(anyLong())).thenAnswer(inv ->
+                episodes.stream().filter(r -> inv.getArgument(0).equals(r.getId())).findFirst().orElse(null));
+        when(episodeMapper.selectByExample(any())).thenAnswer(inv ->
+                ExampleQuery.select(episodes, inv.getArgument(0)));
+
+        when(ingestLogMapper.selectByMediaId(anyString())).thenAnswer(inv ->
+                ingestLogs.stream().filter(r -> inv.getArgument(0).equals(r.getMediaId())).findFirst().orElse(null));
+
         this.community = new CommunityService(
-                channelMapper, followMapper, videoMapper, commentMapper, likeMapper, runMapper, itemMapper);
+                channelMapper, followMapper, videoMapper, commentMapper, likeMapper,
+                runMapper, itemMapper, dramaMapper, episodeMapper, ingestLogMapper);
         this.creator = new CreatorVideoService(
                 videoMapper, jobMapper, renditionMapper, community, ffmpeg,
                 storage.toString(), "/api/creator/media", null);

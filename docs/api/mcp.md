@@ -75,6 +75,18 @@ Header：`Authorization: Bearer <pat>`
 }
 ```
 
+支持工具清单：
+- `ping`：健康检查
+- `list_published_dramas`：分页检索已发布剧集
+- `get_drama`：获取已发布剧集及分集列表
+- `list_continue_watching`：获取当前用户继续观看进度
+- `list_my_videos`：获取当前创作者上传与草稿列表（支持 `status` 过滤）
+- `create_video_draft`：创建创作者视频草稿（`title`, `description`, `category`, `cover_url`）
+- `update_video_draft`：更新本人视频草稿元数据（`video_id`, `title`, `description`, `category`, `cover_url`）
+- `get_upload_task_status`：查询本人视频转码与审核任务状态（`video_id` 或 `job_id`）
+- `create_community_comment`：对社区视频或已发布短剧/长剧分集（`video_id` 或 `media_id` 如 `m_ep_701`）发表评论
+- `toggle_community_like`：对社区视频或已发布短剧/长剧分集切换点赞状态
+
 工具结果为 MCP `content[]` 文本（JSON 字符串），错误时 `isError=true`。
 
 ## 客户端配置摘要

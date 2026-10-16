@@ -38,17 +38,7 @@ function guarded(fn) {
 
 app.whenReady().then(() => {
   player = new VlcPlayer({ resourcesPath: app.isPackaged ? process.resourcesPath : null });
-  const probe = player.probeEngine();
-  if (!probe.ok) {
-    // Explicit, visible flow when the decode engine is missing: no silent failure.
-    dialog.showMessageBox({
-      type: 'warning',
-      title: '未找到 VLC 解码引擎',
-      message: '本播放器依赖系统 VLC/libVLC 解码。',
-      detail: probe.steps.join(String.fromCharCode(10)),
-      buttons: ['知道了'],
-    });
-  }
+  player.probeEngine();
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -96,6 +86,11 @@ ipcMain.handle('player:pause', guarded(async () => {
   return { ok: true };
 }));
 
+ipcMain.handle('player:resume', guarded(async () => {
+  await player.resume();
+  return { ok: true };
+}));
+
 ipcMain.handle('player:stop', guarded(async () => {
   await player.stop();
   return { ok: true };
@@ -112,18 +107,27 @@ ipcMain.handle('player:prev', guarded(async () => {
 }));
 
 ipcMain.handle('player:seek', guarded(async (_evt, seconds) => {
-  await player.seek(seconds);
-  return { ok: true };
+  return player.seek(seconds);
 }));
 
 ipcMain.handle('player:setVolume', guarded(async (_evt, volume) => {
-  await player.setVolume(volume);
-  return { ok: true };
+  return player.setVolume(volume);
 }));
 
 ipcMain.handle('player:setRate', guarded(async (_evt, rate) => {
-  await player.setRate(rate);
-  return { ok: true };
+  return player.setRate(rate);
+}));
+
+ipcMain.handle('player:selectAudioTrack', guarded(async (_evt, trackIndex) => {
+  return player.selectAudioTrack(trackIndex);
+}));
+
+ipcMain.handle('player:selectSubtitleTrack', guarded(async (_evt, trackIndex) => {
+  return player.selectSubtitleTrack(trackIndex);
+}));
+
+ipcMain.handle('player:tracks', guarded(async () => {
+  return player.getTracks();
 }));
 
 ipcMain.handle('player:status', guarded(async () => {

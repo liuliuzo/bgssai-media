@@ -35,18 +35,43 @@ async function checkEngine() {
   return probe;
 }
 
+function renderTrackOptions(status) {
+  const audioSelect = document.getElementById('audio-track');
+  const subSelect = document.getElementById('subtitle-track');
+  if (audioSelect && Array.isArray(status.audioTracks)) {
+    audioSelect.innerHTML = '';
+    status.audioTracks.forEach((t) => {
+      const opt = document.createElement('option');
+      opt.value = String(t.index);
+      opt.textContent = t.label || `Audio ${t.index}`;
+      if (t.index === status.selectedAudioTrack) opt.selected = true;
+      audioSelect.appendChild(opt);
+    });
+  }
+  if (subSelect && Array.isArray(status.subtitleTracks)) {
+    subSelect.innerHTML = '<option value="-1">关闭字幕</option>';
+    status.subtitleTracks.forEach((t) => {
+      const opt = document.createElement('option');
+      opt.value = String(t.index);
+      opt.textContent = t.label || `Subtitle ${t.index}`;
+      if (t.index === status.selectedSubtitleTrack) opt.selected = true;
+      subSelect.appendChild(opt);
+    });
+  }
+}
+
 async function refreshStatus() {
   const status = await window.mediaDesktop.status();
   const el = document.getElementById('status');
   const list = document.getElementById('playlist');
   if (status.canDecode === false) {
-    el.textContent = status.decodeStatus
-      || '引擎缺失，无法解码。不会改用浏览器硬解 mkv。';
+    el.textContent = status.decodeStatus || '引擎不可用';
   } else {
     el.textContent = status.current
-      ? `引擎 ${status.engine} · 当前: ${status.current}`
-      : `引擎 ${status.engine || '未定位'} · 未选择文件`;
+      ? `引擎 ${status.engine} (${status.mode}) - 当前: ${status.current} (位置: ${status.positionSec || 0}s)`
+      : `引擎 ${status.engine || '未定位'} (${status.mode || 'builtin-html5-ffmpeg'}) - 未选择文件`;
   }
+  renderTrackOptions(status);
   if (status.lastError) showError(status.lastError);
   list.innerHTML = '';
   (status.playlist || []).forEach((p, i) => {
@@ -94,9 +119,10 @@ document.getElementById('btn-prev').onclick = async () => {
   await window.mediaDesktop.prev();
   await refreshStatus();
 };
-document.getElementById('btn-seek').onclick = () => {
+document.getElementById('btn-seek').onclick = async () => {
   const s = Number(document.getElementById('seek').value || 0);
-  window.mediaDesktop.seek(s);
+  await window.mediaDesktop.seek(s);
+  await refreshStatus();
 };
 document.getElementById('volume').oninput = (e) => {
   window.mediaDesktop.setVolume(Number(e.target.value));
@@ -104,6 +130,20 @@ document.getElementById('volume').oninput = (e) => {
 document.getElementById('rate').onchange = (e) => {
   window.mediaDesktop.setRate(Number(e.target.value));
 };
+const audioSelectEl = document.getElementById('audio-track');
+if (audioSelectEl) {
+  audioSelectEl.onchange = async (e) => {
+    await window.mediaDesktop.selectAudioTrack(Number(e.target.value));
+    await refreshStatus();
+  };
+}
+const subSelectEl = document.getElementById('subtitle-track');
+if (subSelectEl) {
+  subSelectEl.onchange = async (e) => {
+    await window.mediaDesktop.selectSubtitleTrack(Number(e.target.value));
+    await refreshStatus();
+  };
+}
 
 loadMatrix();
 checkEngine();
