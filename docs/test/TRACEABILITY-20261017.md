@@ -8,7 +8,8 @@
 | REQ-MEDIA-PC-PRODUCT-004 | 作品管理与访问控制 | [TC-opc-product-20261017.md](TC-opc-product-20261017.md) | TC-MEDIA-PC-PRODUCT-004-P, TC-MEDIA-PC-PRODUCT-004-N | 待测 |
 | REQ-MEDIA-PC-PRODUCT-005 | Short与Long交接 | [TC-opc-product-20261017.md](TC-opc-product-20261017.md) | TC-MEDIA-PC-PRODUCT-005-P, TC-MEDIA-PC-PRODUCT-005-N | 待测 |
 | REQ-MEDIA-PC-PRODUCT-006 | 平台播放能力矩阵 | [TC-opc-product-20261017.md](TC-opc-product-20261017.md) | TC-MEDIA-PC-PRODUCT-006-P, TC-MEDIA-PC-PRODUCT-006-N | 待测 |
-| REQ-MEDIA-PC-PRODUCT-007 | PC本地播放器 | [TC-opc-product-20261017.md](TC-opc-product-20261017.md) | TC-MEDIA-PC-PRODUCT-007-P, TC-MEDIA-PC-PRODUCT-007-N | 待测 |
+| REQ-MEDIA-PC-PRODUCT-007 | 本地与平台都能播 | [TC-opc-product-20261017.md](TC-opc-product-20261017.md) | TC-MEDIA-PC-PRODUCT-007-P, TC-MEDIA-PC-PRODUCT-007-N | 待测 |
+| REQ-MEDIA-PC-PRODUCT-008 | 片库接口归属 | [TC-opc-product-20261017.md](TC-opc-product-20261017.md) | TC-MEDIA-PC-PRODUCT-008-P, TC-MEDIA-PC-PRODUCT-008-N | 待测 |
 | REQ-MEDIA-PC-COMMON-001 | 自助注册与本地账号 | [TC-opc-common-20261017.md](TC-opc-common-20261017.md) | TC-MEDIA-PC-COMMON-001-P, TC-MEDIA-PC-COMMON-001-N | 待测 |
 | REQ-MEDIA-PC-COMMON-002 | 邮箱与手机验证码 | [TC-opc-common-20261017.md](TC-opc-common-20261017.md) | TC-MEDIA-PC-COMMON-002-P, TC-MEDIA-PC-COMMON-002-N | 待测 |
 | REQ-MEDIA-PC-COMMON-003 | 平台管理权限隔离 | [TC-opc-common-20261017.md](TC-opc-common-20261017.md) | TC-MEDIA-PC-COMMON-003-P, TC-MEDIA-PC-COMMON-003-N | 待测 |
