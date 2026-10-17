@@ -28,6 +28,7 @@ function assertApiPath(apiPath) {
   }
   const allowed = apiPath.startsWith('/api/drama/')
     || apiPath.startsWith('/api/shorts')
+    || apiPath.startsWith('/api/community/videos')
     || apiPath.startsWith('/api/creator/');
   if (!allowed) {
     throw Object.assign(new Error('路径无效'), { code: 'BAD_PATH' });

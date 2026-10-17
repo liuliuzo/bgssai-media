@@ -62,17 +62,20 @@ function renderTrackOptions(status) {
 
 async function refreshStatus() {
   const status = await window.mediaDesktop.status();
+  await window.syncBuiltinPlayer(status);
   const el = document.getElementById('status');
   const list = document.getElementById('playlist');
-  if (status.canDecode === false) {
+  if (status.preparing) {
+    el.textContent = '正在准备视频，可点击停止取消。';
+  } else if (status.canDecode === false) {
     el.textContent = status.decodeStatus || '引擎不可用';
   } else {
-    el.textContent = status.current
-      ? `引擎 ${status.engine} (${status.mode}) - 当前: ${status.current} (位置: ${status.positionSec || 0}s)`
-      : `引擎 ${status.engine || '未定位'} (${status.mode || 'builtin-html5-ffmpeg'}) - 未选择文件`;
+    const name = status.current ? status.current.split(/[\\/]/).pop().split('?')[0] : '';
+    const state = status.playing ? '正在播放' : status.paused ? '已暂停' : status.ready ? '准备就绪' : '未播放';
+    el.textContent = name ? `${name} · ${state} · ${Math.floor(status.positionSec || 0)} 秒` : '选择本地文件或平台作品开始播放';
   }
   renderTrackOptions(status);
-  if (status.lastError) showError(status.lastError);
+  showError(status.lastError);
   list.innerHTML = '';
   (status.playlist || []).forEach((p, i) => {
     const li = document.createElement('li');
@@ -108,9 +111,12 @@ document.getElementById('btn-open').onclick = async () => {
   showError(r);
   await refreshStatus();
 };
-document.getElementById('btn-play').onclick = () => window.mediaDesktop.play();
-document.getElementById('btn-pause').onclick = () => window.mediaDesktop.pause();
-document.getElementById('btn-stop').onclick = () => window.mediaDesktop.stop();
+for (const action of ['play', 'pause', 'stop']) {
+  document.getElementById(`btn-${action}`).onclick = async () => {
+    showError(await window.mediaDesktop[action]());
+    await refreshStatus();
+  };
+}
 document.getElementById('btn-next').onclick = async () => {
   await window.mediaDesktop.next();
   await refreshStatus();

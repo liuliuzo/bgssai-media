@@ -12,6 +12,7 @@
       <div class="brand">BGSSAI Media</div>
       <p class="tagline">PC 播放平台</p>
       <button type="button" class="nav-btn is-active" data-view="player">播放器</button>
+      <button type="button" class="nav-btn" data-view="community">平台作品</button>
       <button type="button" class="nav-btn" data-view="feed">正片</button>
       <button type="button" class="nav-btn" data-view="shorts">短视频</button>
       <button type="button" class="nav-btn" data-view="creator">创作者中心</button>
@@ -28,10 +29,11 @@
     <section id="view-player" class="view">
     <header class="hero">
       <div class="brand">播放器</div>
-      <p class="tagline">参考 VLC，用系统 libVLC 播放主流格式文件。在线地址也从这里播出。</p>
+      <p class="tagline">打开本地文件或平台视频。未安装 VLC 时由内置解码器准备后播放。</p>
     </header>
 
     <section class="panel">
+      <video id="builtin-video" controls hidden style="width:100%;max-height:60vh;background:#000" playsinline></video>
       <div class="actions">
         <button id="btn-open">打开文件</button>
         <button id="btn-play">播放</button>
@@ -39,6 +41,7 @@
         <button id="btn-stop">停止</button>
         <button id="btn-prev">上一首</button>
         <button id="btn-next">下一首</button>
+        <button id="btn-fullscreen">全屏</button>
       </div>
       <div class="controls">
         <label>音量 <input id="volume" type="range" min="0" max="100" value="50" /></label>
@@ -65,7 +68,7 @@
           <button id="btn-seek">Seek</button>
         </label>
       </div>
-      <p id="status" class="status">正在初始化自包含播放引擎 (builtin-html5-ffmpeg / libVLC)。</p>
+      <p id="status" class="status">正在初始化视频播放器。</p>
       <div id="engine-error" class="engine-error" hidden></div>
       <ul id="playlist" class="playlist"></ul>
     </section>
@@ -75,6 +78,20 @@
       <div id="matrix" class="matrix"></div>
       <p class="hint">Web、Android、iOS 在线播放覆盖接口给出的 MP4、WebM 和 HLS。本机主流格式由这个播放器解码。</p>
     </section>
+    </section>
+
+    <section id="view-community" class="view" hidden>
+      <header class="hero"><div class="brand">平台作品</div>
+        <p class="tagline">发现创作者发布的视频，选择清晰度后在线观看。</p></header>
+      <button id="btn-community-refresh" type="button">刷新作品</button>
+      <p id="community-status" class="status" role="status"></p>
+      <div id="community-list" class="cards"></div>
+      <div id="community-playback" class="panel" hidden>
+        <h2 id="community-title"></h2>
+        <p id="community-description"></p>
+        <label>清晰度 <select id="community-quality"></select></label>
+        <button id="btn-community-play" type="button">播放</button>
+      </div>
     </section>
 
     <section id="view-feed" class="view" hidden>
@@ -112,6 +129,7 @@
     </section>
     </div>
   </div>
+  <script src="./builtin-player.js"></script>
   <script src="./renderer.js"></script>
   <script src="./platform.js"></script>
 </body>

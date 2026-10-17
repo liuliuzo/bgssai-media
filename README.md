@@ -13,7 +13,7 @@ GitHub 仓库已从 `bgssai-media` 改名为 `bgssai-media-pc`。旧地址会打
 | [bgssai-media-android](https://github.com/liuliuzo/bgssai-media-android) | Android 原生播放平台 |
 | [bgssai-media-ios](https://github.com/liuliuzo/bgssai-media-ios) | iOS 原生播放平台 |
 
-当前实现边界仍见 [2026-10-06 产品定位与交付核查](docs/review/product-direction-20261006.md)。桌面播放器通过 RC 控制外部 VLC。Web 前端已迁出。Android / iOS 不再使用本仓的 Capacitor WebView 壳。
+历史实现边界见 [2026-10-06 产品定位与交付核查](docs/review/product-direction-20261006.md)。桌面播放器优先使用 VLC，未安装时通过打包的 FFmpeg/FFprobe 实际准备媒体并在桌面窗口播放，见[本轮验证](docs/test/TC-desktop-real-playback-20261017.md)。Web 前端已迁出，Android / iOS 使用独立原生工程。
 
 - **播放器（对照 VLC）**：按格式矩阵验收 MP4、MKV、WebM、MOV、AVI、FLV、WMV、TS、MP3、FLAC、WAV 以及 HLS。Web 与手机在线播放不继承 VLC 的解码范围。
 - **视频播放平台**：正片 / 剧集连播、继续观看，以及 Shorts 竖屏流。用户在 PC 自己的创作者中心发布作品。上游 `bgssai-short` 与 `bgssai-long` 的成片从本仓摄入接口进入目录。
