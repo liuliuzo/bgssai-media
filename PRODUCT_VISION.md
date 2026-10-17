@@ -32,10 +32,10 @@ long  长剧成片  ──┘     → media 入库（PENDING / FAILED / READY）
 
 ## 与兄弟产品边界与闭环协同
 
-- **bgssai-short**：**AI 短剧制作平台**（参考 `waoowaoo`、`Jellyfish`、`ArcReel`、`LocalMiniDrama`、`openframe`、`ZJT`）。成品短剧通过标准契约（`/bgssai/user/media/ingest/short`）直接发布到本平台 YouTube Shorts 竖屏流。
-- **bgssai-long**：**AI 长剧制作平台**（参考 `waoowaoo`、`Jellyfish`、`ArcReel`、`LocalMiniDrama`、`openframe`、`ZJT`）。成品长剧通过标准契约（`/bgssai/user/media/ingest/long`）直接发布到本平台 YouTube 正片 / 剧集流。
-- **bgssai-media**：**播放器 + 视频播放平台**（参考 VLC，对标 YouTube 和 YouTube Shorts）。目标覆盖主流格式。PC、Web、Android、iOS 四个端的用户都通过创作者中心发布作品，并在线观看。short 与 long 成片仍进入本平台目录。当前差距与通过条件见本次核查。
-- **闭环协同**：`bgssai-short` + `bgssai-long` + `bgssai-media` 形成完整的音视频创作、制作、分发、播放闭环，三仓一体化协同迭代。
+- **bgssai-short**：短剧制作平台（参考 `waoowaoo`、`Jellyfish`、`ArcReel`、`LocalMiniDrama`、`openframe`、`ZJT`）。境内应用，调模型走 `bgssai-tokenhub-cn`。成品短剧通过标准契约（`/bgssai/user/media/ingest/short`）进入本平台目录。
+- **bgssai-long**：长剧制作平台（参考同一组项目）。境内应用，调模型走 `bgssai-tokenhub-cn`，不改走境外中枢。成品长剧通过标准契约（`/bgssai/user/media/ingest/long`）进入本平台正片 / 剧集流。
+- **Media 系列**：视频解决方案。本仓是 PC 播放器（参考 VLC，主流格式）加播放平台。`bgssai-media-web`、`bgssai-media-android`、`bgssai-media-ios` 是各端播放平台，对标 YouTube 和 YouTube Shorts。四端用户都通过创作者中心发布作品，并在线观看。
+- **闭环协同**：短剧制作、长剧制作与 Media 四端播放平台一起迭代。制作仓不做播放平台。
 - **bgssai-chat**：中心账号；本仓用户端预留第三方登录，管理端隔离。
 
 ## 非目标（MVP）
