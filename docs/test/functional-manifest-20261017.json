@@ -1,0 +1,1072 @@
+{
+  "schema": 1,
+  "date": "2026-10-17",
+  "repo": "liuliuzo/bgssai-media-pc",
+  "local_repo": "bgssai-media-pc",
+  "baseline": "2b21ee58264ab026aa1b6ca5243501ccdfb98c83",
+  "requirement_file": "docs/feature/opc-requirements-20261017.md",
+  "requirements": [
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-001",
+      "title": "创作者中心发布",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-001-P",
+        "TC-MEDIA-PC-PRODUCT-001-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-002",
+      "title": "正片与剧集播放",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-002-P",
+        "TC-MEDIA-PC-PRODUCT-002-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-003",
+      "title": "Shorts连续播放",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-003-P",
+        "TC-MEDIA-PC-PRODUCT-003-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-004",
+      "title": "作品管理与访问控制",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-004-P",
+        "TC-MEDIA-PC-PRODUCT-004-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-005",
+      "title": "Short与Long交接",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-005-P",
+        "TC-MEDIA-PC-PRODUCT-005-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-006",
+      "title": "平台播放能力矩阵",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-006-P",
+        "TC-MEDIA-PC-PRODUCT-006-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-007",
+      "title": "PC本地播放器",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-007-P",
+        "TC-MEDIA-PC-PRODUCT-007-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-001",
+      "title": "自助注册与本地账号",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-001-P",
+        "TC-MEDIA-PC-COMMON-001-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-002",
+      "title": "邮箱与手机验证码",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-002-P",
+        "TC-MEDIA-PC-COMMON-002-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-003",
+      "title": "平台管理权限隔离",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-003-P",
+        "TC-MEDIA-PC-COMMON-003-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-004",
+      "title": "第三方授权独立会话",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-004-P",
+        "TC-MEDIA-PC-COMMON-004-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-005",
+      "title": "数据归属与失效会话",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-005-P",
+        "TC-MEDIA-PC-COMMON-005-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-006",
+      "title": "微信区域登录",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-006-P",
+        "TC-MEDIA-PC-COMMON-006-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-007",
+      "title": "抖音区域登录",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-007-P",
+        "TC-MEDIA-PC-COMMON-007-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-008",
+      "title": "百度区域登录",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-008-P",
+        "TC-MEDIA-PC-COMMON-008-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-009",
+      "title": "支付宝区域登录",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-009-P",
+        "TC-MEDIA-PC-COMMON-009-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-010",
+      "title": "同区模型原生能力",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-010-P",
+        "TC-MEDIA-PC-COMMON-010-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-011",
+      "title": "无感选模与倍率",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-011-P",
+        "TC-MEDIA-PC-COMMON-011-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-012",
+      "title": "额度与用量可追溯",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-012-P",
+        "TC-MEDIA-PC-COMMON-012-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-013",
+      "title": "语言与真实状态",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-013-P",
+        "TC-MEDIA-PC-COMMON-013-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-014",
+      "title": "Bot下载与安装信息",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-014-P",
+        "TC-MEDIA-PC-COMMON-014-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-015",
+      "title": "Bot最小授权托管",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-015-P",
+        "TC-MEDIA-PC-COMMON-015-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PLATFORM-001",
+      "title": "Windows核心交付",
+      "cases": [
+        "TC-MEDIA-PC-PLATFORM-001-P",
+        "TC-MEDIA-PC-PLATFORM-001-N"
+      ],
+      "file": "docs/test/TC-opc-platform-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PLATFORM-002",
+      "title": "macOS核心交付",
+      "cases": [
+        "TC-MEDIA-PC-PLATFORM-002-P",
+        "TC-MEDIA-PC-PLATFORM-002-N"
+      ],
+      "file": "docs/test/TC-opc-platform-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PLATFORM-003",
+      "title": "Linux核心交付",
+      "cases": [
+        "TC-MEDIA-PC-PLATFORM-003-P",
+        "TC-MEDIA-PC-PLATFORM-003-N"
+      ],
+      "file": "docs/test/TC-opc-platform-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-REGRESSION-001",
+      "title": "单会话失效",
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-001-P",
+        "TC-MEDIA-PC-REGRESSION-001-N"
+      ],
+      "file": "docs/test/TC-feature-gaps-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-REGRESSION-002",
+      "title": "登录页单一入口",
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-002-P",
+        "TC-MEDIA-PC-REGRESSION-002-N"
+      ],
+      "file": "docs/test/TC-feature-gaps-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-REGRESSION-003",
+      "title": "法律入口去重",
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-003-P",
+        "TC-MEDIA-PC-REGRESSION-003-N"
+      ],
+      "file": "docs/test/TC-feature-gaps-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-REGRESSION-004",
+      "title": "动态效果与可访问性",
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-004-P",
+        "TC-MEDIA-PC-REGRESSION-004-N"
+      ],
+      "file": "docs/test/TC-feature-gaps-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-REGRESSION-005",
+      "title": "在线客服与工单入口",
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-005-P",
+        "TC-MEDIA-PC-REGRESSION-005-N"
+      ],
+      "file": "docs/test/TC-feature-gaps-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-REGRESSION-006",
+      "title": "片库就绪与格式路由",
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-006-P",
+        "TC-MEDIA-PC-REGRESSION-006-N"
+      ],
+      "file": "docs/test/TC-feature-gaps-20261017.md"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-001-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-001",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-001-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-001",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-002-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-002",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-002-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-002",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-003-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-003",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-003-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-003",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-004-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-004",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-004-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-004",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-005-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-005",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-005-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-005",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-006-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-006",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-006-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-006",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-007-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-007",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-007-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-007",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-001-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-001",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-001-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-001",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-002-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-002",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-002-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-002",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-003-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-003",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-003-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-003",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-004-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-004",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-004-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-004",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-005-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-005",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-005-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-005",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-006-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-006",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-006-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-006",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-007-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-007",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-007-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-007",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-008-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-008",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-008-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-008",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-009-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-009",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-009-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-009",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-010-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-010",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-010-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-010",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-011-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-011",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-011-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-011",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-012-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-012",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-012-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-012",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-013-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-013",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-013-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-013",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-014-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-014",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-014-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-014",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-015-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-015",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-015-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-015",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PLATFORM-001-P",
+      "requirement": "REQ-MEDIA-PC-PLATFORM-001",
+      "file": "TC-opc-platform-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PLATFORM-001-N",
+      "requirement": "REQ-MEDIA-PC-PLATFORM-001",
+      "file": "TC-opc-platform-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PLATFORM-002-P",
+      "requirement": "REQ-MEDIA-PC-PLATFORM-002",
+      "file": "TC-opc-platform-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PLATFORM-002-N",
+      "requirement": "REQ-MEDIA-PC-PLATFORM-002",
+      "file": "TC-opc-platform-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PLATFORM-003-P",
+      "requirement": "REQ-MEDIA-PC-PLATFORM-003",
+      "file": "TC-opc-platform-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PLATFORM-003-N",
+      "requirement": "REQ-MEDIA-PC-PLATFORM-003",
+      "file": "TC-opc-platform-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-001-P",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-001",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-001-N",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-001",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-002-P",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-002",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-002-N",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-002",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-003-P",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-003",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-003-N",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-003",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-004-P",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-004",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-004-N",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-004",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-005-P",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-005",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-005-N",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-005",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-006-P",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-006",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-REGRESSION-006-N",
+      "requirement": "REQ-MEDIA-PC-REGRESSION-006",
+      "file": "TC-feature-gaps-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    }
+  ],
+  "coverage": [
+    {
+      "source": "docs/feature/account-entry-20260924.md",
+      "title": "账号入口与密码口径",
+      "classification": "专项或共同契约用例",
+      "legacy": [],
+      "requirements": [
+        "REQ-MEDIA-PC-REGRESSION-002"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-002-P",
+        "TC-MEDIA-PC-REGRESSION-002-N"
+      ]
+    },
+    {
+      "source": "docs/feature/bot-download-entry.md",
+      "title": "Bot 下载入口体验",
+      "classification": "专项或共同契约用例",
+      "legacy": [],
+      "requirements": [
+        "REQ-MEDIA-PC-COMMON-014"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-COMMON-014-P",
+        "TC-MEDIA-PC-COMMON-014-N"
+      ]
+    },
+    {
+      "source": "docs/feature/bot-mobile-downloads.md",
+      "title": "Bot 全平台安装包识别修复",
+      "classification": "专项或共同契约用例",
+      "legacy": [
+        "docs/review/test-cases/TC-bot-mobile-downloads.md"
+      ],
+      "requirements": [
+        "REQ-MEDIA-PC-COMMON-014"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-COMMON-014-P",
+        "TC-MEDIA-PC-COMMON-014-N"
+      ]
+    },
+    {
+      "source": "docs/feature/chat-oauth-prep.md",
+      "title": "Chat third-party login (user PREP)",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-chat-oauth-prep.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/format-matrix.md",
+      "title": "格式支持矩阵",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-format-matrix.md",
+        "docs/review/test-cases/TC-player.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/legal-entry-dedup.md",
+      "title": "协议入口去重（2026-09-29）",
+      "classification": "专项或共同契约用例",
+      "legacy": [],
+      "requirements": [
+        "REQ-MEDIA-PC-REGRESSION-003"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-003-P",
+        "TC-MEDIA-PC-REGRESSION-003-N"
+      ]
+    },
+    {
+      "source": "docs/feature/legal-fan-out.md",
+      "title": "法务外链（官网权威页 fan-out）",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-legal-fan-out.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/login-page-cleanup-20260926.md",
+      "title": "用户登录页整理（2026-09-26）",
+      "classification": "专项或共同契约用例",
+      "legacy": [],
+      "requirements": [
+        "REQ-MEDIA-PC-REGRESSION-002"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-002-P",
+        "TC-MEDIA-PC-REGRESSION-002-N"
+      ]
+    },
+    {
+      "source": "docs/feature/mcp.md",
+      "title": "MCP 连接器（对照 blog）",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-mcp.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/media-01-commercial-gate.md",
+      "title": "MEDIA-01 Commercial Gate — Short-drama playback intake",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-media-01-commercial-gate.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/media-02-long-contract.md",
+      "title": "MEDIA-02 — Long contract + SourceRefs",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-media-02-long-contract.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/MOBILE-IN-BOT-SHELL.md",
+      "title": "USER 前端：Bot 壳内窄栏触控布局（MVP）",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-MOBILE-IN-BOT-SHELL.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/otp-entry-20260924.md",
+      "title": "验证码登录即注册",
+      "classification": "专项或共同契约用例",
+      "legacy": [],
+      "requirements": [
+        "REQ-MEDIA-PC-REGRESSION-002"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-002-P",
+        "TC-MEDIA-PC-REGRESSION-002-N"
+      ]
+    },
+    {
+      "source": "docs/feature/p0-5-ingest-library.md",
+      "title": "P0-5 media: format table, library, idempotent publish",
+      "classification": "专项或共同契约用例",
+      "legacy": [],
+      "requirements": [
+        "REQ-MEDIA-PC-REGRESSION-006"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-006-P",
+        "TC-MEDIA-PC-REGRESSION-006-N"
+      ]
+    },
+    {
+      "source": "docs/feature/player.md",
+      "title": "功能：播放器",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-player.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/product-motion.md",
+      "title": "用户端动态视觉（2026-09-25）",
+      "classification": "专项或共同契约用例",
+      "legacy": [],
+      "requirements": [
+        "REQ-MEDIA-PC-REGRESSION-004"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-004-P",
+        "TC-MEDIA-PC-REGRESSION-004-N"
+      ]
+    },
+    {
+      "source": "docs/feature/README.md",
+      "title": "功能需求",
+      "classification": "索引或模板，不作为独立业务功能",
+      "legacy": [],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/short-drama-ingest.md",
+      "title": "Short drama ingest (shared contract)",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-short-drama-ingest.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/short-drama.md",
+      "title": "功能：短剧平台（MVP）",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-short-drama.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/single-session-20260924.md",
+      "title": "单账号当前会话",
+      "classification": "专项或共同契约用例",
+      "legacy": [],
+      "requirements": [
+        "REQ-MEDIA-PC-REGRESSION-001"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-001-P",
+        "TC-MEDIA-PC-REGRESSION-001-N"
+      ]
+    },
+    {
+      "source": "docs/feature/six-platform-clients.md",
+      "title": "BGSSAI Media 六端客户端",
+      "classification": "历史套件保留",
+      "legacy": [
+        "docs/review/test-cases/TC-six-platform-clients.md"
+      ],
+      "requirements": [],
+      "cases": []
+    },
+    {
+      "source": "docs/feature/support-messaging.md",
+      "title": "站内在线客服（聊优先 + 聊中提工单）",
+      "classification": "专项或共同契约用例",
+      "legacy": [
+        "docs/review/test-cases/TC-support-messaging.md"
+      ],
+      "requirements": [
+        "REQ-MEDIA-PC-REGRESSION-005"
+      ],
+      "cases": [
+        "TC-MEDIA-PC-REGRESSION-005-P",
+        "TC-MEDIA-PC-REGRESSION-005-N"
+      ]
+    }
+  ],
+  "historical_suites": [
+    {
+      "path": "docs/review/test-cases/TC-bot-mobile-downloads.md",
+      "sha256": "e50ed5c5258f77d99d2d160c11dc5b538eda6e5c5bfe49ca6471893be4d38761"
+    },
+    {
+      "path": "docs/review/test-cases/TC-chat-oauth-prep.md",
+      "sha256": "555a1124a42789b0907d8fb4961ae9fe16d667104b7505a092042a2af4745e7c"
+    },
+    {
+      "path": "docs/review/test-cases/TC-format-matrix.md",
+      "sha256": "b68ee7ca0eb463cfe0b6c5f9057a1c48085d06aa8aab4943ec242d55078a7d56"
+    },
+    {
+      "path": "docs/review/test-cases/TC-legal-fan-out.md",
+      "sha256": "49c1fec430bbc988c3ddacb5d2b1744163ff176ae5c358608db5088a5a001596"
+    },
+    {
+      "path": "docs/review/test-cases/TC-mcp.md",
+      "sha256": "deda08dfab891b7d1f18fbb329cda388c69df48319456d61cc0b37c811c2bf89"
+    },
+    {
+      "path": "docs/review/test-cases/TC-media-01-commercial-gate.md",
+      "sha256": "443da388479b714375920cc3641e526cee6e9301778e4226ae25ff222b10b708"
+    },
+    {
+      "path": "docs/review/test-cases/TC-media-02-long-contract.md",
+      "sha256": "271399b3c70631bc5ef211d6206ad2666dcaf3296cc2beaadf98d7f05094df3c"
+    },
+    {
+      "path": "docs/review/test-cases/TC-MOBILE-IN-BOT-SHELL.md",
+      "sha256": "c17cf5e9fb693e15900a9fb2c4ac2c50e6d520864c9051a73ca2823d3c7f13ae"
+    },
+    {
+      "path": "docs/review/test-cases/TC-player.md",
+      "sha256": "9145d5f7fcbdaa134d31f7b7d6c2d6d3e6c569e5ec0078d489e6cbb6d75ea5fd"
+    },
+    {
+      "path": "docs/review/test-cases/TC-short-drama-ingest.md",
+      "sha256": "efe39e0d4f5815ed9604c82d7713b7868598050d2c38256a40235074df0bc907"
+    },
+    {
+      "path": "docs/review/test-cases/TC-short-drama.md",
+      "sha256": "b006ff34b91d7fb22a69b6cde84cd62f5885ca79080f103d2076a25946cbc86f"
+    },
+    {
+      "path": "docs/review/test-cases/TC-six-platform-clients.md",
+      "sha256": "ff47189781acb52b3be3f6991e39c92da74fd5d2a58251b546a963f2226021f1"
+    },
+    {
+      "path": "docs/review/test-cases/TC-support-messaging.md",
+      "sha256": "f7ab5a630590866e98b592350fa6a458a0e8a304321b7e8eaa4f8099df7643e7"
+    }
+  ],
+  "progress": {
+    "待测": 62,
+    "通过": 0,
+    "失败": 0,
+    "阻塞": 0,
+    "不适用": 0
+  },
+  "suite_counts": {
+    "TC-feature-gaps-20261017.md": {
+      "待测": 12,
+      "通过": 0,
+      "失败": 0,
+      "阻塞": 0,
+      "不适用": 0
+    },
+    "TC-opc-common-20261017.md": {
+      "待测": 30,
+      "通过": 0,
+      "失败": 0,
+      "阻塞": 0,
+      "不适用": 0
+    },
+    "TC-opc-platform-20261017.md": {
+      "待测": 6,
+      "通过": 0,
+      "失败": 0,
+      "阻塞": 0,
+      "不适用": 0
+    },
+    "TC-opc-product-20261017.md": {
+      "待测": 14,
+      "通过": 0,
+      "失败": 0,
+      "阻塞": 0,
+      "不适用": 0
+    }
+  },
+  "design_only": true
+}

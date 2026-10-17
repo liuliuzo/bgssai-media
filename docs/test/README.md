@@ -20,3 +20,22 @@
 ## 既有案例
 
 2026-10-15 之前写成的案例仍在 [docs/review/test-cases](../review/test-cases/README.md)，起草进度见 [STATUS.md](../review/test-cases/STATUS.md)。那些文件留在原处。此后新增的案例和执行进度记在本目录。
+
+<!-- OPC-20261017 START -->
+## 2026-10-17 规划补充与功能用例
+
+[需求](../feature/opc-requirements-20261017.md) · [逐需求矩阵](TRACEABILITY-20261017.md) · [存量覆盖索引](REQUIREMENT-COVERAGE.md)
+
+本轮新增31条可验收需求、62条用例；均为待测。历史测试不因本次补充改变结果。
+
+- [TC-opc-product-20261017.md](TC-opc-product-20261017.md)
+- [TC-opc-common-20261017.md](TC-opc-common-20261017.md)
+- [TC-opc-platform-20261017.md](TC-opc-platform-20261017.md)
+- [TC-feature-gaps-20261017.md](TC-feature-gaps-20261017.md)
+<!-- OPC-20261017 END -->
+
+<!-- OPC-VALIDATION-20261017 START -->
+## 覆盖与统计校验
+
+机器可读清单：[functional-manifest-20261017.json](functional-manifest-20261017.json)。管理仓 `scripts/validate-functional-docs.py --repo <本仓路径>` 检查需求/用例ID、正反例、状态、链接、覆盖及历史套件指纹；实际运行测试证据另行填写。
+<!-- OPC-VALIDATION-20261017 END -->
