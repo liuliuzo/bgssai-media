@@ -120,6 +120,8 @@ ipcMain.handle('player:setRate', guarded(async (_evt, rate) => {
   return player.setRate(rate);
 }));
 
+ipcMain.handle('player:fullscreen', guarded(async () => player.fullscreen()));
+
 ipcMain.handle('player:selectAudioTrack', guarded(async (_evt, trackIndex) => {
   return player.selectAudioTrack(trackIndex);
 }));
@@ -135,6 +137,10 @@ ipcMain.handle('player:tracks', guarded(async () => {
 ipcMain.handle('player:status', guarded(async () => {
   return player.getStatus();
 }));
+
+ipcMain.handle('player:report', (_evt, report) => {
+  if (report && typeof report === 'object') player.reportPlayback(report);
+});
 
 ipcMain.handle('player:matrix', guarded(async () => {
   return require('../shared/format-matrix.json');

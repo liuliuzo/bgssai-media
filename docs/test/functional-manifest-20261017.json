@@ -62,7 +62,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-007",
-      "title": "PC本地播放器",
+      "title": "本地与平台都能播",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-007-P",
         "TC-MEDIA-PC-PRODUCT-007-N"
@@ -71,7 +71,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-008",
-      "title": "频道与订阅",
+      "title": "片库接口归属",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-008-P",
         "TC-MEDIA-PC-PRODUCT-008-N"
@@ -80,7 +80,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-009",
-      "title": "点赞评论与分享",
+      "title": "频道与订阅",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-009-P",
         "TC-MEDIA-PC-PRODUCT-009-N"
@@ -89,7 +89,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-010",
-      "title": "搜索与首页推荐",
+      "title": "点赞评论与分享",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-010-P",
         "TC-MEDIA-PC-PRODUCT-010-N"
@@ -98,7 +98,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-011",
-      "title": "观看历史与播放列表",
+      "title": "搜索与首页推荐",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-011-P",
         "TC-MEDIA-PC-PRODUCT-011-N"
@@ -107,7 +107,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-012",
-      "title": "播放控制与清晰度字幕",
+      "title": "观看历史与播放列表",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-012-P",
         "TC-MEDIA-PC-PRODUCT-012-N"
@@ -116,7 +116,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-013",
-      "title": "创作者数据分析",
+      "title": "播放控制与清晰度字幕",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-013-P",
         "TC-MEDIA-PC-PRODUCT-013-N"
@@ -125,7 +125,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-014",
-      "title": "内容审核与举报",
+      "title": "创作者数据分析",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-014-P",
         "TC-MEDIA-PC-PRODUCT-014-N"
@@ -134,7 +134,7 @@
     },
     {
       "id": "REQ-MEDIA-PC-PRODUCT-015",
-      "title": "本地与平台一体播放",
+      "title": "内容审核与举报",
       "cases": [
         "TC-MEDIA-PC-PRODUCT-015-P",
         "TC-MEDIA-PC-PRODUCT-015-N"
@@ -1338,6 +1338,13 @@
     "不适用": 0
   },
   "suite_counts": {
+    "TC-desktop-real-playback-20261017.md": {
+      "待测": 0,
+      "通过": 0,
+      "失败": 0,
+      "阻塞": 0,
+      "不适用": 0
+    },
     "TC-feature-gaps-20261017.md": {
       "待测": 12,
       "通过": 0,

@@ -47,3 +47,14 @@ test('requestJson sends Jwttoken and rejects unknown paths', async () => {
     apiPath: '/api/auth/login',
   }), /路径无效/);
 });
+
+test('platform creator discovery uses the shared community API with a user session', async () => {
+  let request;
+  const result = await api.requestJson(async (url, init) => {
+    request = { url, init };
+    return { text: async () => JSON.stringify({ success: true, result: [{ id: 12, title: '作品' }] }) };
+  }, { base: 'https://media.example', token: 'viewer-session', apiPath: '/api/community/videos' });
+  assert.equal(result[0].id, 12);
+  assert.equal(request.url, 'https://media.example/api/community/videos');
+  assert.equal(request.init.headers.Jwttoken, 'viewer-session');
+});

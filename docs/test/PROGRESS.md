@@ -8,6 +8,7 @@
 
 | 套件 | 待测 | 通过 | 失败 | 阻塞 | 不适用 |
 | --- | --- | --- | --- | --- | --- |
+| [TC-desktop-real-playback-20261017.md](TC-desktop-real-playback-20261017.md) | 0 | 0 | 0 | 0 | 0 |
 | [TC-feature-gaps-20261017.md](TC-feature-gaps-20261017.md) | 12 | 0 | 0 | 0 | 0 |
 | [TC-opc-common-20261017.md](TC-opc-common-20261017.md) | 38 | 0 | 0 | 0 | 0 |
 | [TC-opc-platform-20261017.md](TC-opc-platform-20261017.md) | 6 | 0 | 0 | 0 | 0 |
