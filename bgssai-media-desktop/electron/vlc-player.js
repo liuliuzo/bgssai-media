@@ -3,6 +3,8 @@
 const { spawn } = require('child_process');
 const net = require('net');
 const path = require('path');
+const { pathToFileURL } = require('node:url');
+const { BuiltinMedia } = require('./builtin-media');
 const { locateVlc, headlessArgs, VlcNotFoundError } = require('./vlc-locator');
 
 const ENGINE_MODE_VLC = 'libvlc-rc';
@@ -24,8 +26,7 @@ const TRANSCODE_CONTAINERS = new Set([
  *   2. Built-in self-contained HTML5 + FFmpeg remux/transcode media pipeline
  *      (mode: 'builtin-html5-ffmpeg', vlcAvailable: false) when host VLC is not installed.
  *
- * Clean machines without external VLC can open, play, pause/resume, seek, stop, and switch
- * audio/subtitle tracks across the full format matrix without failing.
+ * The fallback prepares real media with FFmpeg and uses actual renderer playback events.
  */
 class VlcPlayer {
   /**
@@ -34,7 +35,7 @@ class VlcPlayer {
    * @param {string} [opts.ffmpegBinary]  FFmpeg binary override for builtin-html5-ffmpeg pipeline
    * @param {Function} [opts.spawn]       injection for tests
    * @param {Function} [opts.locate]      injection for tests
-   * @param {Function} [opts.probeMedia]  injection for tests
+   * @param {object} [opts.builtin]       decoder injection for lifecycle tests
    */
   constructor(opts = {}) {
     this.proc = null;
@@ -57,13 +58,18 @@ class VlcPlayer {
     this.ffmpegBinary = opts.ffmpegBinary || process.env.BGSSAI_FFMPEG_PATH || 'ffmpeg';
     this.spawnImpl = opts.spawn || spawn;
     this.locateImpl = opts.locate || locateVlc;
-    this.probeMediaImpl = opts.probeMedia || null;
     this.audioTracks = [];
     this.subtitleTracks = [];
     this.selectedAudioTrack = 0;
     this.selectedSubtitleTrack = -1;
     this.currentSession = null;
     this.sessionCounter = 0;
+    this.builtin = opts.builtin || new BuiltinMedia({ ffmpeg: opts.ffmpegBinary, ffprobe: opts.ffprobeBinary });
+    this.preparing = false;
+    this.desiredPlaying = false;
+    this.commandVersion = 0;
+    this.seekVersion = 0;
+    this.prepareVersion = 0;
   }
 
   /**
@@ -97,7 +103,7 @@ class VlcPlayer {
         this.mode = ENGINE_MODE_BUILTIN;
         this.engine = {
           mode: ENGINE_MODE_BUILTIN,
-          binary: this.ffmpegBinary,
+          binary: this.builtin.ffmpeg || this.ffmpegBinary,
           source: 'builtin-html5-ffmpeg',
           vlcAvailable: false,
         };
@@ -107,7 +113,7 @@ class VlcPlayer {
           code: 'BUILTIN_ENGINE_READY',
           mode: ENGINE_MODE_BUILTIN,
           vlcAvailable: false,
-          binary: this.ffmpegBinary,
+          binary: this.builtin.ffmpeg || this.ffmpegBinary,
           source: 'builtin-html5-ffmpeg',
           searched: err.searched,
           fallbackReason: err.message,
@@ -117,107 +123,29 @@ class VlcPlayer {
     }
   }
 
-  /**
-   * Probe container, codec, and embedded audio/subtitle stream metadata for a media file.
-   */
-  probeMedia(filePath) {
-    const resolved = filePath && !String(filePath).includes('://')
-      ? path.resolve(String(filePath))
-      : String(filePath || '');
-    const ext = path.extname(resolved.split('?')[0]).toLowerCase();
-    const container = ext.replace(/^\./, '') || 'unknown';
-    const needsTranscode = TRANSCODE_CONTAINERS.has(ext) || !DIRECT_HTML5_EXTENSIONS.has(ext);
-    const strategy = needsTranscode ? 'ffmpeg-remux-transcode' : 'html5-direct-or-ffmpeg';
-
-    if (typeof this.probeMediaImpl === 'function') {
-      const custom = this.probeMediaImpl(resolved) || {};
-      return {
-        inputPath: resolved,
-        extension: ext,
-        container: custom.container || container,
-        needsTranscode: custom.needsTranscode !== undefined ? Boolean(custom.needsTranscode) : needsTranscode,
-        strategy: custom.strategy || strategy,
-        durationSec: Number(custom.durationSec) || 0,
-        audioTracks: Array.isArray(custom.audioTracks) ? custom.audioTracks : this._defaultAudioTracks(),
-        subtitleTracks: Array.isArray(custom.subtitleTracks) ? custom.subtitleTracks : this._defaultSubtitleTracks(),
-      };
+  async _startBuiltinSession(inputPath, overrides = {}) {
+    const version = ++this.prepareVersion;
+    this.preparing = true;
+    this.ready = false;
+    this.playing = false;
+    this.currentSession = null;
+    this.lastError = null;
+    this.audioTracks = [];
+    this.subtitleTracks = [];
+    let mediaInfo;
+    try {
+      mediaInfo = await this.builtin.prepare(inputPath, {
+        audioTrack: overrides.audioTrack ?? this.selectedAudioTrack,
+        subtitleTrack: overrides.subtitleTrack ?? this.selectedSubtitleTrack,
+      });
+    } catch (err) {
+      if (version === this.prepareVersion) {
+        this.preparing = false;
+        this.lastError = { ok: false, code: err.code || 'MEDIA_DECODE_FAILED', message: err.message };
+      }
+      throw err;
     }
-
-    return {
-      inputPath: resolved,
-      extension: ext,
-      container,
-      needsTranscode,
-      strategy,
-      durationSec: 0,
-      audioTracks: this._defaultAudioTracks(),
-      subtitleTracks: this._defaultSubtitleTracks(),
-    };
-  }
-
-  _defaultAudioTracks() {
-    return [
-      { index: 0, id: 'a0', codec: 'aac', lang: 'und', label: 'Track 1 (Default)', default: true },
-      { index: 1, id: 'a1', codec: 'ac3', lang: 'en', label: 'Track 2 (Secondary)', default: false },
-    ];
-  }
-
-  _defaultSubtitleTracks() {
-    return [
-      { index: 0, id: 's0', codec: 'webvtt', lang: 'zh', label: 'Chinese' },
-      { index: 1, id: 's1', codec: 'webvtt', lang: 'en', label: 'English' },
-    ];
-  }
-
-  /**
-   * Build deterministic FFmpeg CLI arguments for fragmented-MP4 remux/transcode streaming
-   * with seek offset and audio track mapping.
-   */
-  buildTranscodeArgs(opts = {}) {
-    const inputPath = String(opts.inputPath || '');
-    const seekSec = Math.max(0, Number(opts.seekSec) || 0);
-    const audioTrack = Math.max(0, Number.isFinite(Number(opts.audioTrack)) ? Number(opts.audioTrack) : 0);
-    const videoCodec = opts.videoCodec || 'libx264';
-    const audioCodec = opts.audioCodec || 'aac';
-
-    const args = ['-hide_banner', '-loglevel', 'error'];
-    if (seekSec > 0) {
-      args.push('-ss', String(seekSec));
-    }
-    args.push(
-      '-i', inputPath,
-      '-map', '0:v:0?',
-      '-map', `0:a:${audioTrack}?`,
-      '-c:v', videoCodec,
-      '-preset', 'veryfast',
-      '-pix_fmt', 'yuv420p',
-      '-c:a', audioCodec,
-      '-b:a', '192k',
-      '-f', 'mp4',
-      '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
-      'pipe:1'
-    );
-    return args;
-  }
-
-  /**
-   * Build deterministic FFmpeg CLI arguments to extract an embedded subtitle stream to WebVTT.
-   */
-  buildSubtitleExtractArgs(inputPath, subtitleTrack = 0) {
-    const sIdx = Math.max(0, Number.isFinite(Number(subtitleTrack)) ? Number(subtitleTrack) : 0);
-    return [
-      '-hide_banner',
-      '-loglevel', 'error',
-      '-i', String(inputPath || ''),
-      '-map', `0:s:${sIdx}`,
-      '-c:s', 'webvtt',
-      '-f', 'webvtt',
-      'pipe:1',
-    ];
-  }
-
-  _startBuiltinSession(inputPath, overrides = {}) {
-    const mediaInfo = this.probeMedia(inputPath);
+    if (version !== this.prepareVersion) throw Object.assign(new Error('播放准备已取消'), { code: 'PLAYBACK_CANCELED' });
     this.audioTracks = mediaInfo.audioTracks;
     this.subtitleTracks = mediaInfo.subtitleTracks;
 
@@ -235,15 +163,6 @@ class VlcPlayer {
     this.selectedAudioTrack = audioTrack;
     this.selectedSubtitleTrack = subtitleTrack;
 
-    const transcodeArgs = this.buildTranscodeArgs({
-      inputPath: mediaInfo.inputPath,
-      seekSec,
-      audioTrack,
-    });
-    const subtitleExtractArgs = subtitleTrack >= 0
-      ? this.buildSubtitleExtractArgs(mediaInfo.inputPath, subtitleTrack)
-      : null;
-
     this.sessionCounter += 1;
     this.currentSession = {
       sessionId: `session-${this.sessionCounter}`,
@@ -256,14 +175,18 @@ class VlcPlayer {
       seekSec,
       audioTrack,
       subtitleTrack,
-      transcodeArgs,
-      subtitleExtractArgs,
+      playbackUrl: mediaInfo.playbackUrl,
+      subtitleUrl: mediaInfo.subtitleUrl,
+      durationSec: mediaInfo.durationSec,
       audioTracks: this.audioTracks,
       subtitleTracks: this.subtitleTracks,
       startedAt: Date.now(),
     };
     this.ready = true;
-    this.playing = true;
+    this.preparing = false;
+    this.desiredPlaying = true;
+    this.commandVersion += 1;
+    this.playing = false;
     this.paused = false;
     return this.currentSession;
   }
@@ -357,7 +280,7 @@ class VlcPlayer {
     await this.ensureStarted();
     if (this.mode === ENGINE_MODE_BUILTIN) {
       if (this.playlist.length > 0) {
-        this._startBuiltinSession(this.playlist[0], {
+        await this._startBuiltinSession(this.playlist[0], {
           seekSec: 0,
           audioTrack: 0,
           subtitleTrack: -1,
@@ -367,7 +290,8 @@ class VlcPlayer {
     }
     await this.send('clear');
     for (const p of this.playlist) {
-      const uri = p.includes('://') ? p : `file://${p}`;
+      if (/[\r\n]/.test(p)) throw Object.assign(new Error('媒体路径包含无效换行'), { code: 'INVALID_MEDIA_PATH' });
+      const uri = p.includes('://') ? p : pathToFileURL(p).href;
       await this.send(`add ${uri}`);
     }
     await this.send('play');
@@ -380,14 +304,14 @@ class VlcPlayer {
     await this.ensureStarted();
     if (this.mode === ENGINE_MODE_BUILTIN) {
       if (this.playlist.length > 0 && !this.currentSession) {
-        this._startBuiltinSession(this.playlist[this.index], {
+        await this._startBuiltinSession(this.playlist[this.index], {
           seekSec: this.positionSec,
           audioTrack: this.selectedAudioTrack,
           subtitleTrack: this.selectedSubtitleTrack,
         });
       } else {
-        this.playing = true;
-        this.paused = false;
+        this.desiredPlaying = true;
+        this.commandVersion += 1;
       }
       return this.getStatus();
     }
@@ -399,8 +323,8 @@ class VlcPlayer {
 
   async pause() {
     if (this.mode === ENGINE_MODE_BUILTIN) {
-      this.paused = true;
-      this.playing = false;
+      this.desiredPlaying = false;
+      this.commandVersion += 1;
       return this.getStatus();
     }
     await this.send('pause');
@@ -412,8 +336,8 @@ class VlcPlayer {
   async resume() {
     await this.ensureStarted();
     if (this.mode === ENGINE_MODE_BUILTIN) {
-      this.paused = false;
-      this.playing = true;
+      this.desiredPlaying = true;
+      this.commandVersion += 1;
       return this.getStatus();
     }
     await this.send('play');
@@ -424,6 +348,13 @@ class VlcPlayer {
 
   async stop() {
     if (this.mode === ENGINE_MODE_BUILTIN) {
+      this.prepareVersion += 1;
+      await this.builtin.cancel();
+      this.preparing = false;
+      this.desiredPlaying = false;
+      this.currentSession = null;
+      this.ready = false;
+      await this.builtin.cleanup();
       this.playing = false;
       this.paused = false;
       this.positionSec = 0;
@@ -449,10 +380,10 @@ class VlcPlayer {
     this.positionSec = 0;
     if (this.mode === ENGINE_MODE_BUILTIN) {
       if (this.playlist[this.index]) {
-        this._startBuiltinSession(this.playlist[this.index], {
+        await this._startBuiltinSession(this.playlist[this.index], {
           seekSec: 0,
-          audioTrack: this.selectedAudioTrack,
-          subtitleTrack: this.selectedSubtitleTrack,
+          audioTrack: 0,
+          subtitleTrack: -1,
         });
       }
       return this.getStatus();
@@ -466,10 +397,10 @@ class VlcPlayer {
     this.positionSec = 0;
     if (this.mode === ENGINE_MODE_BUILTIN) {
       if (this.playlist[this.index]) {
-        this._startBuiltinSession(this.playlist[this.index], {
+        await this._startBuiltinSession(this.playlist[this.index], {
           seekSec: 0,
-          audioTrack: this.selectedAudioTrack,
-          subtitleTrack: this.selectedSubtitleTrack,
+          audioTrack: 0,
+          subtitleTrack: -1,
         });
       }
       return this.getStatus();
@@ -482,13 +413,9 @@ class VlcPlayer {
     const sec = Math.max(0, Number(seconds) || 0);
     this.positionSec = sec;
     if (this.mode === ENGINE_MODE_BUILTIN) {
-      if (this.playlist[this.index]) {
-        this._startBuiltinSession(this.playlist[this.index], {
-          seekSec: sec,
-          audioTrack: this.selectedAudioTrack,
-          subtitleTrack: this.selectedSubtitleTrack,
-        });
-      }
+      this.commandVersion += 1;
+      this.seekVersion += 1;
+      if (this.currentSession) this.currentSession.seekSec = sec;
       return { ok: true, positionSec: sec, session: this.currentSession };
     }
     await this.send(`seek ${sec}`);
@@ -499,6 +426,7 @@ class VlcPlayer {
     const clamped = Math.max(0, Math.min(100, Number(volume) || 0));
     this.volume = clamped;
     if (this.mode === ENGINE_MODE_BUILTIN) {
+      this.commandVersion += 1;
       return { ok: true, volume: clamped };
     }
     const v = Math.round(clamped * 4);
@@ -507,13 +435,19 @@ class VlcPlayer {
   }
 
   async setRate(rate) {
-    const r = Number(rate) || 1;
+    const r = Math.max(0.25, Math.min(4, Number(rate) || 1));
     this.rate = r;
     if (this.mode === ENGINE_MODE_BUILTIN) {
+      this.commandVersion += 1;
       return { ok: true, rate: r };
     }
     await this.send(`rate ${r}`);
     return { ok: true, rate: r };
+  }
+
+  async fullscreen() {
+    if (this.mode === ENGINE_MODE_VLC) await this.send('fullscreen');
+    return { ok: true };
   }
 
   async selectAudioTrack(trackIndex) {
@@ -524,7 +458,7 @@ class VlcPlayer {
       throw err;
     }
     await this.ensureStarted();
-    if (this.audioTracks.length > 0 && idx >= this.audioTracks.length) {
+    if (this.mode === ENGINE_MODE_BUILTIN && !this.audioTracks.some((t) => t.index === idx)) {
       const err = new Error(`音轨索引超出范围: ${idx}`);
       err.code = 'INVALID_AUDIO_TRACK';
       throw err;
@@ -532,7 +466,7 @@ class VlcPlayer {
     this.selectedAudioTrack = idx;
     if (this.mode === ENGINE_MODE_BUILTIN) {
       if (this.playlist[this.index]) {
-        this._startBuiltinSession(this.playlist[this.index], {
+        await this._startBuiltinSession(this.playlist[this.index], {
           seekSec: this.positionSec,
           audioTrack: idx,
           subtitleTrack: this.selectedSubtitleTrack,
@@ -563,7 +497,7 @@ class VlcPlayer {
       throw err;
     }
     await this.ensureStarted();
-    if (idx >= 0 && this.subtitleTracks.length > 0 && idx >= this.subtitleTracks.length) {
+    if (this.mode === ENGINE_MODE_BUILTIN && idx >= 0 && !this.subtitleTracks.some((t) => t.index === idx)) {
       const err = new Error(`字幕轨索引超出范围: ${idx}`);
       err.code = 'INVALID_SUBTITLE_TRACK';
       throw err;
@@ -571,7 +505,7 @@ class VlcPlayer {
     this.selectedSubtitleTrack = idx;
     if (this.mode === ENGINE_MODE_BUILTIN) {
       if (this.playlist[this.index]) {
-        this._startBuiltinSession(this.playlist[this.index], {
+        await this._startBuiltinSession(this.playlist[this.index], {
           seekSec: this.positionSec,
           audioTrack: this.selectedAudioTrack,
           subtitleTrack: idx,
@@ -601,6 +535,23 @@ class VlcPlayer {
     };
   }
 
+  reportPlayback(report) {
+    if (!this.currentSession || report.sessionId !== this.currentSession.sessionId) return;
+    if (report.commandVersion != null && report.commandVersion < this.commandVersion) return;
+    this.playing = report.playing === true;
+    this.paused = report.paused === true;
+    if (report.readyState >= 2) this.desiredPlaying = this.playing || !this.paused;
+    if (Number.isFinite(report.positionSec)) this.positionSec = Math.max(0, report.positionSec);
+    if (Number.isFinite(report.volume)) this.volume = Math.max(0, Math.min(100, report.volume));
+    if (Number.isFinite(report.rate)) this.rate = Math.max(0.25, Math.min(4, report.rate));
+    if (report.error) {
+      this.playing = false;
+      this.desiredPlaying = false;
+      this.lastError = { ok: false, code: 'MEDIA_OUTPUT_FAILED', message: String(report.error) };
+    }
+    if (report.ended) this.desiredPlaying = false;
+  }
+
   getStatus() {
     if (!this.engine && !this.lastError) {
       try {
@@ -620,6 +571,10 @@ class VlcPlayer {
       index: this.index,
       current: this.playlist[this.index] || null,
       ready: this.ready,
+      preparing: this.preparing,
+      desiredPlaying: this.desiredPlaying,
+      commandVersion: this.commandVersion,
+      seekVersion: this.seekVersion,
       playing: this.playing,
       paused: this.paused,
       positionSec: this.positionSec,
@@ -631,7 +586,7 @@ class VlcPlayer {
       browserHardDecode: false,
       decodeStatus: isVlc
         ? 'libVLC 可用'
-        : '内置自包含引擎可用 (builtin-html5-ffmpeg 转码/解复用管线，无需安装外部 VLC)',
+        : (this.preparing ? '正在准备视频，可停止取消' : '内置 FFmpeg 解码，音画由桌面视频窗口输出'),
       engine: isVlc
         ? `libVLC/rc (${this.engine.source}: ${this.engine.binary})`
         : (found ? `builtin-html5-ffmpeg (${this.engine.source}: ${this.engine.binary})` : null),
@@ -646,6 +601,9 @@ class VlcPlayer {
   }
 
   async shutdown() {
+    this.prepareVersion += 1;
+    await this.builtin.close();
+    this.currentSession = null;
     if (this.transcodeProc) {
       try {
         this.transcodeProc.kill();

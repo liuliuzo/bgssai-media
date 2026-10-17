@@ -1,6 +1,6 @@
 # 格式支持矩阵
 
-本矩阵是样本验收范围，不是四端已通过的证明。2026-10-06 源码核查见 [产品定位与交付核查](../review/product-direction-20261006.md)：当前桌面经 RC 控制外部 VLC；Web 与移动 WebView 受浏览器/系统解码能力限制，Android/iOS 原生本地播放待实现与真机验收。
+本矩阵是样本验收范围，不是四端已通过的证明。2026-10-17 桌面增加真实 FFmpeg/FFprobe 内置解码与视频输出，VLC 可用时保留原路径；[本轮样本与限制](../test/TC-desktop-real-playback-20261017.md)单独记录。Web 使用浏览器播放器，Android/iOS 使用独立原生工程，三端在线播放受各自解码器限制。
 
 ## 验证表（2026-10-12）
 
@@ -29,7 +29,7 @@ URL 钩子（Java / 桌面 `format-hook.js` / 前端 `src/format/matrix.ts` 同�
 | 路径 | 模块 | 引擎 | 用途 |
 | --- | --- | --- | --- |
 | Web 短剧端 | `bgssai-media-web` | video.js + hls.js | 在线短剧目录中的 MP4 / WebM / HLS |
-| 桌面播放器 | `bgssai-media-desktop` | 外部系统 VLC（RC 控制） | PC 自己的界面。本地主流格式和在线地址都由 VLC 播放 |
+| 桌面播放器 | `bgssai-media-desktop` | 系统 VLC，或打包的 FFmpeg/FFprobe 与桌面视频窗口 | PC 自己的界面，本地文件与平台视频；内置路径先转换后播放 |
 | 管理站入口 | `clients/desktop` | Electron | 只打开管理站，不是用户播放界面 |
 | Android / iOS | `bgssai-media-android` / `bgssai-media-ios` | ExoPlayer / AVPlayer | 在线 MP4 / HLS；不能据此声明 VLC 级全格式播放 |
 

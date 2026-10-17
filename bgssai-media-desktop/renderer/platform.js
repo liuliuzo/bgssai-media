@@ -38,6 +38,7 @@ function showView(name) {
   if (name === 'feed') loadFeed();
   if (name === 'shorts') loadShorts();
   if (name === 'creator') loadMine();
+  if (name === 'community') loadCommunity();
 }
 
 async function refreshAccount() {
@@ -86,13 +87,60 @@ document.querySelectorAll('.nav-btn').forEach((button) => {
 });
 
 async function playItem(rawUrl, statusEl) {
+  text(statusEl, '正在准备视频');
+  showView('player');
   const result = await desktop.playUrl(rawUrl);
   if (failed(result)) {
     text(statusEl, result.message || '无法播放');
+    showError(result);
     return;
   }
-  showView('player');
+  await refreshStatus();
 }
+
+let communityVersion = 0;
+async function loadCommunity() {
+  const version = ++communityVersion;
+  const status = document.getElementById('community-status');
+  const list = document.getElementById('community-list');
+  clear(list);
+  document.getElementById('community-playback').hidden = true;
+  text(status, '加载中');
+  const result = await desktop.get('/api/community/videos');
+  if (version !== communityVersion) return;
+  if (failed(result)) { text(status, result.message || '作品加载失败，请重试'); return; }
+  const rows = Array.isArray(result) ? result : [];
+  text(status, rows.length ? '' : '还没有已发布的作品');
+  rows.forEach((video) => addCard(list, video.title, video.description || '', () => openCommunityVideo(video)));
+}
+
+async function openCommunityVideo(video) {
+  const version = ++communityVersion;
+  const status = document.getElementById('community-status');
+  const panel = document.getElementById('community-playback');
+  panel.hidden = true;
+  text(status, '正在获取播放地址');
+  const playback = await desktop.get(`/api/creator/videos/${encodeURIComponent(video.id)}/playback`);
+  if (version !== communityVersion) return;
+  if (failed(playback)) { text(status, playback.message || '作品暂不可播，请刷新重试'); return; }
+  const renditions = (playback.renditions || []).filter((row) => row.play_url);
+  if (!renditions.length) { text(status, '作品没有可播放的清晰度'); return; }
+  text(document.getElementById('community-title'), video.title);
+  text(document.getElementById('community-description'), video.description);
+  const quality = document.getElementById('community-quality');
+  clear(quality);
+  renditions.forEach((row, index) => {
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.textContent = row.profile || row.name || (row.height ? `${row.height}p` : `清晰度 ${index + 1}`);
+    quality.append(option);
+  });
+  panel.hidden = false;
+  text(status, '选择清晰度并播放');
+  document.getElementById('btn-community-play').onclick = () => playItem(renditions[Number(quality.value)].play_url, status);
+}
+
+document.getElementById('btn-community-refresh').addEventListener('click', loadCommunity);
 
 async function loadFeed() {
   const status = document.getElementById('feed-status');
@@ -188,11 +236,15 @@ async function loadMine() {
 document.getElementById('creator-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   const status = document.getElementById('creator-status');
+  const uploadButton = document.getElementById('btn-upload');
+  if (uploadButton.disabled) return;
+  uploadButton.disabled = true;
   text(status, '选择文件并上传');
-  const result = await desktop.upload({
+  let result;
+  try { result = await desktop.upload({
     title: document.getElementById('work-title').value,
     description: document.getElementById('work-description').value,
-  });
+  }); } finally { uploadButton.disabled = false; }
   if (result && result.canceled) {
     text(status, '已取消选择');
     return;
