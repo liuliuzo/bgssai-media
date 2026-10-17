@@ -137,6 +137,16 @@ final class CreatorCommunityHarness {
                 comments.stream().filter(r -> inv.getArgument(0).equals(r.getId())).findFirst().orElse(null));
         when(commentMapper.selectByExample(any())).thenAnswer(inv ->
                 ExampleQuery.select(comments, inv.getArgument(0)));
+        when(commentMapper.updateByPrimaryKeySelective(any())).thenAnswer(inv -> {
+            MediaVideoComment patch = inv.getArgument(0);
+            MediaVideoComment existing = comments.stream().filter(r -> patch.getId().equals(r.getId()))
+                    .findFirst().orElse(null);
+            if (existing == null) {
+                return 0;
+            }
+            ExampleQuery.copyNonNull(patch, existing);
+            return 1;
+        });
         when(commentMapper.deleteByPrimaryKey(anyLong())).thenAnswer(inv -> {
             Long id = inv.getArgument(0);
             return comments.removeIf(r -> id.equals(r.getId())) ? 1 : 0;
@@ -219,9 +229,9 @@ final class CreatorCommunityHarness {
 
         this.community = new CommunityService(
                 channelMapper, followMapper, videoMapper, commentMapper, likeMapper,
-                runMapper, itemMapper, dramaMapper, episodeMapper, ingestLogMapper);
+                runMapper, itemMapper, dramaMapper, episodeMapper, ingestLogMapper, null);
         this.creator = new CreatorVideoService(
                 videoMapper, jobMapper, renditionMapper, community, ffmpeg,
-                storage.toString(), "/api/creator/media", null);
+                storage.toString(), "/api/creator/media", null, true);
     }
 }

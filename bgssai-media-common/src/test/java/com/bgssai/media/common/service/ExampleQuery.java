@@ -73,6 +73,14 @@ final class ExampleQuery {
         String condition = (String) crit.getClass().getMethod("getCondition").invoke(crit);
         Object value = crit.getClass().getMethod("getValue").invoke(crit);
         String cond = condition.trim().toLowerCase(Locale.ROOT);
+        if (cond.endsWith(" is null")) {
+            String column = cond.substring(0, cond.length() - " is null".length()).trim();
+            return readColumn(row, column) == null;
+        }
+        if (cond.endsWith(" is not null")) {
+            String column = cond.substring(0, cond.length() - " is not null".length()).trim();
+            return readColumn(row, column) != null;
+        }
         String column;
         String op;
         if (cond.endsWith(" in")) {

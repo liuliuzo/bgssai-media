@@ -19,6 +19,7 @@ import com.bgssai.media.common.domain.MediaVideoLike;
 import com.bgssai.media.common.domain.MediaVideoLikeExample;
 import com.bgssai.media.common.ingest.IngestStatus;
 import com.bgssai.media.common.mapper.MediaChannelFollowMapper;
+import com.bgssai.media.common.mapper.OpcExtMapper;
 import com.bgssai.media.common.mapper.MediaCreatorVideoMapper;
 import com.bgssai.media.common.mapper.MediaDramaMapper;
 import com.bgssai.media.common.mapper.MediaEpisodeMapper;
@@ -80,6 +81,7 @@ public class CommunityService {
     private final MediaDramaMapper dramaMapper;
     private final MediaEpisodeMapper episodeMapper;
     private final MediaIngestLogMapper ingestLogMapper;
+    private final OpcExtMapper opcExtMapper;
 
     public CommunityService(MediaUserChannelMapper channelMapper,
                             MediaChannelFollowMapper followMapper,
@@ -89,7 +91,7 @@ public class CommunityService {
                             MediaRecommendRunMapper runMapper,
                             MediaRecommendItemMapper itemMapper) {
         this(channelMapper, followMapper, videoMapper, commentMapper, likeMapper,
-                runMapper, itemMapper, null, null, null);
+                runMapper, itemMapper, null, null, null, null);
     }
 
     @Autowired
@@ -102,7 +104,8 @@ public class CommunityService {
                             MediaRecommendItemMapper itemMapper,
                             @Autowired(required = false) MediaDramaMapper dramaMapper,
                             @Autowired(required = false) MediaEpisodeMapper episodeMapper,
-                            @Autowired(required = false) MediaIngestLogMapper ingestLogMapper) {
+                            @Autowired(required = false) MediaIngestLogMapper ingestLogMapper,
+                            @Autowired(required = false) OpcExtMapper opcExtMapper) {
         this.channelMapper = channelMapper;
         this.followMapper = followMapper;
         this.videoMapper = videoMapper;
@@ -113,6 +116,7 @@ public class CommunityService {
         this.dramaMapper = dramaMapper;
         this.episodeMapper = episodeMapper;
         this.ingestLogMapper = ingestLogMapper;
+        this.opcExtMapper = opcExtMapper;
     }
 
     public static Long toEpisodeVideoId(Long episodeId) {
@@ -179,6 +183,7 @@ public class CommunityService {
         row.setUserId(userId);
         row.setHandle("u" + userId);
         row.setDisplayName("channel-" + userId);
+        row.setStatus("active");
         row.setCreatedAt(new Date());
         channelMapper.insertSelective(row);
         return row;
@@ -186,6 +191,11 @@ public class CommunityService {
 
     @Transactional
     public MediaUserChannel updateMine(Long userId, String displayName, String bio, String handle) {
+        return updateMine(userId, displayName, bio, handle, null);
+    }
+
+    @Transactional
+    public MediaUserChannel updateMine(Long userId, String displayName, String bio, String handle, String avatarUrl) {
         MediaUserChannel row = ensureMine(userId);
         if (displayName != null) {
             String name = displayName.trim();
@@ -219,6 +229,16 @@ public class CommunityService {
             }
             row.setHandle(h);
         }
+        if (avatarUrl != null) {
+            String a = avatarUrl.trim();
+            if (a.length() > 1024) {
+                throw new BizException(400, "avatar_url too long");
+            }
+            row.setAvatarUrl(a.isEmpty() ? null : a);
+        }
+        if (row.getStatus() == null) {
+            row.setStatus("active");
+        }
         channelMapper.updateByPrimaryKeySelective(row);
         return row;
     }
@@ -229,6 +249,9 @@ public class CommunityService {
         }
         MediaUserChannel row = channelMapper.selectByPrimaryKey(channelId);
         if (row == null) {
+            throw new BizException(404, "channel not found");
+        }
+        if (row.getStatus() != null && "banned".equalsIgnoreCase(row.getStatus())) {
             throw new BizException(404, "channel not found");
         }
         return row;
@@ -249,6 +272,10 @@ public class CommunityService {
             row.setChannelId(channelId);
             row.setCreatedAt(new Date());
             followMapper.insertSelective(row);
+            if (opcExtMapper != null) {
+                opcExtMapper.insertSubscribeEvent(channelId, userId, "follow",
+                        new java.sql.Date(System.currentTimeMillis()));
+            }
         }
         return followView(userId, channelId, true);
     }
@@ -259,7 +286,12 @@ public class CommunityService {
         getPublic(channelId);
         MediaChannelFollowExample ex = new MediaChannelFollowExample();
         ex.createCriteria().andFollowerUserIdEqualTo(userId).andChannelIdEqualTo(channelId);
+        long before = followMapper.countByExample(ex);
         followMapper.deleteByExample(ex);
+        if (before > 0 && opcExtMapper != null) {
+            opcExtMapper.insertSubscribeEvent(channelId, userId, "unfollow",
+                    new java.sql.Date(System.currentTimeMillis()));
+        }
         return followView(userId, channelId, false);
     }
 
@@ -280,9 +312,16 @@ public class CommunityService {
 
     public List<MediaCreatorVideo> listReadyVideos() {
         MediaCreatorVideoExample ex = new MediaCreatorVideoExample();
-        ex.createCriteria().andStatusEqualTo(CreatorVideoService.STATUS_READY);
+        ex.createCriteria().andStatusEqualTo(CreatorVideoService.STATUS_READY)
+                .andModerationStatusEqualTo("approved")
+                .andVisibilityEqualTo("public");
         ex.setOrderByClause("created_at desc");
-        List<MediaCreatorVideo> combined = new ArrayList<>(videoMapper.selectByExample(ex));
+        List<MediaCreatorVideo> combined = new ArrayList<>();
+        for (MediaCreatorVideo v : videoMapper.selectByExample(ex)) {
+            if (isChannelPublic(v.getChannelId())) {
+                combined.add(v);
+            }
+        }
         combined.addAll(listReadyEpisodeVideos());
         combined.sort((a, b) -> {
             long at = a.getCreatedAt() == null ? 0L : a.getCreatedAt().getTime();
@@ -321,6 +360,15 @@ public class CommunityService {
         if (video == null || !CreatorVideoService.STATUS_READY.equals(video.getStatus())) {
             throw new BizException(404, "video not found");
         }
+        if (!"approved".equalsIgnoreCase(nzStr(video.getModerationStatus(), "approved"))) {
+            throw new BizException(404, "video not found");
+        }
+        if (!"public".equalsIgnoreCase(nzStr(video.getVisibility(), "public"))) {
+            throw new BizException(404, "video not found");
+        }
+        if (!isChannelPublic(video.getChannelId())) {
+            throw new BizException(404, "video not found");
+        }
         return video;
     }
 
@@ -331,6 +379,11 @@ public class CommunityService {
 
     @Transactional
     public MediaVideoComment addComment(Long userId, Long videoId, String content) {
+        return addComment(userId, videoId, content, null);
+    }
+
+    @Transactional
+    public MediaVideoComment addComment(Long userId, Long videoId, String content, Long parentId) {
         requireUser(userId);
         getReadyVideo(videoId);
         String text = content == null ? "" : content.trim();
@@ -340,10 +393,18 @@ public class CommunityService {
         if (text.length() > MAX_COMMENT) {
             throw new BizException(400, "content too long");
         }
+        if (parentId != null) {
+            MediaVideoComment parent = commentMapper.selectByPrimaryKey(parentId);
+            if (parent == null || parent.getDeletedAt() != null || !videoId.equals(parent.getVideoId())) {
+                throw new BizException(400, "invalid parent comment");
+            }
+        }
         MediaVideoComment row = new MediaVideoComment();
         row.setVideoId(videoId);
         row.setUserId(userId);
+        row.setParentId(parentId);
         row.setContent(text);
+        row.setPinned(0);
         row.setCreatedAt(new Date());
         commentMapper.insertSelective(row);
         bumpCommentCount(videoId, 1);
@@ -353,8 +414,8 @@ public class CommunityService {
     public List<MediaVideoComment> listComments(Long videoId) {
         getReadyVideo(videoId);
         MediaVideoCommentExample ex = new MediaVideoCommentExample();
-        ex.createCriteria().andVideoIdEqualTo(videoId);
-        ex.setOrderByClause("id asc");
+        ex.createCriteria().andVideoIdEqualTo(videoId).andDeletedAtIsNull();
+        ex.setOrderByClause("pinned desc, id asc");
         return commentMapper.selectByExample(ex);
     }
 
@@ -365,13 +426,24 @@ public class CommunityService {
             throw new BizException(400, "comment_id required");
         }
         MediaVideoComment row = commentMapper.selectByPrimaryKey(commentId);
-        if (row == null) {
+        if (row == null || row.getDeletedAt() != null) {
             throw new BizException(404, "comment not found");
         }
-        if (!userId.equals(row.getUserId())) {
+        boolean author = userId.equals(row.getUserId());
+        boolean creator = false;
+        if (!isEpisodeVideoId(row.getVideoId())) {
+            MediaCreatorVideo video = videoMapper.selectByPrimaryKey(row.getVideoId());
+            creator = video != null && userId.equals(video.getUserId());
+        }
+        if (!author && !creator) {
             throw new BizException(403, "forbidden");
         }
-        commentMapper.deleteByPrimaryKey(commentId);
+        if (opcExtMapper != null) {
+            opcExtMapper.softDeleteComment(commentId);
+        } else {
+            row.setDeletedAt(new Date());
+            commentMapper.updateByPrimaryKeySelective(row);
+        }
         bumpCommentCount(row.getVideoId(), -1);
     }
 
@@ -426,6 +498,13 @@ public class CommunityService {
     @Transactional
     public Map<String, Object> recommend(Long userId) {
         requireUser(userId);
+        Set<Long> notInterested = new HashSet<>();
+        if (opcExtMapper != null) {
+            List<Long> ids = opcExtMapper.listNotInterestedVideoIds(userId);
+            if (ids != null) {
+                notInterested.addAll(ids);
+            }
+        }
         List<MediaChannelFollow> follows = followsOf(userId);
         List<Long> channelIds = new ArrayList<>();
         for (MediaChannelFollow f : follows) {
@@ -437,7 +516,8 @@ public class CommunityService {
 
         if (!channelIds.isEmpty()) {
             MediaCreatorVideoExample followingEx = new MediaCreatorVideoExample();
-            followingEx.createCriteria().andChannelIdIn(channelIds).andStatusEqualTo(CreatorVideoService.STATUS_READY);
+            followingEx.createCriteria().andChannelIdIn(channelIds).andStatusEqualTo(CreatorVideoService.STATUS_READY)
+                    .andModerationStatusEqualTo("approved").andVisibilityEqualTo("public");
             followingEx.setOrderByClause("created_at desc");
             for (MediaCreatorVideo v : videoMapper.selectByExample(followingEx)) {
                 candidates.add(new Scored(v, RECALL_FOLLOWING, seen.add(v.getId()) ? null : FILTER_DUPLICATE));
@@ -463,6 +543,10 @@ public class CommunityService {
             }
             if (!CreatorVideoService.STATUS_READY.equals(s.video.getStatus())) {
                 s.filterReason = FILTER_NOT_READY;
+                continue;
+            }
+            if (notInterested.contains(s.video.getId())) {
+                s.filterReason = "NOT_INTERESTED";
                 continue;
             }
             if (s.filterReason != null) {
@@ -532,6 +616,121 @@ public class CommunityService {
         out.put("kept_count", kept.size());
         out.put("items", items);
         return out;
+    }
+
+
+    public List<Map<String, Object>> listChannelVideos(Long channelId) {
+        getPublic(channelId);
+        if (opcExtMapper == null) {
+            MediaCreatorVideoExample ex = new MediaCreatorVideoExample();
+            ex.createCriteria().andChannelIdEqualTo(channelId)
+                    .andStatusEqualTo(CreatorVideoService.STATUS_READY)
+                    .andModerationStatusEqualTo("approved")
+                    .andVisibilityEqualTo("public");
+            ex.setOrderByClause("created_at desc");
+            List<Map<String, Object>> out = new ArrayList<>();
+            for (MediaCreatorVideo v : videoMapper.selectByExample(ex)) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("id", v.getId());
+                row.put("title", v.getTitle());
+                row.put("cover_url", v.getCoverUrl());
+                row.put("like_count", nz(v.getLikeCount()));
+                row.put("comment_count", nz(v.getCommentCount()));
+                row.put("created_at", v.getCreatedAt());
+                out.add(row);
+            }
+            return out;
+        }
+        return opcExtMapper.channelPublicVideos(channelId);
+    }
+
+    public List<Map<String, Object>> subscriptionFeed(Long userId) {
+        requireUser(userId);
+        if (opcExtMapper == null) {
+            return List.of();
+        }
+        return opcExtMapper.subscriptionFeed(userId, 50);
+    }
+
+    public Map<String, Object> search(String q) {
+        String query = q == null ? "" : q.trim();
+        if (query.isEmpty()) {
+            Map<String, Object> empty = new LinkedHashMap<>();
+            empty.put("videos", List.of());
+            empty.put("channels", List.of());
+            return empty;
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        if (opcExtMapper != null) {
+            out.put("videos", opcExtMapper.searchVideos(query, 50));
+            out.put("channels", opcExtMapper.searchChannels(query, 20));
+        } else {
+            out.put("videos", List.of());
+            out.put("channels", List.of());
+        }
+        return out;
+    }
+
+    @Transactional
+    public Map<String, Object> markNotInterested(Long userId, Long videoId, String reason) {
+        requireUser(userId);
+        getReadyVideo(videoId);
+        if (opcExtMapper != null) {
+            opcExtMapper.insertNotInterested(userId, videoId, reason);
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("video_id", videoId);
+        out.put("not_interested", true);
+        return out;
+    }
+
+    @Transactional
+    public Map<String, Object> pinComment(Long userId, Long commentId, boolean pinned) {
+        requireUser(userId);
+        MediaVideoComment row = commentMapper.selectByPrimaryKey(commentId);
+        if (row == null || row.getDeletedAt() != null) {
+            throw new BizException(404, "comment not found");
+        }
+        if (isEpisodeVideoId(row.getVideoId())) {
+            throw new BizException(403, "forbidden");
+        }
+        MediaCreatorVideo video = videoMapper.selectByPrimaryKey(row.getVideoId());
+        if (video == null || !userId.equals(video.getUserId())) {
+            throw new BizException(403, "forbidden");
+        }
+        if (opcExtMapper != null) {
+            opcExtMapper.setCommentPinned(commentId, pinned ? 1 : 0);
+        } else {
+            row.setPinned(pinned ? 1 : 0);
+            commentMapper.updateByPrimaryKeySelective(row);
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("comment_id", commentId);
+        out.put("pinned", pinned);
+        return out;
+    }
+
+    public Map<String, Object> shareLink(Long videoId, String publicBase) {
+        MediaCreatorVideo video = getReadyVideo(videoId);
+        String base = publicBase == null || publicBase.isBlank() ? "https://media.bgssai.com" : publicBase.replaceAll("/$", "");
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("video_id", videoId);
+        out.put("content_id", toContentId(videoId));
+        out.put("share_url", base + "/v/" + toContentId(videoId));
+        out.put("visibility", nzStr(video.getVisibility(), "public"));
+        return out;
+    }
+
+    private boolean isChannelPublic(Long channelId) {
+        if (channelId == null || channelId == 0L) {
+            return true;
+        }
+        MediaUserChannel ch = channelMapper.selectByPrimaryKey(channelId);
+        return ch != null && (ch.getStatus() == null || "active".equalsIgnoreCase(ch.getStatus()));
+    }
+
+    private static String nzStr(String v, String dft) {
+        return v == null || v.isBlank() ? dft : v;
     }
 
     private List<MediaCreatorVideo> listReadyEpisodeVideos() {

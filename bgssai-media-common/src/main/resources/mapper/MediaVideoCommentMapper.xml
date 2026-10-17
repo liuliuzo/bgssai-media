@@ -5,11 +5,14 @@
     <id column="id" property="id"/>
     <result column="video_id" property="videoId"/>
     <result column="user_id" property="userId"/>
+    <result column="parent_id" property="parentId"/>
     <result column="content" property="content"/>
+    <result column="pinned" property="pinned"/>
+    <result column="deleted_at" property="deletedAt"/>
     <result column="created_at" property="createdAt"/>
   </resultMap>
 
-  <sql id="Base_Column_List">id, video_id, user_id, content, created_at</sql>
+  <sql id="Base_Column_List">id, video_id, user_id, parent_id, content, pinned, deleted_at, created_at</sql>
 
   <sql id="Example_Where_Clause">
     <where>
@@ -57,16 +60,33 @@
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="videoId != null">video_id,</if>
       <if test="userId != null">user_id,</if>
+      <if test="parentId != null">parent_id,</if>
       <if test="content != null">content,</if>
+      <if test="pinned != null">pinned,</if>
       <if test="createdAt != null">created_at,</if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="videoId != null">#{videoId},</if>
       <if test="userId != null">#{userId},</if>
+      <if test="parentId != null">#{parentId},</if>
       <if test="content != null">#{content},</if>
+      <if test="pinned != null">#{pinned},</if>
       <if test="createdAt != null">#{createdAt},</if>
     </trim>
   </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.bgssai.media.common.domain.MediaVideoComment">
+    update media_video_comment
+    <set>
+      <if test="videoId != null">video_id = #{videoId},</if>
+      <if test="userId != null">user_id = #{userId},</if>
+      <if test="parentId != null">parent_id = #{parentId},</if>
+      <if test="content != null">content = #{content},</if>
+      <if test="pinned != null">pinned = #{pinned},</if>
+      <if test="deletedAt != null">deleted_at = #{deletedAt},</if>
+    </set>
+    where id = #{id}
+  </update>
 
   <delete id="deleteByPrimaryKey" parameterType="long">
     delete from media_video_comment where id = #{id}

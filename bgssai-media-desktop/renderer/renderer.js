@@ -151,6 +151,66 @@ if (subSelectEl) {
   };
 }
 
+const subDelayEl = document.getElementById('sub-delay');
+if (subDelayEl) {
+  subDelayEl.onchange = async (e) => {
+    await window.mediaDesktop.setSubtitleDelay(Number(e.target.value));
+  };
+}
+const audioDelayEl = document.getElementById('audio-delay');
+if (audioDelayEl) {
+  audioDelayEl.onchange = async (e) => {
+    await window.mediaDesktop.setAudioDelay(Number(e.target.value));
+  };
+}
+const shotBtn = document.getElementById('btn-screenshot');
+if (shotBtn) {
+  shotBtn.onclick = async () => {
+    const video = document.getElementById('builtin-video');
+    if (video && !video.hidden && video.videoWidth) {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `bgssai-shot-${Date.now()}.png`;
+      a.click();
+      setStatus('已保存截图');
+      return;
+    }
+    const r = await window.mediaDesktop.screenshot();
+    setStatus(r && r.ok ? '已请求截图' : '截图失败');
+  };
+}
+const openUrlBtn = document.getElementById('btn-open-url');
+if (openUrlBtn) {
+  openUrlBtn.onclick = async () => {
+    const url = window.prompt('网络流地址 (http / https / .m3u8)');
+    if (!url) return;
+    try {
+      await window.mediaDesktop.openNetwork(url.trim());
+      setStatus('已打开网络流');
+      await refreshStatus();
+    } catch (err) {
+      setStatus(err.message || '无法打开网络流');
+    }
+  };
+}
+const extSubBtn = document.getElementById('btn-ext-sub');
+if (extSubBtn) {
+  extSubBtn.onclick = async () => {
+    const path = window.prompt('外挂字幕文件路径 (srt/vtt/ass)');
+    if (!path) return;
+    try {
+      await window.mediaDesktop.openExternalSubtitle(path.trim());
+      setStatus('已加载外挂字幕');
+    } catch (err) {
+      setStatus(err.message || '字幕加载失败');
+    }
+  };
+}
+
 loadMatrix();
 checkEngine();
 refreshStatus();

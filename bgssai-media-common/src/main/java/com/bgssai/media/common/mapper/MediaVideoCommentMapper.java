@@ -10,5 +10,6 @@ public interface MediaVideoCommentMapper {
     List<MediaVideoComment> selectByExample(MediaVideoCommentExample example);
     MediaVideoComment selectByPrimaryKey(Long id);
     int insertSelective(MediaVideoComment row);
+    int updateByPrimaryKeySelective(MediaVideoComment row);
     int deleteByPrimaryKey(Long id);
 }

@@ -37,6 +37,8 @@ public class MediaUserChannelExample {
         public Criteria andHandleIn(List<String> values) { addCriterion("handle in", values, "handle"); return this; }
         public Criteria andDisplayNameEqualTo(String value) { addCriterion("display_name =", value, "displayName"); return this; }
         public Criteria andBioEqualTo(String value) { addCriterion("bio =", value, "bio"); return this; }
+        public Criteria andAvatarUrlEqualTo(String value) { addCriterion("avatar_url =", value, "avatarUrl"); return this; }
+        public Criteria andStatusEqualTo(String value) { addCriterion("status =", value, "status"); return this; }
         public Criteria andCreatedAtEqualTo(Date value) { addCriterion("created_at =", value, "createdAt"); return this; }
         public Criteria andUpdatedAtEqualTo(Date value) { addCriterion("updated_at =", value, "updatedAt"); return this; }
     }

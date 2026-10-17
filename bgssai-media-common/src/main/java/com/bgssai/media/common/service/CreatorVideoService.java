@@ -63,6 +63,7 @@ public class CreatorVideoService {
     private final Path storageDir;
     private final String publicBase;
     private final TaskExecutor transcodeExecutor;
+    private final boolean autoApprove;
 
     public CreatorVideoService(MediaCreatorVideoMapper videoMapper,
                                MediaTranscodeJobMapper jobMapper,
@@ -71,7 +72,8 @@ public class CreatorVideoService {
                                FfmpegGateway ffmpegGateway,
                                @Value("${bgssai.media.creator.storage-dir:uploads/creator}") String storageDir,
                                @Value("${bgssai.media.creator.public-base:/api/creator/media}") String publicBase,
-                               @Autowired(required = false) @Qualifier("mediaTranscodeExecutor") TaskExecutor transcodeExecutor) {
+                               @Autowired(required = false) @Qualifier("mediaTranscodeExecutor") TaskExecutor transcodeExecutor,
+                               @Value("${bgssai.media.moderation.auto-approve:true}") boolean autoApprove) {
         this.videoMapper = videoMapper;
         this.jobMapper = jobMapper;
         this.renditionMapper = renditionMapper;
@@ -80,6 +82,7 @@ public class CreatorVideoService {
         this.storageDir = Path.of(storageDir).toAbsolutePath().normalize();
         this.publicBase = publicBase.endsWith("/") ? publicBase.substring(0, publicBase.length() - 1) : publicBase;
         this.transcodeExecutor = transcodeExecutor;
+        this.autoApprove = autoApprove;
     }
 
     @Transactional
@@ -111,6 +114,9 @@ public class CreatorVideoService {
         video.setChannelId(channel.getId());
         video.setTitle(resolvedTitle);
         video.setDescription(trimToNull(description));
+        video.setTags(null);
+        video.setVisibility("public");
+        video.setModerationStatus("pending");
         video.setStatus(STATUS_QUEUED);
         video.setOriginalFilename(filename);
         video.setContentType(contentType);
@@ -248,6 +254,69 @@ public class CreatorVideoService {
         return toView(video, true);
     }
 
+    @Transactional
+    public Map<String, Object> editVideo(Long userId, Long videoId, String title, String description,
+                                         String tags, String visibility) {
+        requireUser(userId);
+        MediaCreatorVideo video = requireOwned(userId, videoId);
+        if (title != null) {
+            String trimmed = title.trim();
+            if (trimmed.isEmpty()) {
+                throw new BizException(400, "title required");
+            }
+            if (trimmed.length() > 256) {
+                throw new BizException(400, "title too long");
+            }
+            video.setTitle(trimmed);
+        }
+        if (description != null) {
+            video.setDescription(trimToNull(description));
+        }
+        if (tags != null) {
+            String t = tags.trim();
+            if (t.length() > 512) {
+                throw new BizException(400, "tags too long");
+            }
+            video.setTags(t.isEmpty() ? null : t);
+        }
+        if (visibility != null) {
+            String vis = visibility.trim().toLowerCase(Locale.ROOT);
+            if (!Set.of("public", "private", "unlisted").contains(vis)) {
+                throw new BizException(400, "invalid visibility");
+            }
+            video.setVisibility(vis);
+        }
+        video.setUpdatedAt(new Date());
+        videoMapper.updateByPrimaryKeySelective(video);
+        return toView(video, true);
+    }
+
+    @Transactional
+    public Map<String, Object> unpublish(Long userId, Long videoId) {
+        requireUser(userId);
+        MediaCreatorVideo video = requireOwned(userId, videoId);
+        video.setVisibility("private");
+        video.setUpdatedAt(new Date());
+        videoMapper.updateByPrimaryKeySelective(video);
+        Map<String, Object> out = toView(video, true);
+        out.put("unpublished", true);
+        return out;
+    }
+
+    private MediaCreatorVideo requireOwned(Long userId, Long videoId) {
+        if (videoId == null) {
+            throw new BizException(400, "video_id required");
+        }
+        MediaCreatorVideo video = videoMapper.selectByPrimaryKey(videoId);
+        if (video == null) {
+            throw new BizException(404, "video not found");
+        }
+        if (!userId.equals(video.getUserId())) {
+            throw new BizException(403, "forbidden");
+        }
+        return video;
+    }
+
     public Map<String, Object> getUploadTaskStatus(Long userId, Long videoId, Long jobId) {
         requireUser(userId);
         MediaCreatorVideo video = null;
@@ -274,10 +343,11 @@ public class CreatorVideoService {
             throw new BizException(400, "video_id or job_id required");
         }
         String vStatus = video == null ? null : video.getStatus();
+        String moderation = video == null ? null : video.getModerationStatus();
         String reviewStatus;
-        if (STATUS_READY.equals(vStatus)) {
+        if ("approved".equalsIgnoreCase(moderation)) {
             reviewStatus = "APPROVED";
-        } else if (STATUS_FAILED.equals(vStatus)) {
+        } else if ("rejected".equalsIgnoreCase(moderation) || STATUS_FAILED.equals(vStatus)) {
             reviewStatus = "REJECTED";
         } else {
             reviewStatus = "PENDING";
@@ -462,6 +532,12 @@ public class CreatorVideoService {
 
             Date done = new Date();
             video.setStatus(STATUS_READY);
+            if (autoApprove) {
+                video.setModerationStatus("approved");
+                video.setModeratedAt(done);
+            } else if (video.getModerationStatus() == null || video.getModerationStatus().isBlank()) {
+                video.setModerationStatus("pending");
+            }
             video.setUpdatedAt(done);
             videoMapper.updateByPrimaryKeySelective(video);
             job.setStatus(STATUS_READY);
@@ -537,6 +613,9 @@ public class CreatorVideoService {
         out.put("channel_id", video.getChannelId());
         out.put("title", video.getTitle());
         out.put("description", video.getDescription());
+        out.put("tags", video.getTags());
+        out.put("visibility", video.getVisibility() == null ? "public" : video.getVisibility());
+        out.put("moderation_status", video.getModerationStatus() == null ? "pending" : video.getModerationStatus());
         out.put("category", video.getContentType());
         out.put("status", video.getStatus());
         out.put("cover_url", video.getCoverUrl());

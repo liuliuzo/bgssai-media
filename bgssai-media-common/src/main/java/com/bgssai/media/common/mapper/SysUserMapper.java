@@ -11,6 +11,10 @@ public interface SysUserMapper {
     String currentSession(@Param("id") Long id, @Param("role") String role);
     @org.apache.ibatis.annotations.Update("UPDATE sys_user SET current_session_id = #{sid} WHERE id = #{id} AND status = 'active' AND role_code = #{role}")
     int bindSession(@Param("id") Long id, @Param("role") String role, @Param("sid") String sid);
+    @org.apache.ibatis.annotations.Update("UPDATE sys_user SET phone = NULL WHERE id = #{id} AND status = 'active'")
+    int clearPhone(@Param("id") Long id);
+    @org.apache.ibatis.annotations.Update("UPDATE sys_user SET email = NULL WHERE id = #{id} AND status = 'active'")
+    int clearEmail(@Param("id") Long id);
 
     long countByExample(SysUserExample example);
     List<SysUser> selectByExample(SysUserExample example);

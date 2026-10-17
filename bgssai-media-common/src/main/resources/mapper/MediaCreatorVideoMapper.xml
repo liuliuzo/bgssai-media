@@ -7,6 +7,10 @@
     <result column="channel_id" property="channelId"/>
     <result column="title" property="title"/>
     <result column="description" property="description"/>
+    <result column="tags" property="tags"/>
+    <result column="visibility" property="visibility"/>
+    <result column="moderation_status" property="moderationStatus"/>
+    <result column="moderated_at" property="moderatedAt"/>
     <result column="status" property="status"/>
     <result column="original_filename" property="originalFilename"/>
     <result column="original_path" property="originalPath"/>
@@ -20,7 +24,7 @@
     <result column="updated_at" property="updatedAt"/>
   </resultMap>
 
-  <sql id="Base_Column_List">id, user_id, channel_id, title, description, status, original_filename, original_path, content_type, size_bytes, cover_path, cover_url, like_count, comment_count, created_at, updated_at</sql>
+  <sql id="Base_Column_List">id, user_id, channel_id, title, description, tags, visibility, moderation_status, moderated_at, status, original_filename, original_path, content_type, size_bytes, cover_path, cover_url, like_count, comment_count, created_at, updated_at</sql>
 
   <sql id="Example_Where_Clause">
     <where>
@@ -70,6 +74,10 @@
       <if test="channelId != null">channel_id,</if>
       <if test="title != null">title,</if>
       <if test="description != null">description,</if>
+      <if test="tags != null">tags,</if>
+      <if test="visibility != null">visibility,</if>
+      <if test="moderationStatus != null">moderation_status,</if>
+      <if test="moderatedAt != null">moderated_at,</if>
       <if test="status != null">status,</if>
       <if test="originalFilename != null">original_filename,</if>
       <if test="originalPath != null">original_path,</if>
@@ -87,6 +95,10 @@
       <if test="channelId != null">#{channelId},</if>
       <if test="title != null">#{title},</if>
       <if test="description != null">#{description},</if>
+      <if test="tags != null">#{tags},</if>
+      <if test="visibility != null">#{visibility},</if>
+      <if test="moderationStatus != null">#{moderationStatus},</if>
+      <if test="moderatedAt != null">#{moderatedAt},</if>
       <if test="status != null">#{status},</if>
       <if test="originalFilename != null">#{originalFilename},</if>
       <if test="originalPath != null">#{originalPath},</if>
@@ -108,6 +120,10 @@
       <if test="channelId != null">channel_id = #{channelId},</if>
       <if test="title != null">title = #{title},</if>
       <if test="description != null">description = #{description},</if>
+      <if test="tags != null">tags = #{tags},</if>
+      <if test="visibility != null">visibility = #{visibility},</if>
+      <if test="moderationStatus != null">moderation_status = #{moderationStatus},</if>
+      <if test="moderatedAt != null">moderated_at = #{moderatedAt},</if>
       <if test="status != null">status = #{status},</if>
       <if test="originalFilename != null">original_filename = #{originalFilename},</if>
       <if test="originalPath != null">original_path = #{originalPath},</if>

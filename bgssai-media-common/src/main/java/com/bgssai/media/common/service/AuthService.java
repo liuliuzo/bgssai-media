@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -168,33 +167,16 @@ public class AuthService {
 
     public Map<String, Object> completeOauth(String rawProvider, String code, String state, String requiredRole) {
         String provider = rawProvider == null ? "" : rawProvider.trim().toUpperCase(Locale.ROOT);
-        String trimmedCode = code == null ? "" : code.trim();
-        if (trimmedCode.isEmpty()) {
-            throw new BizException(400, oauthSettings.configured(provider) ? "授权码不能为空" : "未配置该登录方式");
-        }
-        OAuthUserInfo profile;
-        String storedProvider = provider;
-        if (CHAT_PROVIDERS.contains(provider)) {
-            profile = chatOAuthService.exchange(trimmedCode, state);
-            storedProvider = "CHAT";
-        } else if (CN_PROVIDERS.contains(provider)) {
-            OAuthStateStore.Entry entry = oauthStateStore.consume(state);
-            if (entry == null || !provider.equals(entry.provider)) {
-                throw new BizException(400, "授权已过期，请重新发起");
-            }
-            profile = cnOAuthClient.exchange(provider, trimmedCode);
-        } else {
-            throw new BizException(400, "unsupported login provider");
-        }
-        if (profile == null || profile.getOpenId() == null || profile.getOpenId().isBlank()
-                || "demo".equalsIgnoreCase(profile.getOpenId())) {
-            throw new BizException(400, "未配置该登录方式");
-        }
+        String storedProvider = CHAT_PROVIDERS.contains(provider) ? "CHAT" : provider;
+        OAuthUserInfo profile = exchangeOauthProfile(provider, code, state);
         UserIdentity existing = userIdentityMapper.findByProviderOpenId(storedProvider, profile.getOpenId());
         if (existing != null) {
             SysUser user = sysUserMapper.selectByPrimaryKey(existing.getUserId());
             if (user == null) {
                 throw new BizException(401, "oauth user missing");
+            }
+            if (!"active".equals(user.getStatus())) {
+                throw new BizException(401, "account not active");
             }
             if (requiredRole != null && !requiredRole.equals(user.getRoleCode())) {
                 throw new BizException(403, "role not allowed");
@@ -216,10 +198,39 @@ public class AuthService {
         return tokenResult(user);
     }
 
+    /**
+     * Exchanges an authorization code for the provider profile without logging in.
+     * Used by login and by account-settings bind so both share state / fail-closed checks.
+     */
+    public OAuthUserInfo exchangeOauthProfile(String rawProvider, String code, String state) {
+        String provider = rawProvider == null ? "" : rawProvider.trim().toUpperCase(Locale.ROOT);
+        String trimmedCode = code == null ? "" : code.trim();
+        if (trimmedCode.isEmpty()) {
+            throw new BizException(400, oauthSettings.configured(provider) ? "授权码不能为空" : "未配置该登录方式");
+        }
+        OAuthUserInfo profile;
+        if (CHAT_PROVIDERS.contains(provider)) {
+            profile = chatOAuthService.exchange(trimmedCode, state);
+        } else if (CN_PROVIDERS.contains(provider)) {
+            OAuthStateStore.Entry entry = oauthStateStore.consume(state);
+            if (entry == null || !provider.equals(entry.provider)) {
+                throw new BizException(400, "授权已过期，请重新发起");
+            }
+            profile = cnOAuthClient.exchange(provider, trimmedCode);
+        } else {
+            throw new BizException(400, "unsupported login provider");
+        }
+        if (profile == null || profile.getOpenId() == null || profile.getOpenId().isBlank()
+                || "demo".equalsIgnoreCase(profile.getOpenId())) {
+            throw new BizException(400, "未配置该登录方式");
+        }
+        return profile;
+    }
+
     private SysUser provisionUser(String username, String email, String phone, String requiredRole) {
         SysUser user = new SysUser();
         user.setUsername(username);
-        user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+        user.setPasswordHash(AccountPassword.unusable());
         user.setEmail(email);
         user.setPhone(phone);
         user.setRoleCode(requiredRole == null ? "USER" : requiredRole);
@@ -246,6 +257,9 @@ public class AuthService {
     }
 
     private Map<String, Object> tokenResult(SysUser user) {
+        if (!"active".equals(user.getStatus())) {
+            throw new BizException(401, "account not active");
+        }
         AuthUser auth = new AuthUser(user.getId(), user.getUsername(), user.getRoleCode());
         String token = jwtService.createToken(auth);
         Map<String, Object> result = new HashMap<>();

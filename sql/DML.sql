@@ -121,3 +121,4 @@ ON DUPLICATE KEY UPDATE
       AND (secret_key IS NULL OR secret_key = '')
       AND (sdk_app_id IS NULL OR sdk_app_id = ''),
     VALUES(enabled), enabled);
+

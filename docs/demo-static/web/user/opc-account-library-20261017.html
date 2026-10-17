@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BGSSAI Media · 账号与片库同步</title>
+  <style>
+    :root { --bg: #0f1419; --fg: #e8eef7; --muted: #9aa8bc; --line: rgba(255,255,255,.08); --accent: #3d8bfd; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", "PingFang SC", sans-serif; color: var(--fg);
+      background: radial-gradient(900px 400px at 20% -10%, rgba(61,139,253,.22), transparent 55%), var(--bg); }
+    main { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+    h1 { font-size: 2rem; margin: 0 0 8px; }
+    p { color: var(--muted); line-height: 1.6; }
+    section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
+    code { color: var(--accent); }
+    ul { color: var(--muted); }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>BGSSAI Media</h1>
+    <p>账号注销、登录方式绑定，以及观看历史 / 稍后观看 / 播放列表跨端同步。媒体应用不提供模型与额度套餐。</p>
+    <section>
+      <h2>账号</h2>
+      <ul>
+        <li><code>POST /api/account/delete</code> 身份验证 + 确认后果后注销</li>
+        <li><code>GET|POST|DELETE /api/account/bindings</code> 查看 / 绑定 / 解绑</li>
+      </ul>
+    </section>
+    <section>
+      <h2>片库同步</h2>
+      <ul>
+        <li><code>/api/library/history</code> 观看历史与暂停记录</li>
+        <li><code>/api/library/watch-later</code> 稍后观看</li>
+        <li><code>/api/library/playlists</code> 自建播放列表</li>
+      </ul>
+    </section>
+    <section>
+      <h2>社区与审核</h2>
+      <ul>
+        <li>频道订阅时间线、搜索、不感兴趣、评论置顶 / 回复</li>
+        <li>举报 <code>POST /api/community/reports</code>；管理端审核与处理通知</li>
+        <li>创作者 <code>PATCH</code> 编辑与 <code>unpublish</code>；分析按日聚合</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

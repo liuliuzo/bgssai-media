@@ -62,6 +62,8 @@ class VlcPlayer {
     this.subtitleTracks = [];
     this.selectedAudioTrack = 0;
     this.selectedSubtitleTrack = -1;
+    this.subtitleDelayMs = 0;
+    this.audioDelayMs = 0;
     this.currentSession = null;
     this.sessionCounter = 0;
     this.builtin = opts.builtin || new BuiltinMedia({ ffmpeg: opts.ffmpegBinary, ffprobe: opts.ffprobeBinary });
@@ -448,6 +450,49 @@ class VlcPlayer {
   async fullscreen() {
     if (this.mode === ENGINE_MODE_VLC) await this.send('fullscreen');
     return { ok: true };
+  }
+
+  async setSubtitleDelay(ms) {
+    const delay = Number(ms) || 0;
+    this.subtitleDelayMs = delay;
+    if (this.mode === ENGINE_MODE_VLC) {
+      // VLC RC uses microseconds
+      await this.send(`subdelay ${Math.round(delay * 1000)}`);
+    }
+    return { ok: true, subtitle_delay_ms: delay };
+  }
+
+  async setAudioDelay(ms) {
+    const delay = Number(ms) || 0;
+    this.audioDelayMs = delay;
+    if (this.mode === ENGINE_MODE_VLC) {
+      await this.send(`audiodelay ${Math.round(delay * 1000)}`);
+    }
+    return { ok: true, audio_delay_ms: delay };
+  }
+
+  async screenshot() {
+    await this.ensureStarted();
+    if (this.mode === ENGINE_MODE_VLC) {
+      await this.send('snapshot');
+      return { ok: true, mode: 'vlc' };
+    }
+    // Builtin: renderer captures the video element; main returns a marker for UI.
+    return { ok: true, mode: 'builtin', capture: 'renderer' };
+  }
+
+  async openExternalSubtitle(filePath) {
+    if (!filePath || typeof filePath !== 'string') {
+      const err = new Error('字幕文件路径无效');
+      err.code = 'INVALID_SUBTITLE_FILE';
+      throw err;
+    }
+    await this.ensureStarted();
+    if (this.mode === ENGINE_MODE_VLC) {
+      await this.send(`addsubtitle ${filePath}`);
+      return { ok: true, path: filePath };
+    }
+    return { ok: true, path: filePath, mode: 'builtin', note: '外挂字幕由渲染层加载' };
   }
 
   async selectAudioTrack(trackIndex) {

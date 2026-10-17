@@ -129,6 +129,10 @@ async function openCommunityVideo(video) {
   text(document.getElementById('community-description'), video.description);
   const quality = document.getElementById('community-quality');
   clear(quality);
+  const auto = document.createElement('option');
+  auto.value = 'auto';
+  auto.textContent = '自动';
+  quality.append(auto);
   renditions.forEach((row, index) => {
     const option = document.createElement('option');
     option.value = String(index);
@@ -137,7 +141,16 @@ async function openCommunityVideo(video) {
   });
   panel.hidden = false;
   text(status, '选择清晰度并播放');
-  document.getElementById('btn-community-play').onclick = () => playItem(renditions[Number(quality.value)].play_url, status);
+  document.getElementById('btn-community-play').onclick = () => {
+    let idx = quality.value === 'auto'
+      ? renditions.reduce((best, row, i, arr) => {
+          const h = Number(row.height) || 0;
+          const bh = Number(arr[best].height) || 0;
+          return h >= bh ? i : best;
+        }, 0)
+      : Number(quality.value);
+    playItem(renditions[idx].play_url, status);
+  };
 }
 
 document.getElementById('btn-community-refresh').addEventListener('click', loadCommunity);
