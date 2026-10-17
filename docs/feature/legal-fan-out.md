@@ -42,7 +42,7 @@
 
 ## 2026-09-23 收敛
 
-按 bgssai-skeleton `docs/BGSSAI-Standards.md` 第 15 节「法务同意行与页脚统一口径」收敛，上文「五条中英外链 + 需法务审阅」的界面口径作废，只留作沿革：
+按 bgssai-skeleton [全局开发规范](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/BGSSAI-Standards.md) 第 15 节「法务同意行与页脚统一口径」收敛，上文「五条中英外链 + 需法务审阅」的界面口径作废，只留作沿革：
 
 - 用户端登录卡内只留一行 `登录或注册即表示已阅读并同意《用户协议》与《隐私政策》`（`bgssai-media-user/frontend/src/legal/LegalConsent.tsx`），书名号在链接文字里；Chat 回调页不放。
 - 管理端登录页不放同意句、不放任何法务链接，只靠页脚。

@@ -5,4 +5,4 @@
 - `GET /auth/oauth/channels` 返回凭证已配齐（且未停用）的第三方登录渠道；与授权地址接口同一把尺子。
 - **登录页与注册页只渲染返回里的渠道**，一个都没开通则第三方登录整段（含分隔线）不出现。
   此前入口无条件常驻，点下去才报「未开放 / 暂不可用」——界面承诺了实际用不了的登录方式。
-- 品牌标统一引自 `public/brand/oauth/*.svg`（全线同一套方形 viewBox 矢量标），按钮只写品牌名，分隔线固定「第三方账号登录」。口径见骨架仓 `docs/BGSSAI-Standards.md` 第 14 节。
+- 品牌标统一引自 `public/brand/oauth/*.svg`（全线同一套方形 viewBox 矢量标），按钮只写品牌名，分隔线固定「第三方账号登录」。口径见骨架仓 [全局开发规范](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/BGSSAI-Standards.md) 第 14 节。
