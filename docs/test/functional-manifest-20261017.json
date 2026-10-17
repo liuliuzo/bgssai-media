@@ -70,6 +70,87 @@
       "file": "docs/test/TC-opc-product-20261017.md"
     },
     {
+      "id": "REQ-MEDIA-PC-PRODUCT-008",
+      "title": "频道与订阅",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-008-P",
+        "TC-MEDIA-PC-PRODUCT-008-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-009",
+      "title": "点赞评论与分享",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-009-P",
+        "TC-MEDIA-PC-PRODUCT-009-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-010",
+      "title": "搜索与首页推荐",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-010-P",
+        "TC-MEDIA-PC-PRODUCT-010-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-011",
+      "title": "观看历史与播放列表",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-011-P",
+        "TC-MEDIA-PC-PRODUCT-011-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-012",
+      "title": "播放控制与清晰度字幕",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-012-P",
+        "TC-MEDIA-PC-PRODUCT-012-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-013",
+      "title": "创作者数据分析",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-013-P",
+        "TC-MEDIA-PC-PRODUCT-013-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-014",
+      "title": "内容审核与举报",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-014-P",
+        "TC-MEDIA-PC-PRODUCT-014-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-015",
+      "title": "本地与平台一体播放",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-015-P",
+        "TC-MEDIA-PC-PRODUCT-015-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-PRODUCT-016",
+      "title": "网络流与外挂字幕",
+      "cases": [
+        "TC-MEDIA-PC-PRODUCT-016-P",
+        "TC-MEDIA-PC-PRODUCT-016-N"
+      ],
+      "file": "docs/test/TC-opc-product-20261017.md"
+    },
+    {
       "id": "REQ-MEDIA-PC-COMMON-001",
       "title": "自助注册与本地账号",
       "cases": [
@@ -201,6 +282,42 @@
       "cases": [
         "TC-MEDIA-PC-COMMON-015-P",
         "TC-MEDIA-PC-COMMON-015-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-016",
+      "title": "账号注销",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-016-P",
+        "TC-MEDIA-PC-COMMON-016-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-017",
+      "title": "登录方式绑定与解绑",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-017-P",
+        "TC-MEDIA-PC-COMMON-017-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-018",
+      "title": "额度套餐开通与续费",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-018-P",
+        "TC-MEDIA-PC-COMMON-018-N"
+      ],
+      "file": "docs/test/TC-opc-common-20261017.md"
+    },
+    {
+      "id": "REQ-MEDIA-PC-COMMON-019",
+      "title": "额度按token计量显示",
+      "cases": [
+        "TC-MEDIA-PC-COMMON-019-P",
+        "TC-MEDIA-PC-COMMON-019-N"
       ],
       "file": "docs/test/TC-opc-common-20261017.md"
     },
@@ -381,6 +498,132 @@
     {
       "id": "TC-MEDIA-PC-PRODUCT-007-N",
       "requirement": "REQ-MEDIA-PC-PRODUCT-007",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-008-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-008",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-008-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-008",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-009-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-009",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-009-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-009",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-010-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-010",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-010-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-010",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-011-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-011",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-011-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-011",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-012-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-012",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-012-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-012",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-013-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-013",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-013-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-013",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-014-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-014",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-014-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-014",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-015-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-015",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-015-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-015",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-016-P",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-016",
+      "file": "TC-opc-product-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-PRODUCT-016-N",
+      "requirement": "REQ-MEDIA-PC-PRODUCT-016",
       "file": "TC-opc-product-20261017.md",
       "status": "待测",
       "kind": "N"
@@ -591,6 +834,62 @@
     {
       "id": "TC-MEDIA-PC-COMMON-015-N",
       "requirement": "REQ-MEDIA-PC-COMMON-015",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-016-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-016",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-016-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-016",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-017-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-017",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-017-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-017",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-018-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-018",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-018-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-018",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "N"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-019-P",
+      "requirement": "REQ-MEDIA-PC-COMMON-019",
+      "file": "TC-opc-common-20261017.md",
+      "status": "待测",
+      "kind": "P"
+    },
+    {
+      "id": "TC-MEDIA-PC-COMMON-019-N",
+      "requirement": "REQ-MEDIA-PC-COMMON-019",
       "file": "TC-opc-common-20261017.md",
       "status": "待测",
       "kind": "N"
@@ -1032,7 +1331,7 @@
     }
   ],
   "progress": {
-    "待测": 62,
+    "待测": 88,
     "通过": 0,
     "失败": 0,
     "阻塞": 0,
@@ -1047,7 +1346,7 @@
       "不适用": 0
     },
     "TC-opc-common-20261017.md": {
-      "待测": 30,
+      "待测": 38,
       "通过": 0,
       "失败": 0,
       "阻塞": 0,
@@ -1061,7 +1360,7 @@
       "不适用": 0
     },
     "TC-opc-product-20261017.md": {
-      "待测": 14,
+      "待测": 32,
       "通过": 0,
       "失败": 0,
       "阻塞": 0,
