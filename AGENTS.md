@@ -27,7 +27,7 @@ Web、Android、iOS 已拆到独立仓库，共用本仓用户端 / 管理端 AP
 
 ## 强制约定（摘要）
 
-- 跨仓规范以 `docs/BGSSAI-Standards.md`（骨架仓权威副本）为准。
+- 跨仓规范以 [全局开发规范](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/BGSSAI-Standards.md)（骨架仓权威副本）为准。
 - 中间件连接参数只写 `application-*.properties` 字面量，禁止 `${}`。
 - 统一响应 `{ code, message, success, result }`；JWT 头 `Jwttoken`；`@NeedAop`；角色 `PLATFORM_ADMIN` / `USER`。
 - MyBatis Example + PageHelper；禁止 Lombok；JSON snake_case。
@@ -51,3 +51,20 @@ Web、Android、iOS 已拆到独立仓库，共用本仓用户端 / 管理端 AP
 - 本仓 https://github.com/liuliuzo/bgssai-media-pc （本系列 API 与 PC 播放器；Web / Android / iOS 在同名独立仓）
 
 Standards / monorepo / auth / ApiResponse 以 skeleton、short 远程为准，变更后应重新 clone 同步。
+
+## 本仓技术栈补充
+
+权威以 `bgssai-skeleton/docs/BGSSAI-Standards.md` 为准。本仓强制遵循摘要：
+
+1. **配置**：环境差异下沉 `application-*.properties`；禁止 `${}` 占位符；中间件连接参数只写 properties。
+2. **Controller**：单入口风格（按资源一个 Controller，方法扁平）；统一响应 `{ code, message, success, result }`。
+3. **JSON**：snake_case。
+4. **持久化**：MyBatis Example + PageHelper 物理分页；禁止 Lombok。
+5. **鉴权**：JWT 请求头 `Jwttoken`；业务接口 `@NeedAop`；角色 `PLATFORM_ADMIN` / `USER`。
+6. **登录**：user 支持密码 + 邮箱 OTP + 手机 OTP（可 stub）；admin 仅种子账号，不接 Chat。
+7. **文档**：产品愿景/README/功能说明中文。
+8. **禁止**：emoji、装饰性符号。
+9. **业务第三方凭证**：Admin 维护 + 库表 + DML 种子（本 MVP 摄入令牌属服务间配置，写 properties 示例）。
+10. **用户端工程归属**：用户端 Web、iOS、Android、桌面和小程序全部放在 `bgssai-<产品>-user/`，不放仓库根 `clients/`。iOS / Android 为原生界面，不用 WebView 套网站。管理端放 `bgssai-<产品>-admin/`。权威见骨架仓 Standards §9。
+
+全局规范须读取[骨架仓唯一来源](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/BGSSAI-Standards.md)；本地多仓工作区可读取 `bgssai-skeleton/docs/BGSSAI-Standards.md`，单仓检出时读取上述 GitHub 文件。本仓只保留自身补充，不复制全局规范。

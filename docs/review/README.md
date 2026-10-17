@@ -16,7 +16,7 @@
 | 文件 | 说明 |
 | --- | --- |
 | [test-cases/README.md](./test-cases/README.md) | 用例索引（功能清单、AC/TC 计数） |
-| [test-cases/TEMPLATE.md](./test-cases/TEMPLATE.md) | 用例表模板与编写约定 |
+| [功能测试模板](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/test/TEMPLATE.md) | 用例表模板与编写约定 |
 | [test-cases/STATUS.md](./test-cases/STATUS.md) | 生成/执行状态摘要 |
 | [test-cases/TC-*.md](./test-cases/) | 按功能 slug 展开的用例表（54 条，in-scope） |
 
@@ -30,5 +30,5 @@
 ## 相关链接
 
 - 产品线愿景：[`docs/PRODUCT-LINE-VISION.md`](../PRODUCT-LINE-VISION.md)
-- 跨仓规范：[`docs/BGSSAI-Standards.md`](../BGSSAI-Standards.md)
+- 跨仓规范：[[全局开发规范](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/BGSSAI-Standards.md)](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/BGSSAI-Standards.md)
 - 骨架仓验收基线：[product-line-acceptance.md](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/feature/product-line-acceptance.md)

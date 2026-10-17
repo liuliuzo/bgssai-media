@@ -13,7 +13,7 @@
 | 验收标准合计（in-scope） | 54 |
 | 生成用例合计（in-scope） | 54 |
 | 用例目录 | `TC-<slug>.md`（本目录） |
-| 模板 | [`TEMPLATE.md`](./TEMPLATE.md) |
+| 模板 | [[功能测试模板](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/test/TEMPLATE.md)](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/test/TEMPLATE.md) |
 | 产品缩写（用例ID） | `MEDIA` |
 | 编写日期 | 2026-09-24 |
 | 执行状态 | [`STATUS.md`](./STATUS.md) |

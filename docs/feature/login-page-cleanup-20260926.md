@@ -2,7 +2,7 @@
 
 > 原型：`docs/demo-static/web/user/login-20260926.html`
 > 详设：`docs/architecture/login-page-cleanup-20260926.md`
-> 口径：骨架 `docs/BGSSAI-Standards.md` §14 登录页统一口径、§15 法务同意行与页脚
+> 口径：骨架 [全局开发规范](https://github.com/liuliuzo/bgssai-skeleton/blob/develop/docs/BGSSAI-Standards.md) §14 登录页统一口径、§15 法务同意行与页脚
 
 ## 背景
 
