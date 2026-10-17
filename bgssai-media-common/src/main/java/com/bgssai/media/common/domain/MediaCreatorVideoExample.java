@@ -37,6 +37,9 @@ public class MediaCreatorVideoExample {
         public Criteria andChannelIdIn(List<Long> values) { addCriterion("channel_id in", values, "channelId"); return this; }
         public Criteria andTitleEqualTo(String value) { addCriterion("title =", value, "title"); return this; }
         public Criteria andDescriptionEqualTo(String value) { addCriterion("description =", value, "description"); return this; }
+        public Criteria andTagsEqualTo(String value) { addCriterion("tags =", value, "tags"); return this; }
+        public Criteria andVisibilityEqualTo(String value) { addCriterion("visibility =", value, "visibility"); return this; }
+        public Criteria andModerationStatusEqualTo(String value) { addCriterion("moderation_status =", value, "moderationStatus"); return this; }
         public Criteria andStatusEqualTo(String value) { addCriterion("status =", value, "status"); return this; }
         public Criteria andStatusNotEqualTo(String value) { addCriterion("status <>", value, "status"); return this; }
         public Criteria andOriginalFilenameEqualTo(String value) { addCriterion("original_filename =", value, "originalFilename"); return this; }

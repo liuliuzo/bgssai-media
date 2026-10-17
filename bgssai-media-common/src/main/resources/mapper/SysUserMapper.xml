@@ -9,6 +9,7 @@
     <result column="phone" property="phone"/>
     <result column="role_code" property="roleCode"/>
     <result column="status" property="status"/>
+    <result column="deleted_at" property="deletedAt"/>
     <result column="created_at" property="createdAt"/>
     <result column="updated_at" property="updatedAt"/>
   </resultMap>
@@ -31,7 +32,7 @@
   </sql>
 
   <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.bgssai.media.common.domain.SysUserExample">
-    select id, username, password_hash, email, phone, role_code, status, created_at, updated_at
+    select id, username, password_hash, email, phone, role_code, status, deleted_at, created_at, updated_at
     from sys_user
     <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
     <if test="orderByClause != null">order by ${orderByClause}</if>
@@ -41,7 +42,7 @@
     <if test="_parameter != null"><include refid="Example_Where_Clause"/></if>
   </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long">
-    select id, username, password_hash, email, phone, role_code, status, created_at, updated_at from sys_user where id = #{id}
+    select id, username, password_hash, email, phone, role_code, status, deleted_at, created_at, updated_at from sys_user where id = #{id}
   </select>
   <insert id="insertSelective" parameterType="com.bgssai.media.common.domain.SysUser" useGeneratedKeys="true" keyProperty="id">
     insert into sys_user
@@ -71,6 +72,7 @@
       <if test="phone != null">phone = #{phone},</if>
       <if test="roleCode != null">role_code = #{roleCode},</if>
       <if test="status != null">status = #{status},</if>
+      <if test="deletedAt != null">deleted_at = #{deletedAt},</if>
     </set>
     where id = #{id}
   </update>

@@ -91,3 +91,15 @@
 - REQ-MEDIA-PC-COMMON-017（共同契约）：登录方式绑定与解绑
 - REQ-MEDIA-PC-COMMON-018（共同契约）：额度套餐开通与续费
 - REQ-MEDIA-PC-COMMON-019（共同契约）：额度按token计量显示
+
+## 2026-10-17 产品决策（媒体应用）
+
+本仓为媒体播放平台，**不提供 AI / 模型调用能力**。下列通用模型与额度条款对本仓不适用（N/A），不实施选模、Token 倍率、额度套餐与 K/M/B 展示：
+
+- REQ-MEDIA-PC-COMMON-010 同区模型原生能力 — N/A
+- REQ-MEDIA-PC-COMMON-011 无感选模与倍率 — N/A
+- REQ-MEDIA-PC-COMMON-012 额度与用量可追溯 — N/A（无模型用量）
+- REQ-MEDIA-PC-COMMON-018 额度套餐开通与续费 — N/A
+- REQ-MEDIA-PC-COMMON-019 额度按 token 计量显示 — N/A
+
+账号注销、登录方式绑定/解绑仍适用。

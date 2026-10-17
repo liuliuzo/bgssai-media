@@ -14,6 +14,7 @@ public class SysUser {
     private String phone;
     private String roleCode;
     private String status;
+    private Date deletedAt;
     private Date createdAt;
     private Date updatedAt;
 
@@ -31,6 +32,8 @@ public class SysUser {
     public void setRoleCode(String roleCode) { this.roleCode = roleCode; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public Date getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Date deletedAt) { this.deletedAt = deletedAt; }
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
     public Date getUpdatedAt() { return updatedAt; }

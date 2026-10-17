@@ -8,6 +8,8 @@ public class MediaUserChannel {
     private String handle;
     private String displayName;
     private String bio;
+    private String avatarUrl;
+    private String status;
     private Date createdAt;
     private Date updatedAt;
 
@@ -25,6 +27,12 @@ public class MediaUserChannel {
 
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }

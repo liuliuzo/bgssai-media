@@ -35,6 +35,10 @@ public class MediaVideoCommentExample {
         public Criteria andVideoIdIn(List<Long> values) { addCriterion("video_id in", values, "videoId"); return this; }
         public Criteria andUserIdEqualTo(Long value) { addCriterion("user_id =", value, "userId"); return this; }
         public Criteria andUserIdIn(List<Long> values) { addCriterion("user_id in", values, "userId"); return this; }
+        public Criteria andParentIdEqualTo(Long value) { addCriterion("parent_id =", value, "parentId"); return this; }
+        public Criteria andParentIdIsNull() { addCriterion("parent_id is null"); return this; }
+        public Criteria andPinnedEqualTo(Integer value) { addCriterion("pinned =", value, "pinned"); return this; }
+        public Criteria andDeletedAtIsNull() { addCriterion("deleted_at is null"); return this; }
         public Criteria andContentEqualTo(String value) { addCriterion("content =", value, "content"); return this; }
         public Criteria andCreatedAtEqualTo(Date value) { addCriterion("created_at =", value, "createdAt"); return this; }
     }

@@ -7,11 +7,13 @@
     <result column="handle" property="handle"/>
     <result column="display_name" property="displayName"/>
     <result column="bio" property="bio"/>
+    <result column="avatar_url" property="avatarUrl"/>
+    <result column="status" property="status"/>
     <result column="created_at" property="createdAt"/>
     <result column="updated_at" property="updatedAt"/>
   </resultMap>
 
-  <sql id="Base_Column_List">id, user_id, handle, display_name, bio, created_at, updated_at</sql>
+  <sql id="Base_Column_List">id, user_id, handle, display_name, bio, avatar_url, status, created_at, updated_at</sql>
 
   <sql id="Example_Where_Clause">
     <where>
@@ -61,6 +63,8 @@
       <if test="handle != null">handle,</if>
       <if test="displayName != null">display_name,</if>
       <if test="bio != null">bio,</if>
+      <if test="avatarUrl != null">avatar_url,</if>
+      <if test="status != null">status,</if>
       <if test="createdAt != null">created_at,</if>
       <if test="updatedAt != null">updated_at,</if>
     </trim>
@@ -69,6 +73,8 @@
       <if test="handle != null">#{handle},</if>
       <if test="displayName != null">#{displayName},</if>
       <if test="bio != null">#{bio},</if>
+      <if test="avatarUrl != null">#{avatarUrl},</if>
+      <if test="status != null">#{status},</if>
       <if test="createdAt != null">#{createdAt},</if>
       <if test="updatedAt != null">#{updatedAt},</if>
     </trim>
@@ -81,6 +87,8 @@
       <if test="handle != null">handle = #{handle},</if>
       <if test="displayName != null">display_name = #{displayName},</if>
       <if test="bio != null">bio = #{bio},</if>
+      <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+      <if test="status != null">status = #{status},</if>
       <if test="updatedAt != null">updated_at = #{updatedAt},</if>
     </set>
     where id = #{id}

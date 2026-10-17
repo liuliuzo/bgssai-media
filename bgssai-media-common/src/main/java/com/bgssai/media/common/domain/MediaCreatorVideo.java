@@ -10,6 +10,10 @@ public class MediaCreatorVideo {
     private Long channelId;
     private String title;
     private String description;
+    private String tags;
+    private String visibility;
+    private String moderationStatus;
+    private Date moderatedAt;
     private String status;
     private String originalFilename;
     private String originalPath;
@@ -36,6 +40,18 @@ public class MediaCreatorVideo {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getTags() { return tags; }
+    public void setTags(String tags) { this.tags = tags; }
+
+    public String getVisibility() { return visibility; }
+    public void setVisibility(String visibility) { this.visibility = visibility; }
+
+    public String getModerationStatus() { return moderationStatus; }
+    public void setModerationStatus(String moderationStatus) { this.moderationStatus = moderationStatus; }
+
+    public Date getModeratedAt() { return moderatedAt; }
+    public void setModeratedAt(Date moderatedAt) { this.moderatedAt = moderatedAt; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

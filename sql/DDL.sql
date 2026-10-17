@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS sys_user (
   phone         VARCHAR(32)  NULL,
   role_code     VARCHAR(32)  NOT NULL,
   status        VARCHAR(16)  NOT NULL DEFAULT 'active',
+  deleted_at    DATETIME     NULL COMMENT '注销时间；status=deleted 时填充',
   created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_sys_user_username (username),
@@ -251,6 +252,8 @@ CREATE TABLE IF NOT EXISTS media_user_channel (
   handle        VARCHAR(64)  NOT NULL                          COMMENT '公开 handle，唯一',
   display_name  VARCHAR(128) NOT NULL,
   bio           VARCHAR(512) NULL,
+  avatar_url    VARCHAR(1024) NULL                              COMMENT '频道头像',
+  status        VARCHAR(16)  NOT NULL DEFAULT 'active'          COMMENT 'active / banned',
   created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_media_user_channel_user (user_id),
@@ -263,6 +266,10 @@ CREATE TABLE IF NOT EXISTS media_creator_video (
   channel_id         BIGINT        NOT NULL                          COMMENT 'media_user_channel.id',
   title              VARCHAR(256)  NOT NULL,
   description        TEXT          NULL,
+  tags               VARCHAR(512)  NULL                              COMMENT '逗号分隔标签',
+  visibility         VARCHAR(16)   NOT NULL DEFAULT 'public'         COMMENT 'public / private / unlisted',
+  moderation_status  VARCHAR(16)   NOT NULL DEFAULT 'pending'        COMMENT 'pending / approved / rejected；通过前不对公众展示',
+  moderated_at       DATETIME      NULL,
   status             VARCHAR(16)   NOT NULL DEFAULT 'QUEUED'         COMMENT 'QUEUED / RUNNING / READY / FAILED',
   original_filename  VARCHAR(256)  NULL,
   original_path      VARCHAR(1024) NULL                              COMMENT '本地存储路径，不对其他用户暴露',
@@ -277,6 +284,7 @@ CREATE TABLE IF NOT EXISTS media_creator_video (
   KEY idx_media_creator_video_user (user_id),
   KEY idx_media_creator_video_channel (channel_id),
   KEY idx_media_creator_video_status (status, created_at),
+  KEY idx_media_creator_video_moderation (moderation_status, visibility, status),
   CONSTRAINT fk_media_creator_video_channel FOREIGN KEY (channel_id) REFERENCES media_user_channel(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='创作者上传成片（非剧集分集）';
 
@@ -325,10 +333,14 @@ CREATE TABLE IF NOT EXISTS media_video_comment (
   id          BIGINT PRIMARY KEY AUTO_INCREMENT,
   video_id    BIGINT       NOT NULL,
   user_id     BIGINT       NOT NULL,
+  parent_id   BIGINT       NULL COMMENT '回复的父评论 id',
   content     VARCHAR(2000) NOT NULL,
+  pinned      TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '创作者置顶',
+  deleted_at  DATETIME     NULL COMMENT '软删除时间',
   created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_media_video_comment_video (video_id, id),
   KEY idx_media_video_comment_user (user_id),
+  KEY idx_media_video_comment_parent (parent_id),
   CONSTRAINT fk_media_video_comment_video FOREIGN KEY (video_id) REFERENCES media_creator_video(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='成片评论';
 
@@ -401,3 +413,123 @@ CREATE TABLE IF NOT EXISTS cs_support_receipt (
   PRIMARY KEY (id),
   UNIQUE KEY uk_cs_support_receipt_delivery (delivery_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一客服回传回执';
+
+-- -----------------------------------------------------------------------------
+-- OPC 2026-10-17：订阅时间线辅助、历史/播放列表、分析、举报、额度
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS media_not_interested (
+  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id     BIGINT       NOT NULL,
+  video_id    BIGINT       NOT NULL,
+  reason      VARCHAR(64)  NULL,
+  created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_media_not_interested (user_id, video_id),
+  KEY idx_media_not_interested_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='不感兴趣反馈';
+
+CREATE TABLE IF NOT EXISTS media_user_pref (
+  user_id               BIGINT PRIMARY KEY,
+  pause_watch_history   TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1=暂停记录观看历史',
+  updated_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户偏好';
+
+CREATE TABLE IF NOT EXISTS media_watch_history (
+  id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id       BIGINT       NOT NULL,
+  video_id      BIGINT       NOT NULL,
+  content_id    VARCHAR(64)  NULL,
+  title         VARCHAR(256) NULL,
+  watched_sec   INT          NOT NULL DEFAULT 0,
+  playable      TINYINT(1)   NOT NULL DEFAULT 1,
+  last_watched_at DATETIME   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_media_watch_history (user_id, video_id),
+  KEY idx_media_watch_history_user_time (user_id, last_watched_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='观看历史';
+
+CREATE TABLE IF NOT EXISTS media_watch_later (
+  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id     BIGINT   NOT NULL,
+  video_id    BIGINT   NOT NULL,
+  sort_order  INT      NOT NULL DEFAULT 0,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_media_watch_later (user_id, video_id),
+  KEY idx_media_watch_later_user (user_id, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='稍后观看';
+
+CREATE TABLE IF NOT EXISTS media_playlist (
+  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id     BIGINT       NOT NULL,
+  title       VARCHAR(128) NOT NULL,
+  visibility  VARCHAR(16)  NOT NULL DEFAULT 'private' COMMENT 'private / public',
+  created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_media_playlist_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='自建播放列表';
+
+CREATE TABLE IF NOT EXISTS media_playlist_item (
+  id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+  playlist_id  BIGINT   NOT NULL,
+  video_id     BIGINT   NOT NULL,
+  sort_order   INT      NOT NULL DEFAULT 0,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_media_playlist_item (playlist_id, video_id),
+  KEY idx_media_playlist_item_order (playlist_id, sort_order),
+  CONSTRAINT fk_media_playlist_item_playlist FOREIGN KEY (playlist_id) REFERENCES media_playlist(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='播放列表条目';
+
+CREATE TABLE IF NOT EXISTS media_view_event (
+  id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id       BIGINT       NULL,
+  video_id      BIGINT       NOT NULL,
+  channel_id    BIGINT       NOT NULL,
+  watched_sec   INT          NOT NULL DEFAULT 0,
+  completed     TINYINT(1)   NOT NULL DEFAULT 0,
+  event_day     DATE         NOT NULL,
+  created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_media_view_event_video_day (video_id, event_day),
+  KEY idx_media_view_event_channel_day (channel_id, event_day)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='播放事件（分析口径源）';
+
+CREATE TABLE IF NOT EXISTS media_subscribe_event (
+  id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+  channel_id    BIGINT       NOT NULL,
+  follower_user_id BIGINT    NOT NULL,
+  action        VARCHAR(16)  NOT NULL COMMENT 'follow / unfollow',
+  event_day     DATE         NOT NULL,
+  created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_media_subscribe_event_channel_day (channel_id, event_day)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订阅增减事件';
+
+CREATE TABLE IF NOT EXISTS media_content_report (
+  id                BIGINT PRIMARY KEY AUTO_INCREMENT,
+  reporter_user_id  BIGINT       NOT NULL,
+  target_type       VARCHAR(16)  NOT NULL COMMENT 'VIDEO / COMMENT',
+  target_id         BIGINT       NOT NULL,
+  reason            VARCHAR(512) NOT NULL,
+  status            VARCHAR(16)  NOT NULL DEFAULT 'open' COMMENT 'open / resolved / rejected',
+  merge_key         VARCHAR(128) NOT NULL COMMENT '合并键 reporter+type+target',
+  handler_note      VARCHAR(512) NULL,
+  handled_at        DATETIME     NULL,
+  notify_sent       TINYINT(1)   NOT NULL DEFAULT 0,
+  created_at        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_media_content_report_merge (merge_key),
+  KEY idx_media_content_report_status (status, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='作品/评论举报';
+
+CREATE TABLE IF NOT EXISTS media_user_notice (
+  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id     BIGINT       NOT NULL,
+  kind        VARCHAR(32)  NOT NULL,
+  title       VARCHAR(128) NOT NULL,
+  body        VARCHAR(1024) NOT NULL,
+  ref_type    VARCHAR(32)  NULL,
+  ref_id      BIGINT       NULL,
+  read_flag   TINYINT(1)   NOT NULL DEFAULT 0,
+  created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_media_user_notice_user (user_id, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='站内通知（举报处理等）';
+
+
+
+
+

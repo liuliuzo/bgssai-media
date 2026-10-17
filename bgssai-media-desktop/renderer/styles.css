@@ -97,3 +97,11 @@ h2 { font-size: 1.1rem; margin: 0 0 10px; }
 }
 .engine-error ol { margin: 8px 0 8px 18px; padding: 0; }
 .engine-error a { word-break: break-all; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

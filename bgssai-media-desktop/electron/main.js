@@ -130,6 +130,11 @@ ipcMain.handle('player:selectSubtitleTrack', guarded(async (_evt, trackIndex) =>
   return player.selectSubtitleTrack(trackIndex);
 }));
 
+ipcMain.handle('player:setSubtitleDelay', guarded(async (_evt, ms) => player.setSubtitleDelay(ms)));
+ipcMain.handle('player:setAudioDelay', guarded(async (_evt, ms) => player.setAudioDelay(ms)));
+ipcMain.handle('player:screenshot', guarded(async () => player.screenshot()));
+ipcMain.handle('player:openExternalSubtitle', guarded(async (_evt, p) => player.openExternalSubtitle(p)));
+
 ipcMain.handle('player:tracks', guarded(async () => {
   return player.getTracks();
 }));
