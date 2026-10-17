@@ -15,7 +15,7 @@
 
 ## 本仓定位
 
-**bgssai-media-pc**（GitHub 旧名 `bgssai-media`）：视频解决方案里的 PC 端。播放器对照 VLC，要能播放主流格式文件；同时是对标 YouTube / YouTube Shorts 的视频播放平台，承接 `bgssai-short` 与 `bgssai-long` 成片发布和在线观看。short / long 不做分发渠道。
+**bgssai-media-pc**（GitHub 旧名 `bgssai-media`）：视频解决方案里的 PC 端。播放器对照 VLC，要能播放主流格式文件；同时是对标 YouTube / YouTube Shorts 的视频播放平台。用户通过创作者中心发布作品，并在线观看。本仓承接 `bgssai-short` 与 `bgssai-long` 成片进入目录。short / long 不做分发渠道。
 
 Web、Android、iOS 已拆到独立仓库，共用本仓用户端 / 管理端 API：
 

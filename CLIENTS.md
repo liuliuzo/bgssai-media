@@ -4,10 +4,10 @@
 
 | 端 | 仓库 | 形态 |
 | --- | --- | --- |
-| PC 播放器 + 平台 API | 本仓 `bgssai-media-pc` | `bgssai-media-desktop` 参考 VLC，播放主流格式；用户端 / 管理端 API 也在本仓 |
-| Web | [bgssai-media-web](https://github.com/liuliuzo/bgssai-media-web) | `user/` 与 `admin/` |
-| Android | [bgssai-media-android](https://github.com/liuliuzo/bgssai-media-android) | 原生 Kotlin，ExoPlayer，不用 WebView |
-| iOS | [bgssai-media-ios](https://github.com/liuliuzo/bgssai-media-ios) | 原生 SwiftUI，AVPlayer，不用 WebView |
+| PC 播放器 + 平台 API | 本仓 `bgssai-media-pc` | `bgssai-media-desktop` 参考 VLC，播放主流格式；用户通过创作者中心发布作品 |
+| Web | [bgssai-media-web](https://github.com/liuliuzo/bgssai-media-web) | `user/` 与 `admin/`；用户在创作者中心发布作品 |
+| Android | [bgssai-media-android](https://github.com/liuliuzo/bgssai-media-android) | 原生 Kotlin，ExoPlayer，不用 WebView；用户在创作者中心发布作品 |
+| iOS | [bgssai-media-ios](https://github.com/liuliuzo/bgssai-media-ios) | 原生 SwiftUI，AVPlayer，不用 WebView；用户在创作者中心发布作品 |
 
 2026-10-06 的播放器/平台源码边界与验收顺序见 [产品定位与交付核查](docs/review/product-direction-20261006.md)。桌面本地播放器与 PC 平台壳尚未联通。Android / iOS 的原生工程已独立成仓，真机播放仍需验收。本仓不再保留 Capacitor 移动壳。
 
@@ -23,8 +23,8 @@
 | Windows | 单 Electron | `clients/desktop/` | `installable=single-app dual-entry` | 脚手架 |
 | macOS | 同上（同一包） | `clients/desktop/` | 同上 | 脚手架 |
 | Linux | 同上（AppImage） | `clients/desktop/` | 同上 | 脚手架 |
-| iOS | 原生 SwiftUI | 仓库 `bgssai-media-ios` | 在线观看与发布 | 独立仓，待真机验收 |
-| Android | 原生 Kotlin | 仓库 `bgssai-media-android` | 在线观看与发布 | 独立仓，待真机验收 |
+| iOS | 原生 SwiftUI | 仓库 `bgssai-media-ios` | 在线观看；创作者中心发布作品 | 独立仓，待真机验收 |
+| Android | 原生 Kotlin | 仓库 `bgssai-media-android` | 在线观看；创作者中心发布作品 | 独立仓，待真机验收 |
 | 微信小程序 | 单 AppID | `clients/miniprogram/` | 同上 | 脚手架 |
 
 ## 与既有模块的关系

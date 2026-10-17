@@ -4,7 +4,7 @@
 
 ## 核心定位
 
-> **bgssai-media 系列是视频解决方案。四个端都是对标 YouTube 和 YouTube Shorts 的视频播放平台，支持发布和在线观看。本仓 bgssai-media-pc 还是参考 VLC 的 PC 播放器，要能播放主流格式文件。Web、Android、iOS 分别在 bgssai-media-web、bgssai-media-android、bgssai-media-ios。**
+> **bgssai-media 系列是视频解决方案。bgssai-media-pc、bgssai-media-web、bgssai-media-android、bgssai-media-ios 都是对标 YouTube 和 YouTube Shorts 的视频播放平台。四个端都支持在线观看，用户都通过创作者中心发布作品。本仓 bgssai-media-pc 还是参考 VLC 的 PC 播放器，要能播放主流格式文件。**
 
 平台 API、数据库和 PC 播放器在本仓。另外三端只做各自的客户端，调用本仓用户端接口。
 
@@ -25,7 +25,7 @@ long  长剧成片  ──┘     → media 入库（PENDING / FAILED / READY）
 | 能力 | 说明 |
 | --- | --- |
 | 通用播放器 | 对照 VLC。当前桌面模块经 RC 控制外部 VLC，按样本验证矩阵；Web 播放 MP4/WebM/HLS 依赖浏览器及编码。移动原生播放与桌面统一入口仍待实现/验收。详见 `docs/feature/format-matrix.md` |
-| 视频平台 | 对标 YouTube（正片 / 剧集）与 YouTube Shorts（短视频 / 短剧）：目录、分集播放、继续观看、Shorts 流 `/shorts` |
+| 视频平台 | 对标 YouTube（正片 / 剧集）与 YouTube Shorts（短视频 / 短剧）：目录、分集播放、继续观看、Shorts 流 `/shorts`。用户通过创作者中心发布作品 |
 | 发布接入 | 承接 `bgssai-short` 与 `bgssai-long` 成片摄入（`idempotency_key` UNIQUE upsert，READY 重放不双写），运营端查看摄入日志 |
 | 用户登录 | 密码 + 邮箱 OTP + 手机 OTP；境内四家演示；**Chat 第三方登录为 PREP**（不签发会话） |
 | 管理端 | 仅 DML 种子密码登录，**不接入 Chat** |
@@ -34,7 +34,7 @@ long  长剧成片  ──┘     → media 入库（PENDING / FAILED / READY）
 
 - **bgssai-short**：**AI 短剧制作平台**（参考 `waoowaoo`、`Jellyfish`、`ArcReel`、`LocalMiniDrama`、`openframe`、`ZJT`）。成品短剧通过标准契约（`/bgssai/user/media/ingest/short`）直接发布到本平台 YouTube Shorts 竖屏流。
 - **bgssai-long**：**AI 长剧制作平台**（参考 `waoowaoo`、`Jellyfish`、`ArcReel`、`LocalMiniDrama`、`openframe`、`ZJT`）。成品长剧通过标准契约（`/bgssai/user/media/ingest/long`）直接发布到本平台 YouTube 正片 / 剧集流。
-- **bgssai-media**：**播放器 + 视频播放平台**（参考 VLC，对标 YouTube 和 YouTube Shorts）。目标覆盖主流格式并承接 short 与 long 成片，交付 Windows PC、Web、Android、iOS；当前差距与通过条件见本次核查。
+- **bgssai-media**：**播放器 + 视频播放平台**（参考 VLC，对标 YouTube 和 YouTube Shorts）。目标覆盖主流格式。PC、Web、Android、iOS 四个端的用户都通过创作者中心发布作品，并在线观看。short 与 long 成片仍进入本平台目录。当前差距与通过条件见本次核查。
 - **闭环协同**：`bgssai-short` + `bgssai-long` + `bgssai-media` 形成完整的音视频创作、制作、分发、播放闭环，三仓一体化协同迭代。
 - **bgssai-chat**：中心账号；本仓用户端预留第三方登录，管理端隔离。
 

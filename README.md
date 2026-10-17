@@ -1,6 +1,6 @@
 # bgssai-media-pc
 
-**bgssai-media 系列是视频解决方案。本仓是 PC 端：播放器参考 VLC，同时是视频播放平台，对标 YouTube 和 YouTube Shorts。播放器要能播放主流格式文件；平台支持视频发布和在线观看。**
+**bgssai-media 系列是视频解决方案。本仓是 PC 端：播放器参考 VLC，同时是视频播放平台，对标 YouTube 和 YouTube Shorts。播放器要能播放主流格式文件。用户通过创作者中心发布作品，并在线观看。**
 
 GitHub 仓库已从 `bgssai-media` 改名为 `bgssai-media-pc`。旧地址会打开本仓。
 
@@ -16,7 +16,7 @@ GitHub 仓库已从 `bgssai-media` 改名为 `bgssai-media-pc`。旧地址会打
 当前实现边界仍见 [2026-10-06 产品定位与交付核查](docs/review/product-direction-20261006.md)。桌面播放器通过 RC 控制外部 VLC。Web 前端已迁出。Android / iOS 不再使用本仓的 Capacitor WebView 壳。
 
 - **播放器（对照 VLC）**：按格式矩阵验收 MP4、MKV、WebM、MOV、AVI、FLV、WMV、TS、MP3、FLAC、WAV 以及 HLS。Web 与手机在线播放不继承 VLC 的解码范围。
-- **视频播放平台**：正片 / 剧集连播、继续观看，以及 Shorts 竖屏流。上游 `bgssai-short` 与 `bgssai-long` 的成片从本仓摄入接口发布。
+- **视频播放平台**：正片 / 剧集连播、继续观看，以及 Shorts 竖屏流。用户在创作者中心发布作品；PC 平台壳打开 Web 用户站里的创作者中心。上游 `bgssai-short` 与 `bgssai-long` 的成片从本仓摄入接口进入目录。
 
 ## 仓库结构
 

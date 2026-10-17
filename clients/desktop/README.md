@@ -4,7 +4,7 @@
 
 **禁止** 拆成 Admin / User 两套桌面程序。
 
-与仓库根下 `bgssai-media-desktop`（libVLC 本地播放器）职责不同。
+与仓库根下 `bgssai-media-desktop`（libVLC 本地播放器）职责不同。用户入口打开 Web 用户站，在创作者中心发布作品。
 
 ## 运行
 
