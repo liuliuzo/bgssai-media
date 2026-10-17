@@ -29,8 +29,8 @@ URL 钩子（Java / 桌面 `format-hook.js` / 前端 `src/format/matrix.ts` 同�
 | 路径 | 模块 | 引擎 | 用途 |
 | --- | --- | --- | --- |
 | Web 短剧端 | `bgssai-media-web` | video.js + hls.js | 在线短剧目录中的 MP4 / WebM / HLS |
-| 桌面播放器 | `bgssai-media-desktop` | 外部系统 VLC（RC 控制） | 本地格式样本验证；VLC 承担播放窗口 |
-| Windows 产品壳 | `clients/desktop` | Electron Web 壳 | 在线入口与文件关联声明；尚未接入上述播放器 |
+| 桌面播放器 | `bgssai-media-desktop` | 外部系统 VLC（RC 控制） | PC 自己的界面。本地主流格式和在线地址都由 VLC 播放 |
+| 管理站入口 | `clients/desktop` | Electron | 只打开管理站，不是用户播放界面 |
 | Android / iOS | `bgssai-media-android` / `bgssai-media-ios` | ExoPlayer / AVPlayer | 在线 MP4 / HLS；不能据此声明 VLC 级全格式播放 |
 
 权威 JSON：`bgssai-media-desktop/shared/format-matrix.json`。

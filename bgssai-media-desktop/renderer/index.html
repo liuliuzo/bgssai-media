@@ -8,9 +8,27 @@
 </head>
 <body>
   <div class="app">
+    <aside class="nav">
+      <div class="brand">BGSSAI Media</div>
+      <p class="tagline">PC 播放平台</p>
+      <button type="button" class="nav-btn is-active" data-view="player">播放器</button>
+      <button type="button" class="nav-btn" data-view="feed">正片</button>
+      <button type="button" class="nav-btn" data-view="shorts">短视频</button>
+      <button type="button" class="nav-btn" data-view="creator">创作者中心</button>
+      <form id="account" class="account">
+        <label>服务地址 <input id="server" type="url" value="http://127.0.0.1:8081" /></label>
+        <label>账号 <input id="username" autocomplete="username" /></label>
+        <label>密码 <input id="password" type="password" autocomplete="current-password" /></label>
+        <button id="btn-login" type="submit">登录</button>
+        <button id="btn-logout" type="button" hidden>退出</button>
+        <p id="account-status" class="status"></p>
+      </form>
+    </aside>
+    <div class="workspace">
+    <section id="view-player" class="view">
     <header class="hero">
-      <div class="brand">bgssai-media</div>
-      <p class="tagline">桌面播放器 - 内置自包含解码管线 (builtin-html5-ffmpeg) / 可选外部 libVLC</p>
+      <div class="brand">播放器</div>
+      <p class="tagline">参考 VLC，用系统 libVLC 播放主流格式文件。在线地址也从这里播出。</p>
     </header>
 
     <section class="panel">
@@ -55,9 +73,46 @@
     <section class="panel">
       <h2>格式支持矩阵</h2>
       <div id="matrix" class="matrix"></div>
-      <p class="hint">Web 短剧端仅覆盖 MP4 / WebM / HLS；本桌面端通过内置自包含管线或系统 VLC 覆盖完整矩阵。</p>
+      <p class="hint">Web、Android、iOS 在线播放覆盖接口给出的 MP4、WebM 和 HLS。本机主流格式由这个播放器解码。</p>
     </section>
+    </section>
+
+    <section id="view-feed" class="view" hidden>
+      <header class="hero">
+        <div class="brand">正片</div>
+        <p class="tagline">已发布剧集。选择一集后用本机播放器打开。</p>
+      </header>
+      <p id="feed-status" class="status"></p>
+      <div id="feed-list" class="cards"></div>
+      <div id="episode-list" class="cards"></div>
+    </section>
+
+    <section id="view-shorts" class="view" hidden>
+      <header class="hero">
+        <div class="brand">短视频</div>
+        <p class="tagline">对标 YouTube Shorts 的竖屏目录。可播条目用本机播放器打开。</p>
+      </header>
+      <p id="shorts-status" class="status"></p>
+      <div id="shorts-list" class="cards"></div>
+    </section>
+
+    <section id="view-creator" class="view" hidden>
+      <header class="hero">
+        <div class="brand">创作者中心</div>
+        <p class="tagline">在这里发布作品。选择本地视频后上传，转码完成后再播放。</p>
+      </header>
+      <form id="creator-form" class="panel">
+        <label>标题 <input id="work-title" required maxlength="120" /></label>
+        <label>简介 <textarea id="work-description" rows="3"></textarea></label>
+        <button id="btn-upload" type="submit">选择视频并发布</button>
+        <p id="creator-status" class="status"></p>
+      </form>
+      <h2>我的作品</h2>
+      <div id="mine-list" class="cards"></div>
+    </section>
+    </div>
   </div>
   <script src="./renderer.js"></script>
+  <script src="./platform.js"></script>
 </body>
 </html>

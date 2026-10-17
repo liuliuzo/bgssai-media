@@ -16,7 +16,7 @@ GitHub 仓库已从 `bgssai-media` 改名为 `bgssai-media-pc`。旧地址会打
 当前实现边界仍见 [2026-10-06 产品定位与交付核查](docs/review/product-direction-20261006.md)。桌面播放器通过 RC 控制外部 VLC。Web 前端已迁出。Android / iOS 不再使用本仓的 Capacitor WebView 壳。
 
 - **播放器（对照 VLC）**：按格式矩阵验收 MP4、MKV、WebM、MOV、AVI、FLV、WMV、TS、MP3、FLAC、WAV 以及 HLS。Web 与手机在线播放不继承 VLC 的解码范围。
-- **视频播放平台**：正片 / 剧集连播、继续观看，以及 Shorts 竖屏流。用户在创作者中心发布作品；PC 平台壳打开 Web 用户站里的创作者中心。上游 `bgssai-short` 与 `bgssai-long` 的成片从本仓摄入接口进入目录。
+- **视频播放平台**：正片 / 剧集连播、继续观看，以及 Shorts 竖屏流。用户在 PC 自己的创作者中心发布作品。上游 `bgssai-short` 与 `bgssai-long` 的成片从本仓摄入接口进入目录。
 
 ## 仓库结构
 
@@ -25,8 +25,8 @@ GitHub 仓库已从 `bgssai-media` 改名为 `bgssai-media-pc`。旧地址会打
 | `bgssai-media-common` | 共享领域、MyBatis、鉴权、业务服务 | - |
 | `bgssai-media-admin` | 管理端 API | 8080 |
 | `bgssai-media-user` | 用户端 API、发布与在线目录 | 8081（本机并发用启动参数） |
-| `bgssai-media-desktop` | Electron + libVLC 桌面播放器 | 本地 |
-| `clients/desktop` | PC 平台壳，打开 Web 用户站 / 管理站 | 本地 |
+| `bgssai-media-desktop` | PC 自己的界面：libVLC 播放器、正片、短视频、创作者中心 | 本地 |
+| `clients/desktop` | 只打开管理站，不是用户播放界面 | 本地 |
 | `clients/miniprogram` | 微信小程序壳 | 本地 |
 | `sql/` | DDL + DML 种子 | - |
 
@@ -105,13 +105,13 @@ sudo apt install -y vlc
 cd bgssai-media-desktop && npm install && npm run smoke:vlc && npm start
 ```
 
-PC 平台壳：
+PC 界面：
 
 ```bash
-cd clients/desktop && npm install && npm start
+cd bgssai-media-desktop && npm install && npm start
 ```
 
-壳默认打开本机 Web 登录页。微信开发者工具打开 `clients/miniprogram/`。
+登录后侧栏有播放器、正片、短视频和创作者中心。服务地址默认 `http://127.0.0.1:8081`。`clients/desktop` 只打开管理站。微信开发者工具打开 `clients/miniprogram/`。
 
 ## 与骨架仓对齐
 

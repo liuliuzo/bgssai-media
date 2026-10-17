@@ -1,6 +1,6 @@
 # BGSSAI Media 六端客户端
 
-2026-10-17：Web 在 `bgssai-media-web`，Android 在 `bgssai-media-android`，iOS 在 `bgssai-media-ios`。本仓留下 PC 播放器、PC 壳、平台 API 和微信小程序。下面 2026-09-19 的六端条目是当时的单仓规划，移动壳路径 `clients/mobile/` 已经删除。
+2026-10-17：Web 在 `bgssai-media-web`，Android 在 `bgssai-media-android`，iOS 在 `bgssai-media-ios`。PC 用户界面在 `bgssai-media-desktop`，自己绘制播放器、正片、短视频和创作者中心，不打开 Web 用户站。下面 2026-09-19 的六端条目是当时的单仓规划，移动壳路径 `clients/mobile/` 已经删除。
 
 依据组织标准（2026-09-19）：每个产品须覆盖可安装六端 **Windows、macOS、Linux、iOS、Android、微信小程序**（先代码，服务器/域名稍后）。
 

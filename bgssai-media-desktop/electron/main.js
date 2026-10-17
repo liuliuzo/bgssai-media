@@ -1,22 +1,24 @@
 'use strict';
 
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const fs = require('fs');
 const path = require('path');
 const { VlcPlayer } = require('./vlc-player');
+const platformApi = require('./platform-api');
 
 let mainWindow = null;
 let player = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 960,
-    height: 720,
+    width: 1180,
+    height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
-    title: 'bgssai-media Desktop Player',
+    title: 'BGSSAI Media',
   });
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
   mainWindow.on('closed', () => {
@@ -145,4 +147,138 @@ ipcMain.handle('player:formatHook', guarded(async (_evt, name) => {
 
 ipcMain.handle('player:engine', guarded(async () => {
   return player.probeEngine();
+}));
+
+const DEFAULT_BASE = 'http://127.0.0.1:8081';
+
+function sessionFile() {
+  return path.join(app.getPath('userData'), 'bgssai-media-session.json');
+}
+
+function readSession() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(sessionFile(), 'utf8'));
+    return {
+      base: typeof parsed.base === 'string' && parsed.base ? parsed.base : DEFAULT_BASE,
+      token: typeof parsed.token === 'string' ? parsed.token : '',
+      username: typeof parsed.username === 'string' ? parsed.username : '',
+    };
+  } catch (err) {
+    return { base: DEFAULT_BASE, token: '', username: '' };
+  }
+}
+
+function writeSession(next) {
+  fs.mkdirSync(path.dirname(sessionFile()), { recursive: true });
+  fs.writeFileSync(sessionFile(), JSON.stringify(next));
+}
+
+function publicSession(session) {
+  return {
+    base: session.base,
+    username: session.username,
+    loggedIn: Boolean(session.token),
+  };
+}
+
+function clearToken(session) {
+  session.token = '';
+  session.username = '';
+  writeSession(session);
+}
+
+ipcMain.handle('platform:session', guarded(async () => {
+  return publicSession(readSession());
+}));
+
+ipcMain.handle('platform:login', guarded(async (_evt, payload) => {
+  const session = readSession();
+  const base = platformApi.normalizeBase(payload && payload.base ? payload.base : session.base);
+  const username = payload && payload.username ? String(payload.username) : '';
+  const password = payload && payload.password ? String(payload.password) : '';
+  const result = await platformApi.requestJson(fetch, {
+    base,
+    method: 'POST',
+    apiPath: '/api/auth/login',
+    jsonBody: { username, password },
+    trustedPath: true,
+  });
+  const token = result && result.token ? String(result.token) : '';
+  if (!token) {
+    return { ok: false, code: 'NO_TOKEN', message: '登录没有返回令牌' };
+  }
+  writeSession({ base, token, username: (result && result.username) || username });
+  return publicSession(readSession());
+}));
+
+ipcMain.handle('platform:logout', guarded(async () => {
+  const session = readSession();
+  clearToken(session);
+  session.base = session.base || DEFAULT_BASE;
+  writeSession(session);
+  return publicSession(readSession());
+}));
+
+ipcMain.handle('platform:get', guarded(async (_evt, apiPath) => {
+  const session = readSession();
+  if (!session.token) {
+    return { ok: false, code: 'NO_TOKEN', message: '请先登录' };
+  }
+  try {
+    return await platformApi.requestJson(fetch, {
+      base: session.base,
+      token: session.token,
+      apiPath,
+    });
+  } catch (err) {
+    if (err && err.sessionEnded) clearToken(session);
+    throw err;
+  }
+}));
+
+ipcMain.handle('platform:play', guarded(async (_evt, rawUrl) => {
+  const session = readSession();
+  const target = platformApi.playableHttpUrl(session.base, rawUrl);
+  await player.openPlaylist([target]);
+  await player.play();
+  return { ok: true, url: target };
+}));
+
+ipcMain.handle('platform:upload', guarded(async (_evt, payload) => {
+  const session = readSession();
+  if (!session.token) {
+    return { ok: false, code: 'NO_TOKEN', message: '请先登录' };
+  }
+  const title = payload && payload.title ? String(payload.title).trim() : '';
+  const description = payload && payload.description ? String(payload.description) : '';
+  if (!title) {
+    return { ok: false, code: 'NO_TITLE', message: '请填写标题' };
+  }
+  const picked = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Video', extensions: ['mp4', 'mkv', 'webm', 'mov', 'avi', 'm3u8', 'ts', 'flv'] },
+      { name: 'All', extensions: ['*'] },
+    ],
+  });
+  if (picked.canceled || picked.filePaths.length === 0) {
+    return { canceled: true };
+  }
+  const filePath = picked.filePaths[0];
+  const bytes = await fs.promises.readFile(filePath);
+  try {
+    const result = await platformApi.uploadVideo(fetch, {
+      base: session.base,
+      token: session.token,
+      title,
+      description,
+      bytes,
+      mime: platformApi.videoMime(filePath),
+      filename: path.basename(filePath),
+    });
+    return { ok: true, result };
+  } catch (err) {
+    if (err && err.sessionEnded) clearToken(session);
+    throw err;
+  }
 }));
