@@ -758,42 +758,42 @@
       "id": "TC-MEDIA-PC-COMMON-010-P",
       "requirement": "REQ-MEDIA-PC-COMMON-010",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "P"
     },
     {
       "id": "TC-MEDIA-PC-COMMON-010-N",
       "requirement": "REQ-MEDIA-PC-COMMON-010",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "N"
     },
     {
       "id": "TC-MEDIA-PC-COMMON-011-P",
       "requirement": "REQ-MEDIA-PC-COMMON-011",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "P"
     },
     {
       "id": "TC-MEDIA-PC-COMMON-011-N",
       "requirement": "REQ-MEDIA-PC-COMMON-011",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "N"
     },
     {
       "id": "TC-MEDIA-PC-COMMON-012-P",
       "requirement": "REQ-MEDIA-PC-COMMON-012",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "P"
     },
     {
       "id": "TC-MEDIA-PC-COMMON-012-N",
       "requirement": "REQ-MEDIA-PC-COMMON-012",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "N"
     },
     {
@@ -870,28 +870,28 @@
       "id": "TC-MEDIA-PC-COMMON-018-P",
       "requirement": "REQ-MEDIA-PC-COMMON-018",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "P"
     },
     {
       "id": "TC-MEDIA-PC-COMMON-018-N",
       "requirement": "REQ-MEDIA-PC-COMMON-018",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "N"
     },
     {
       "id": "TC-MEDIA-PC-COMMON-019-P",
       "requirement": "REQ-MEDIA-PC-COMMON-019",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "P"
     },
     {
       "id": "TC-MEDIA-PC-COMMON-019-N",
       "requirement": "REQ-MEDIA-PC-COMMON-019",
       "file": "TC-opc-common-20261017.md",
-      "status": "待测",
+      "status": "不适用",
       "kind": "N"
     },
     {
@@ -1331,11 +1331,11 @@
     }
   ],
   "progress": {
-    "待测": 88,
+    "待测": 78,
     "通过": 0,
     "失败": 0,
     "阻塞": 0,
-    "不适用": 0
+    "不适用": 10
   },
   "suite_counts": {
     "TC-desktop-real-playback-20261017.md": {
@@ -1353,11 +1353,11 @@
       "不适用": 0
     },
     "TC-opc-common-20261017.md": {
-      "待测": 38,
+      "待测": 28,
       "通过": 0,
       "失败": 0,
       "阻塞": 0,
-      "不适用": 0
+      "不适用": 10
     },
     "TC-opc-platform-20261017.md": {
       "待测": 6,
