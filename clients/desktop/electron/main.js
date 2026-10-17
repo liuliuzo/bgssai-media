@@ -4,12 +4,9 @@ const { app, BrowserWindow, shell, ipcMain, Menu } = require('electron');
 const path = require('path');
 
 /**
- * ONE Electron install for Win/macOS/Linux.
- * Startup shows a dual-entry gate (用户入口 / 管理入口) — Boss直聘 pattern.
- * No separate admin vs user desktop packages.
+ * Admin-site entry only.
+ * The PC user UI lives in bgssai-media-desktop and does not load the web user site.
  */
-const USER_URL =
-  process.env.BGSSAI_MEDIA_USER_URL || 'http://127.0.0.1:3002/login';
 const ADMIN_URL =
   process.env.BGSSAI_MEDIA_ADMIN_URL || 'http://127.0.0.1:3001/login';
 
@@ -62,15 +59,15 @@ function showGate() {
 }
 
 function enterRole(role) {
-  currentRole = role === 'admin' ? 'admin' : 'user';
+  if (role !== 'admin') {
+    return;
+  }
+  currentRole = 'admin';
   if (!mainWindow) {
     return;
   }
-  const url = currentRole === 'admin' ? ADMIN_URL : USER_URL;
-  mainWindow.loadURL(url);
-  mainWindow.setTitle(
-    currentRole === 'admin' ? 'BGSSAI Media — 管理' : 'BGSSAI Media — 用户'
-  );
+  mainWindow.loadURL(ADMIN_URL);
+  mainWindow.setTitle('BGSSAI Media — 管理');
 }
 
 function buildMenu() {
@@ -81,10 +78,6 @@ function buildMenu() {
         {
           label: '返回双入口',
           click: () => showGate(),
-        },
-        {
-          label: '用户入口',
-          click: () => enterRole('user'),
         },
         {
           label: '管理入口',
@@ -100,6 +93,9 @@ function buildMenu() {
 }
 
 ipcMain.handle('shell:enter', async (_evt, role) => {
+  if (role !== 'admin') {
+    return { ok: false, message: 'PC 用户界面在 bgssai-media-desktop，不打开 Web 用户站。' };
+  }
   enterRole(role);
   return { ok: true, role: currentRole };
 });

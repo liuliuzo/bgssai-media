@@ -21,4 +21,10 @@ contextBridge.exposeInMainWorld('mediaDesktop', {
   matrix: () => ipcRenderer.invoke('player:matrix'),
   formatHook: (name) => ipcRenderer.invoke('player:formatHook', name),
   engine: () => ipcRenderer.invoke('player:engine'),
+  session: () => ipcRenderer.invoke('platform:session'),
+  login: (payload) => ipcRenderer.invoke('platform:login', payload),
+  logout: () => ipcRenderer.invoke('platform:logout'),
+  get: (apiPath) => ipcRenderer.invoke('platform:get', apiPath),
+  playUrl: (url) => ipcRenderer.invoke('platform:play', url),
+  upload: (payload) => ipcRenderer.invoke('platform:upload', payload),
 });

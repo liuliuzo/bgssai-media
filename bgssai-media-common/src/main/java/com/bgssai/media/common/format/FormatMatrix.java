@@ -19,7 +19,7 @@ import java.util.Map;
  * Verification stays whatever the row records. This class does not mark a format verified.
  *
  * <p>Lockstep cases also live in {@code bgssai-media-desktop/shared/format-hook.js}
- * and {@code bgssai-media-user/frontend/src/format/matrix.ts}: .mp4 PLAY, .mkv REJECT,
+ * and bgssai-media-web {@code user/src/format/matrix.ts}: .mp4 PLAY, .mkv REJECT,
  * .m3u8 PLAY, no extension UNKNOWN.
  */
 public final class FormatMatrix {

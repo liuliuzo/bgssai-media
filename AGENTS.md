@@ -15,7 +15,15 @@
 
 ## 本仓定位
 
-**bgssai-media**：播放器（对照 VLC）+ 视频播放平台（对标 YouTube / YouTube Shorts）。承接 `bgssai-short` 短剧成片与 `bgssai-long` 长剧成片直接发布播放；short / long 不做分发渠道。
+**bgssai-media-pc**（GitHub 旧名 `bgssai-media`）：视频解决方案里的 PC 端。播放器对照 VLC，要能播放主流格式文件；同时是对标 YouTube / YouTube Shorts 的视频播放平台。用户通过创作者中心发布作品，并在线观看。本仓承接 `bgssai-short` 与 `bgssai-long` 成片进入目录。short / long 不做分发渠道。
+
+Web、Android、iOS 已拆到独立仓库，共用本仓用户端 / 管理端 API：
+
+- https://github.com/liuliuzo/bgssai-media-web
+- https://github.com/liuliuzo/bgssai-media-android
+- https://github.com/liuliuzo/bgssai-media-ios
+
+浏览器页面不在本仓。Android / iOS 使用各自仓库里的原生工程，不使用 WebView。
 
 ## 强制约定（摘要）
 
@@ -40,6 +48,6 @@
 
 - https://github.com/liuliuzo/bgssai-skeleton
 - https://github.com/liuliuzo/bgssai-short
-- 本仓 https://github.com/liuliuzo/bgssai-media （唯一可写）
+- 本仓 https://github.com/liuliuzo/bgssai-media-pc （本系列 API 与 PC 播放器；Web / Android / iOS 在同名独立仓）
 
 Standards / monorepo / auth / ApiResponse 以 skeleton、short 远程为准，变更后应重新 clone 同步。

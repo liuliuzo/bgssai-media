@@ -1,4 +1,4 @@
-// bgssai-media 部署流水线（Jenkins）。
+// bgssai-media-pc 部署流水线（Jenkins）。浏览器前端在 bgssai-media-web，本流水线部署用户端和管理端 jar。
 //
 // 部署通道唯一：本流水线是该产品的唯一部署入口，仅手动触发。构建与 ship 的全部逻辑收敛在
 // 中央仓 bgssai-workflows 的 Jenkins 共享库（vars/ + resources/），本文件只声明「本产品长什么样」。

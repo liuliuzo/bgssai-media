@@ -2,7 +2,7 @@
 
 `bgssai-media` 是 Java 21 + Spring Boot 4 双端（`bgssai-media-user` / `bgssai-media-admin`），
 以可执行 jar 运行（`java -jar`），不使用 Docker。两端共享 MySQL 库 `bgssai_media`。
-前端在各模块下的 `frontend/`（Vite 开发端口 user 3002 / admin 3001）。
+浏览器前端已迁到仓库 `bgssai-media-web`（开发端口 user 3002 / admin 3001）。本仓 Jenkins 仍部署用户端和管理端 jar。主机尚未分配，见下文 OPS-02。
 桌面播放器 `bgssai-media-desktop` 与六端壳 `clients/*` **不走**本服务部署。
 
 Jenkins 走共享库 `bgssaiDeployEnd`。dev / prod 都是 **目标机自建**：目标机拉本仓 `develop`，
@@ -65,8 +65,8 @@ Jenkins 是唯一部署入口。环境由 Job 名决定（内部名 `dev-media-d
 目标机工具链：git + JDK 21 + Maven + Node。一次性准备见中央仓
 `jenkins/install/provision-build-host.sh`。
 
-根 `Jenkinsfile` 声明 `frontendScript: build:deploy`。**当前树**前端在
-`bgssai-media-user/frontend` 与 `bgssai-media-admin/frontend`，脚本名是 `build`，没有 `build:deploy`；
+根 `Jenkinsfile` 声明 `frontendScript: build:deploy`。浏览器前端已经不在本仓，而在
+`bgssai-media-web` 的 `user/` 与 `admin/`，脚本名是 `build`，没有 `build:deploy`；
 Maven 模块在仓库根下扁平存放，不是骨架仓 `<repo>-<end>/<repo>-<end>-react`。
 共享库 dual 布局按骨架路径找模块。主机到位后若构建失败，先对路径与脚本名。
 

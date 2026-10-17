@@ -1,8 +1,8 @@
 # bgssai-media-desktop
 
-Electron 壳 + 系统 **libVLC / VLC**（`cvlc` RC）桌面播放器，覆盖完整格式矩阵。
+PC 端自己的界面。播放器参考 VLC，用系统 **libVLC / VLC**（`cvlc` RC）播放主流格式；同一窗口里还有正片、短视频和创作者中心。用户在创作者中心发布作品。界面不加载 Web 用户站。
 
-短剧 Web 端仍用浏览器播放 MP4/WebM/HLS；本模块负责本地全格式文件。
+在线目录和上传调用本仓用户端，默认 `http://127.0.0.1:8081`。令牌放在请求头 `Jwttoken`。Web 端仍用浏览器播放 MP4/WebM/HLS。
 
 ## 依赖
 

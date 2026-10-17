@@ -19,7 +19,28 @@ body {
   min-height: 100vh;
 }
 
-.app { max-width: 920px; margin: 0 auto; padding: 28px 20px 48px; }
+.app { display: flex; min-height: 100vh; }
+.nav {
+  width: 240px;
+  flex: 0 0 240px;
+  padding: 20px 16px;
+  border-right: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.2);
+}
+.workspace { flex: 1; padding: 28px 20px 48px; overflow: auto; }
+.nav-btn, .card {
+  display: flex;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 8px;
+}
+.nav-btn.is-active { border-color: var(--accent); }
+.account { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+.account label, #creator-form label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 0.85rem; }
+.account input, #creator-form input, #creator-form textarea { width: 100%; }
+.cards { display: flex; flex-direction: column; gap: 8px; }
+.card { flex-direction: column; align-items: flex-start; gap: 4px; }
+.card span { color: var(--muted); font-size: 0.85rem; }
 .hero { margin-bottom: 20px; }
 .brand {
   font-size: 2.4rem;
