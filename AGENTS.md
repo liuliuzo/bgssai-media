@@ -9,7 +9,7 @@
 - 境外仅 GEO / SaaS / Tokenhub / Chat 的 Global 仓。Web 用户登录需账号密码、邮箱验证码、手机验证码；境内另支持微信、抖音、百度、支付宝，境外另支持 Google、GitHub。
 - Tokenhub CN/Global 分别接入大陆/国际模型原生 API，服务旗下产品和外部用户。调模型不跨区切换：境内应用只用 tokenhub-cn，境外应用只用 tokenhub-global。Admin 模型凭证管理参考 Dify。
 - 全产品支持 Bot 下载与授权托管；Wiki/Build 构成工程文档、HTML 设计、人工/Agent 编辑与编程任务的双向闭环。
-- Short / Long 是短剧与长剧制作平台，对照 waoowaoo、Jellyfish、ArcReel、LocalMiniDrama、openframe、ZJT，两仓是境内应用，调模型走 tokenhub-cn，不改走境外中枢。Media 系列是视频解决方案：media-pc、media-web、media-android、media-ios 对标 YouTube 与 YouTube Shorts，用户通过创作者中心发布并在线观看；主流格式本地播放只在参考 VLC 的 media-pc。成片进入 Media 目录播放。Wechat 参考既定 IM 项目，支持 Web/Android/iOS 及会话内 AI 图片和回复建议。Office 参考 OpenOffice，按实际格式与版本样本验收兼容性及 AI 办公。
+- Short / Long 是短剧与长剧制作平台，对照 waoowaoo、Jellyfish、ArcReel、LocalMiniDrama、openframe、ZJT，两仓是境内应用，调模型走 tokenhub-cn，不改走境外中枢。Media 系列是视频解决方案：media-pc、media-web、media-android、media-ios 对标 YouTube 与 YouTube Shorts，用户通过创作者中心发布并在线观看；主流格式本地播放只在参考 VLC 的 media-pc，该播放器也可以播放平台上的作品。成片进入 Media 目录播放。Wechat 参考既定 IM 项目，支持 Web/Android/iOS 及会话内 AI 图片和回复建议。Office 参考 OpenOffice，按实际格式与版本样本验收兼容性及 AI 办公。
 - Blog 支持 AI、Markdown、富文本、HTML 发文；Note 对照小红书，两者推荐参考 x-algorithm。Publish 对照传声港；SaaS 包含工作流、CRM、线索与 Hootsuite 式社媒管理；Web（建站，仓 `bgssai-web`）支持预览、管理、编辑和 *.bgssai-web.com 部署；不要把 Web 写成 Build。
 - 参考代码来自工作区 reference-github，参考原型来自 reference-prototypes；未完成实现、缺失参考和未执行的集成验收必须显式记录。数据库脚本版本与线上数据库执行状态分别报告。
 
