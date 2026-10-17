@@ -6,7 +6,7 @@
 
 VlcPlayer 内置会话包含 sessionId、playbackUrl、subtitleUrl、durationSec、seekSec、音轨/字幕和 desiredPlaying；准备时 ready=false。渲染层仅在 sessionId 改变时装载视频，用实际 play/pause/timeupdate/error/ended 事件回报主进程；旧 session 回报丢弃。seek 使用当前 MP4 的真实时间轴；更换音轨生成新会话并恢复位置。停止递增准备代次、终止旧进程，异步完成不得覆盖后续会话。暂停/音量/倍速同步到实际 HTMLVideoElement，全屏使用该元素。
 
-临时目录按代次回收，删除失败延迟退出时重试；原始文件不删除。打包声明 asarUnpack，包含两套引擎依赖。VLC 存在时保留 RC 路径；不把内置路径的样本结果写入全矩阵通过状态。
+临时目录按代次回收，删除失败延迟退出时重试；原始文件不删除。打包声明 asarUnpack，包含两套引擎依赖；beforePack 实际运行两个二进制的版本命令，安装脚本未执行、缺引擎或不可执行时拒绝生成缺失解码器的包。VLC 存在时保留 RC 路径；不把内置路径的样本结果写入全矩阵通过状态。
 
 ## 平台视频
 

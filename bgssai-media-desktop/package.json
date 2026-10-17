@@ -24,6 +24,7 @@
   "build": {
     "appId": "com.bgssai.media.desktop",
     "productName": "BGSSAI Media Player",
+    "beforePack": "scripts/verify-engines.js",
     "artifactName": "bgssai-media-player-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"
