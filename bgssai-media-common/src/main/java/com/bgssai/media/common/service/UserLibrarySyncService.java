@@ -1,6 +1,7 @@
 package com.bgssai.media.common.service;
 
 import com.bgssai.media.common.domain.MediaCreatorVideo;
+import com.bgssai.media.common.mapper.MediaCreatorVideoMapper;
 import com.bgssai.media.common.mapper.OpcExtMapper;
 import com.bgssai.media.common.web.BizException;
 import org.springframework.stereotype.Service;
@@ -20,10 +21,14 @@ public class UserLibrarySyncService {
 
     private final OpcExtMapper opcExtMapper;
     private final CommunityService communityService;
+    private final MediaCreatorVideoMapper videoMapper;
 
-    public UserLibrarySyncService(OpcExtMapper opcExtMapper, CommunityService communityService) {
+    public UserLibrarySyncService(OpcExtMapper opcExtMapper,
+                                  CommunityService communityService,
+                                  MediaCreatorVideoMapper videoMapper) {
         this.opcExtMapper = opcExtMapper;
         this.communityService = communityService;
+        this.videoMapper = videoMapper;
     }
 
     public Map<String, Object> getHistoryPrefs(Long userId) {
@@ -92,6 +97,7 @@ public class UserLibrarySyncService {
         List<Map<String, Object>> rows = opcExtMapper.listWatchLater(userId);
         for (Map<String, Object> row : rows) {
             normalizeKeys(row);
+            enrichVideoMeta(row);
         }
         return rows;
     }
@@ -147,6 +153,7 @@ public class UserLibrarySyncService {
         List<Map<String, Object>> items = opcExtMapper.listPlaylistItems(playlistId);
         for (Map<String, Object> item : items) {
             normalizeKeys(item);
+            enrichVideoMeta(item);
         }
         Map<String, Object> out = new LinkedHashMap<>(pl);
         normalizeKeys(out);
@@ -164,10 +171,61 @@ public class UserLibrarySyncService {
     }
 
     @Transactional
+    public Map<String, Object> reorderPlaylistItems(Long userId, Long playlistId, List<Long> videoIds) {
+        requireUser(userId);
+        requirePlaylistOwner(userId, playlistId);
+        if (videoIds == null || videoIds.isEmpty()) {
+            throw new BizException(400, "video_ids required");
+        }
+        int order = 0;
+        for (Long videoId : videoIds) {
+            if (videoId == null) {
+                continue;
+            }
+            opcExtMapper.updatePlaylistItemOrder(playlistId, videoId, order++);
+        }
+        return getPlaylist(userId, playlistId);
+    }
+
+    @Transactional
     public void removePlaylistItem(Long userId, Long playlistId, Long videoId) {
         requireUser(userId);
         requirePlaylistOwner(userId, playlistId);
         opcExtMapper.deletePlaylistItem(playlistId, videoId);
+    }
+
+    private void enrichVideoMeta(Map<String, Object> row) {
+        Long videoId = asLong(row.get("video_id"));
+        if (videoId == null) {
+            videoId = asLong(row.get("videoId"));
+        }
+        String title = null;
+        String cover = null;
+        boolean playable = false;
+        if (videoId != null) {
+            try {
+                MediaCreatorVideo ready = communityService.getReadyVideo(videoId);
+                title = ready.getTitle();
+                cover = coverOf(ready);
+                playable = true;
+            } catch (BizException ex) {
+                MediaCreatorVideo video = videoMapper.selectByPrimaryKey(videoId);
+                if (video != null) {
+                    title = video.getTitle();
+                    cover = coverOf(video);
+                }
+            }
+        }
+        row.put("title", title);
+        row.put("cover", cover);
+        row.put("playable", playable);
+    }
+
+    private static String coverOf(MediaCreatorVideo video) {
+        if (video.getCoverUrl() != null && !video.getCoverUrl().isBlank()) {
+            return video.getCoverUrl();
+        }
+        return video.getCoverPath();
     }
 
     private Map<String, Object> requirePlaylistAccess(Long userId, Long playlistId) {

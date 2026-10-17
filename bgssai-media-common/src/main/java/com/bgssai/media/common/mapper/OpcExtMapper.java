@@ -180,6 +180,12 @@ public interface OpcExtMapper {
             + "WHERE playlist_id = #{playlistId} ORDER BY sort_order ASC, id ASC")
     List<Map<String, Object>> listPlaylistItems(@Param("playlistId") Long playlistId);
 
+    @Update("UPDATE media_playlist_item SET sort_order = #{sortOrder} "
+            + "WHERE playlist_id = #{playlistId} AND video_id = #{videoId}")
+    int updatePlaylistItemOrder(@Param("playlistId") Long playlistId,
+                                @Param("videoId") Long videoId,
+                                @Param("sortOrder") int sortOrder);
+
     // ---- analytics ----
     @Insert("INSERT INTO media_view_event(user_id, video_id, channel_id, watched_sec, completed, event_day, created_at) "
             + "VALUES(#{userId}, #{videoId}, #{channelId}, #{watchedSec}, #{completed}, #{eventDay}, NOW())")
@@ -217,6 +223,19 @@ public interface OpcExtMapper {
     List<Map<String, Object>> channelSubscribeDaily(@Param("channelId") Long channelId,
                                                     @Param("fromDay") java.sql.Date fromDay,
                                                     @Param("toDay") java.sql.Date toDay);
+
+    @Select("SELECT event_day AS eventDay, "
+            + "COUNT(*) AS play_count, "
+            + "COALESCE(SUM(e.watched_sec),0) AS watched_sec_sum, "
+            + "COALESCE(SUM(e.completed),0) AS completed_count "
+            + "FROM media_view_event e "
+            + "INNER JOIN media_creator_video v ON v.id = e.video_id "
+            + "WHERE v.user_id = #{userId} "
+            + "AND e.event_day >= #{fromDay} AND e.event_day <= #{toDay} "
+            + "GROUP BY event_day ORDER BY event_day ASC")
+    List<Map<String, Object>> creatorDailyStats(@Param("userId") Long userId,
+                                                @Param("fromDay") java.sql.Date fromDay,
+                                                @Param("toDay") java.sql.Date toDay);
 
     // ---- reports / notices ----
     @Insert("INSERT INTO media_content_report(reporter_user_id, target_type, target_id, reason, status, merge_key, created_at) "

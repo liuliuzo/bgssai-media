@@ -3,7 +3,9 @@ package com.bgssai.media.user.controller;
 import com.bgssai.media.common.aop.NeedAop;
 import com.bgssai.media.common.auth.AuthContext;
 import com.bgssai.media.common.auth.RoleCodes;
+import com.bgssai.media.common.oauth.OAuthUserInfo;
 import com.bgssai.media.common.service.AccountSettingsService;
+import com.bgssai.media.common.service.AuthService;
 import com.bgssai.media.common.service.VerifyCodeService;
 import com.bgssai.media.common.web.ApiResponse;
 import com.bgssai.media.common.web.BizException;
@@ -32,11 +34,14 @@ public class AccountController {
 
     private final AccountSettingsService accountSettingsService;
     private final VerifyCodeService verifyCodeService;
+    private final AuthService authService;
 
     public AccountController(AccountSettingsService accountSettingsService,
-                             VerifyCodeService verifyCodeService) {
+                             VerifyCodeService verifyCodeService,
+                             AuthService authService) {
         this.accountSettingsService = accountSettingsService;
         this.verifyCodeService = verifyCodeService;
+        this.authService = authService;
     }
 
     @GetMapping("/deletion-notice")
@@ -124,9 +129,16 @@ public class AccountController {
                 yield ApiResponse.ok(accountSettingsService.bindPhone(userId, phone));
             }
             default -> {
-                String openId = b.get("open_id") != null ? b.get("open_id") : b.get("provider_uid");
+                // Never trust client-supplied open_id / provider_uid. Exchange code+state
+                // with the same OAuth path used by login.
+                String code = b.get("code");
+                String state = b.get("state");
+                if (code == null || code.isBlank() || state == null || state.isBlank()) {
+                    throw new BizException(400, "code and state required");
+                }
+                OAuthUserInfo profile = authService.exchangeOauthProfile(type, code, state);
                 yield ApiResponse.ok(accountSettingsService.bindIdentity(
-                        userId, type, openId, b.get("nickname")));
+                        userId, type, profile.getOpenId(), profile.getNickname()));
             }
         };
     }

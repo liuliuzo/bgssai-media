@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -108,6 +109,14 @@ public class LibrarySyncController {
                 AuthContext.get().getId(), id, asLong(body.get("video_id"))));
     }
 
+    @PutMapping("/playlists/{id}/items/order")
+    public ApiResponse<Map<String, Object>> reorderItems(@PathVariable("id") Long id,
+                                                         @RequestBody Map<String, Object> body) {
+        return ApiResponse.ok(librarySyncService.reorderPlaylistItems(
+                AuthContext.get().getId(), id, asLongList(body == null ? null : body.get("video_ids"),
+                        body == null ? null : body.get("video_id"))));
+    }
+
     @DeleteMapping("/playlists/{id}/items/{videoId}")
     public ApiResponse<Void> removeItem(@PathVariable("id") Long id,
                                         @PathVariable("videoId") Long videoId) {
@@ -123,6 +132,25 @@ public class LibrarySyncController {
             return n.longValue();
         }
         return Long.valueOf(String.valueOf(v));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Long> asLongList(Object primary, Object fallback) {
+        Object raw = primary != null ? primary : fallback;
+        if (raw == null) {
+            return List.of();
+        }
+        if (raw instanceof List<?> list) {
+            ArrayList<Long> out = new ArrayList<>();
+            for (Object item : list) {
+                Long vid = asLong(item);
+                if (vid != null) {
+                    out.add(vid);
+                }
+            }
+            return out;
+        }
+        throw new com.bgssai.media.common.web.BizException(400, "video_ids must be an array");
     }
 
     private static Integer asInt(Object v) {
