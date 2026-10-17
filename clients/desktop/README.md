@@ -8,10 +8,9 @@
 
 ## 运行
 
-```bash
-cd ../../bgssai-media-user/frontend && npm run dev
-cd ../../bgssai-media-admin/frontend && npm run dev
+用户站和管理站在仓库 `bgssai-media-web`。先在那边启动 `user`（3002）和 `admin`（3001），再启动本壳。
 
+```bash
 cd clients/desktop
 npm install
 npm start

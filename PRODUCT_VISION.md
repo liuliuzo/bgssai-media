@@ -4,7 +4,9 @@
 
 ## 核心定位
 
-> **bgssai-media 是播放器 + 视频播放平台：播放器参考 VLC，平台对标 YouTube 和 YouTube Shorts；承接 Short 短剧成片与 Long 长剧成片直接发布。交付目标是主流格式播放及 Windows PC、Web 在线、Android、iOS 多端播放。**
+> **bgssai-media 系列是视频解决方案。四个端都是对标 YouTube 和 YouTube Shorts 的视频播放平台，支持发布和在线观看。本仓 bgssai-media-pc 还是参考 VLC 的 PC 播放器，要能播放主流格式文件。Web、Android、iOS 分别在 bgssai-media-web、bgssai-media-android、bgssai-media-ios。**
+
+平台 API、数据库和 PC 播放器在本仓。另外三端只做各自的客户端，调用本仓用户端接口。
 
 ## 闭环（MVP）
 

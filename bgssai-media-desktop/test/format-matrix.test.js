@@ -9,7 +9,6 @@ const { hook } = require('../shared/format-hook');
 const copies = [
   path.join(__dirname, '../shared/format-matrix.json'),
   path.join(__dirname, '../../bgssai-media-common/src/main/resources/format/format-matrix.json'),
-  path.join(__dirname, '../../bgssai-media-user/frontend/src/data/format-matrix.json'),
 ];
 
 const texts = copies.map((file) => fs.readFileSync(file, 'utf8'));
@@ -17,7 +16,6 @@ const matrix = JSON.parse(texts[0]);
 
 test('format matrix copies stay identical', () => {
   assert.equal(texts[1], texts[0]);
-  assert.equal(texts[2], texts[0]);
 });
 
 test('deployment stays undeployed with empty hosts', () => {
