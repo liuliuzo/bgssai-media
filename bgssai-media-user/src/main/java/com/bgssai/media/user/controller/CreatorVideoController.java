@@ -79,6 +79,13 @@ public class CreatorVideoController {
         return ApiResponse.ok(creatorVideoService.unpublish(AuthContext.get().getId(), id));
     }
 
+    @GetMapping("/analytics")
+    public ApiResponse<Map<String, Object>> analyticsAggregate(
+            @RequestParam(name = "from", required = false) String from,
+            @RequestParam(name = "to", required = false) String to) {
+        return ApiResponse.ok(analyticsService.creatorAggregateStats(AuthContext.get().getId(), from, to));
+    }
+
     @GetMapping("/analytics/videos/{id}")
     public ApiResponse<Map<String, Object>> analytics(@PathVariable("id") Long id,
                                                       @RequestParam(name = "from", required = false) String from,
